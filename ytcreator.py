@@ -1,22 +1,13 @@
 import os
-
-from flask import Flask, render_template, request, flash, redirect, url_for
-from flaskext.mysql import MySQL
-from sqlalchemy import create_engine, MetaData, Table
+from flask import Flask, render_template, request, flash, redirect
 from werkzeug.utils import secure_filename
-
-from db import models
+from View.view import AffectForm
+from db.models import get_db
 
 app = Flask(__name__)
-mysql = MySQL()
+
 
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Thienhanh1991'
-app.config['MYSQL_DATABASE_DB'] = 'mydb'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-mysql.init_app(app)
-mysql.connect()
 
 
 def init_db():
@@ -71,6 +62,15 @@ def upload():
             file.save(os.path.join('/tmp/', filename))
             return '{} upload success'.format(filename)
     return 'hello world'
+
+
+@app.route('/newaffect', methods=['GET', 'POST'])
+def newaffect():
+    """
+    Add an affect
+    """
+    form = AffectForm(request.form)
+    return render_template('newaffect.html', form=form)
 
 
 if __name__ == '__main__':
