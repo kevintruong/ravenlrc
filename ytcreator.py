@@ -68,6 +68,7 @@ def upload():
 def newaffect():
     """
     Add an affect
+    submit redirect to confirm (preview page) to display current affect will add to database
     """
     form = AffectForm(request.form)
     return render_template('newaffect.html', form=form)
