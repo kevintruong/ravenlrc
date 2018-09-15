@@ -1,7 +1,13 @@
-from wtforms import Form, StringField, FileField, IntegerField, SelectField
+from wtforms import *
+from wtforms.fields.html5 import URLField
+from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+
+photos = UploadSet('photos', IMAGES)
 
 
-class AffectForm(Form):
+class AffectForm(FlaskForm):
     """
 
     """
@@ -80,8 +86,66 @@ class ScreenForm(Form):
     affect_id = SelectField("select affect id for the screen:", choices=affectlist)
 
 
-class ScreenConfiguration:
+class ScreenConfiguration(Form):
+    """
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `ScreenTemplate_id` INT NOT NULL,
+    `Screen_id` INT NOT NULL,
+    """
     screen_template_list = []
     screen_template_id = SelectField("select template Id for current screen", choices=screen_template_list)
     screen_list = []
     screen_id = SelectField("Select Screen id for current screen", choices=screen_list)
+
+
+class YoutubeMV(Form):
+    """
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `ScreenConfiguration_id` INT NOT NULL,
+    `Song_id` INT NOT NULL,
+    `Song_Title_id` INT NOT NULL,
+    """
+    screen_conf_list = []
+    song_list = []
+    song_title_list = []
+    screen_conf_id = SelectField("Select Screen configuration Id:", choices=screen_conf_list)
+    song_id = SelectField("Select song Id:", choices=song_list)
+
+
+class MvInput(FlaskForm):
+    """
+    sound_url: <nhaccuatui> URL
+    background_img: <background image>
+    title_img <title image>
+    title_pos <title position>
+    affect_mv : <affect video>
+    affect_opacity: <int: affect opacity>
+    sub1st_pos : <position of subtitle 1>
+    sub1st_color: <color code of subtitle 1>
+    sub1st_font : <sub1st_font>
+    sub1st_fontsize: < font size of subtitle 1>
+    """
+    sound_url = URLField("Nhaccuatui Url <included lyric>:")
+    bg_img = FileField("Background image")
+    title_img = FileField("Title image")
+    title_pos_x = IntegerField("Title Position x : ")
+    title_pos_y = IntegerField("Title Position y : ")
+    affect_mv = FileField("Affect: ")
+    affect_opacity = IntegerField("Affect opacity:")
+    sub1st_pos_x = IntegerField("Subtitle 1 position x : ")
+    sub1st_pos_y = IntegerField("Subtitle 1 position y : ")
+    sub1st_color = StringField("subtitle color code:")
+    sub1st_font = StringField("Subtitle 1 Font name")
+    sub1st_fontsize = IntegerField("Subtitle font size")
+
+    def get_url(self):
+        return self.sound_url.data
+
+    def get_bg(self):
+        return self.bg_img.data
+
+    def get_title(self):
+        return self.title_img.data
+
+    def get_title_pos(self):
+        return [self.title_pos_x.data, self.title_pos_y.data]

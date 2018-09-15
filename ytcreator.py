@@ -1,10 +1,15 @@
 import os
 from flask import Flask, render_template, request, flash, redirect
+from werkzeug.datastructures import CombinedMultiDict
 from werkzeug.utils import secure_filename
-from View.view import AffectForm
+
+from Model.youtubemv import handle_input_video
+from View.view import AffectForm, MvInput
 from db.models import get_db
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'any secret string'
 
 
 # MySQL configurations
@@ -15,13 +20,6 @@ def init_db():
     with app.open_resource('db/youtubeCreator.sql', mode='r') as f:
         db.cursor().executescript(f.read())
     db.commit()
-
-
-@app.cli.command('initdb')
-def initdb_command():
-    """Initializes the database."""
-    init_db()
-    print('Initialized the database.')
 
 
 @app.route('/showSignUp')
@@ -64,13 +62,30 @@ def upload():
     return 'hello world'
 
 
+@app.route('/inputmv', methods=['GET', 'POST'])
+def mvinput():
+    """
+    submit redirect to confirm (preview page) to display current affect will add to database
+    """
+    mvinput = MvInput(CombinedMultiDict((request.files, request.form)))
+    if request.method == 'POST':
+        handle_input_video(request)
+        return render_template('inputmv.html', form=mvinput)
+    return render_template('inputmv.html', form=mvinput)
+
+
 @app.route('/newaffect', methods=['GET', 'POST'])
 def newaffect():
     """
     Add an affect
     submit redirect to confirm (preview page) to display current affect will add to database
     """
-    form = AffectForm(request.form)
+
+    form = AffectForm(CombinedMultiDict((request.files, request.form)))
+    if request.method == 'POST':
+        if 'affectMv' in request.files:
+            print("found file {} in files upload".format(request.files['affectMv']))
+        return render_template('newaffect.html', form=form)
     return render_template('newaffect.html', form=form)
 
 

@@ -8,43 +8,20 @@
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <nav>
-            <ul class="nav nav-pills pull-right">
-                <li role="presentation" class="active"><a href="#">Home</a>
-                </li>
-                <li role="presentation"><a href="#">Sign In</a>
-                </li>
-                <li role="presentation"><a href="showSignUp">Sign Up</a>
-                </li>
-            </ul>
-        </nav>
-        <h3 class="text-muted">Python Flask App</h3>
-    </div>
-
-    <div class="jumbotron">
-        <h1>Bucket List App</h1>
-        <p class="lead"></p>
-        <p><a class="btn btn-lg btn-success" href="showSignUp" role="button">Sign up today</a>
-        </p>
+    <div class="container">
+        <h1> Upload New Affect </h1>
+        <form method="post" action="{{ url_for('newaffect') }}" enctype="multipart/form-data">
+            <button type="submit" class="btn btn-default">Upload new Affect</button>
+        </form>
     </div>
 
     <div class="container">
-        <h1> input file </h1>
-        <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="inputFile"> File input </label>
-                <input type="file" name="input-file">
-            </div>
-            <button type="submit" class="btn btn-default">Submit</button>
+        <h1> Create new youtube MV </h1>
+        <form method="post" action="{{ url_for('mvinput') }}" enctype="multipart/form-data">
+            <button type="submit" class="btn btn-default"> Create new Youtube MV</button>
         </form>
-
-
-        <footer class="footer">
-            <p>&copy; Company 2015</p>
-        </footer>
-
     </div>
+</div>
 </body>
 
 </html>

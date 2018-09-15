@@ -1,0 +1,28 @@
+<doctype html>
+    <head>
+        <title>Python Flask Bucket List App</title>
+        <link href="static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="static/jumbotron-narrow.css" rel="stylesheet">
+    </head>
+    <title>New MV </title>
+    <h2>New Music Video Youtube</h2>
+
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post enctype="multipart/form-data">
+        <dl>
+            {{ render_field(form.sound_url) }}
+            {{ render_field(form.bg_img) }}
+            {{ render_field(form.title_img) }}
+            {{ render_field(form.title_pos_x) }}
+            {{ render_field(form.title_pos_y) }}
+            {{ render_field(form.affect_mv) }}
+            {{ render_field(form.affect_opacity) }}
+            {{ render_field(form.sub1st_pos_x) }}
+            {{ render_field(form.sub1st_pos_y) }}
+            {{ render_field(form.sub1st_color) }}
+            {{ render_field(form.sub1st_font) }}
+            {{ render_field(form.sub1st_fontsize) }}
+        </dl>
+        <p><input type=submit value=Submit>
+    </form>
+</doctype>
