@@ -10,7 +10,8 @@
     {% from "_formhelpers.html" import render_field %}
     <form method=post enctype="multipart/form-data">
         <dl>
-            {{ render_field(form.sound_url) }}
+            {{ render_field(form.mp3_file) }}
+            {{ render_field(form.sound_nct_url) }}
             {{ render_field(form.bg_img) }}
             {{ render_field(form.title_img) }}
             {{ render_field(form.title_pos_x) }}

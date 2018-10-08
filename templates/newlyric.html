@@ -1,0 +1,14 @@
+<doctype html>
+    <title>New Album - Flask Music Database</title>
+    <h2>New Album</h2>
+
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post enctype="multipart/form-data">
+        <dl>
+            {{ render_field(form.url_nct) }}
+            {{ render_field(form.lyric_1st) }}
+            {{ render_field(form.lyric_2st) }}
+        </dl>
+        <p><input type=submit value=Submit>
+    </form>
+</doctype>

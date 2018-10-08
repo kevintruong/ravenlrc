@@ -1,8 +1,18 @@
-from wtforms import *
-from wtforms.fields.html5 import URLField
-from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
+import os
+
+from flask_uploads import UploadSet, IMAGES, AUDIO
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
+from werkzeug.datastructures import FileStorage
+from wtforms import *
+from wtforms.fields.html5 import URLField
+import asyncio
+import async_timeout
+
+from backend.ass_customizor import create_ass_sub
+from backend.ffmpeg.ffmpegcli import FffmpegCli, Coordinate
+
+UPLOAD_FOLDER = '/tmp/'
 
 photos = UploadSet('photos', IMAGES)
 
@@ -16,12 +26,13 @@ class AffectForm(FlaskForm):
     # media_type = SelectField('Media', choices=media_types)
 
 
-class LyricForm(Form):
+class LyricForm(FlaskForm):
     """
     `id` INT NOT NULL AUTO_INCREMENT,
    `Lyric_1st` MEDIUMBLOB NULL,
    `Lyric_2nd` MEDIUMBLOB NULL,
     """
+    url_nct = URLField('input nhaccuatui url ')
     lyric_1st = FileField('Lyric 1st:')
     lyric_2st = FileField('Lyric 2st:')
 
@@ -125,7 +136,12 @@ class MvInput(FlaskForm):
     sub1st_font : <sub1st_font>
     sub1st_fontsize: < font size of subtitle 1>
     """
-    sound_url = URLField("Nhaccuatui Url <included lyric>:")
+    audio = UploadSet("audio", AUDIO)
+    sound_nct_url = URLField("Nhaccuatui Url <included lyric>:")
+    mp3_file = FileField("Mp3 file",
+                         validators=[FileRequired("file must upload"),
+                                     FileAllowed(['mp3'], "audio file only")]
+                         )
     bg_img = FileField("Background image")
     title_img = FileField("Title image")
     title_pos_x = IntegerField("Title Position x : ")
@@ -138,14 +154,35 @@ class MvInput(FlaskForm):
     sub1st_font = StringField("Subtitle 1 Font name")
     sub1st_fontsize = IntegerField("Subtitle font size")
 
-    def get_url(self):
-        return self.sound_url.data
+    def file_return(self, filedata: FileStorage):
+        filesave = os.path.join(UPLOAD_FOLDER, filedata.filename)
+        filedata.save(filesave)
+        return filesave
 
-    def get_bg(self):
+    def get_nct_url(self):
+        return self.sound_nct_url.data
+
+    def get_bg_img(self) -> FileStorage:
         return self.bg_img.data
 
-    def get_title(self):
+    def get_title(self) -> FileStorage:
         return self.title_img.data
 
     def get_title_pos(self):
         return [self.title_pos_x.data, self.title_pos_y.data]
+
+    def get_sub_pos(self):
+        return [self.sub1st_pos_x.data, self.sub1st_pos_y.data]
+
+    def get_sub_font(self):
+        return self.sub1st_font.data
+
+    async def handle_new_mv(self):
+        create_ass_sub(self.get_nct_url(), "/tmp/test.ass")
+        ffmpeg_cli = FffmpegCli()
+        bg_img_file = self.file_return(self.get_bg_img())
+        title_img_file = self.file_return(self.get_title())
+        ffmpeg_cli.add_logo_to_bg_img(bg_img_file,
+                                      title_img_file,
+                                      "/tmp/test.png",
+                                      Coordinate(100, 100))

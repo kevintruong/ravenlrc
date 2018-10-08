@@ -1,14 +1,18 @@
 import os
+import time
+
 from flask import Flask, render_template, request, flash, redirect
 from werkzeug.datastructures import CombinedMultiDict
 from werkzeug.utils import secure_filename
-
-from Model.youtubemv import handle_input_video
-from View.view import AffectForm, MvInput
+import asyncio
+import async_timeout
+from flask import Flask
+from Model.youtubemv import handle_input_video, handle_new_lyric
+from View.view import AffectForm, MvInput, LyricForm
 from db.models import get_db
 
 app = Flask(__name__)
-
+loop = asyncio.get_event_loop()
 app.config['SECRET_KEY'] = 'any secret string'
 
 
@@ -69,7 +73,13 @@ def mvinput():
     """
     mvinput = MvInput(CombinedMultiDict((request.files, request.form)))
     if request.method == 'POST':
-        handle_input_video(request)
+        # start_time = time.time()
+        # loop.run_until_complete(mvinput.handle_new_mv())
+        # print("--- %s seconds ---" % (time.time() - start_time))
+        start_time = time.time()
+        mvinput.handle_new_mv()
+        print("--- %s seconds ---" % (time.time() - start_time))
+        # mvinput.handle_new_mv()
         return render_template('inputmv.html', form=mvinput)
     return render_template('inputmv.html', form=mvinput)
 
@@ -87,6 +97,35 @@ def newaffect():
             print("found file {} in files upload".format(request.files['affectMv']))
         return render_template('newaffect.html', form=form)
     return render_template('newaffect.html', form=form)
+
+
+@app.route('/result', methods=['GET'])
+def newaffect():
+    """
+    Add an affect
+    submit redirect to confirm (preview page) to display current affect will add to database
+    """
+
+    form = AffectForm(CombinedMultiDict((request.files, request.form)))
+    if request.method == 'POST':
+        if 'affectMv' in request.files:
+            print("found file {} in files upload".format(request.files['affectMv']))
+        return render_template('newaffect.html', form=form)
+    return render_template('result.html', form=form)
+
+@app.route('/newlyric', methods=['GET', 'POST'])
+def newlyric():
+    """
+    Add an affect
+    submit redirect to confirm (preview page) to display current affect will add to database
+    """
+
+    form = LyricForm(CombinedMultiDict((request.files, request.form)))
+    if request.method == 'POST':
+        handle_new_lyric(form)
+        return 'upload a lyric '
+
+    return render_template('newlyric.html', form=form)
 
 
 if __name__ == '__main__':
