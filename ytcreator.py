@@ -100,7 +100,7 @@ def newaffect():
 
 
 @app.route('/result', methods=['GET'])
-def newaffect():
+def result():
     """
     Add an affect
     submit redirect to confirm (preview page) to display current affect will add to database
@@ -110,7 +110,7 @@ def newaffect():
     if request.method == 'POST':
         if 'affectMv' in request.files:
             print("found file {} in files upload".format(request.files['affectMv']))
-        return render_template('newaffect.html', form=form)
+        return render_template('result.html', form=form)
     return render_template('result.html', form=form)
 
 @app.route('/newlyric', methods=['GET', 'POST'])

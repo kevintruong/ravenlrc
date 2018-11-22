@@ -179,10 +179,13 @@ class MvInput(FlaskForm):
 
     async def handle_new_mv(self):
         create_ass_sub(self.get_nct_url(), "/tmp/test.ass")
-        ffmpeg_cli = FffmpegCli()
         bg_img_file = self.file_return(self.get_bg_img())
         title_img_file = self.file_return(self.get_title())
+
+
+        ffmpeg_cli = FffmpegCli()
         ffmpeg_cli.add_logo_to_bg_img(bg_img_file,
                                       title_img_file,
                                       "/tmp/test.png",
                                       Coordinate(100, 100))
+
