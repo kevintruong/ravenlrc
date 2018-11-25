@@ -2,8 +2,8 @@ from werkzeug.datastructures import CombinedMultiDict
 from werkzeug.local import LocalProxy
 
 from View.view import MvInput, LyricForm
-from backend.ass_customizor import create_ass_subtitile
-from subcrawler.subcrawler import get_sub_from_url
+from backend.subcraw.ass_customizor import create_ass_subtitile
+from backend.subcraw.subcrawler import get_sub_from_url
 
 
 def handle_input_video(request: LocalProxy):

@@ -14,7 +14,7 @@ def get_db(user, password, host, dbname):
     return dbengine
 
 
-db_engine = get_db('root', 'Thienhanh1991', 'localhost', 'youtubecreatordb')
+db_engine = get_db('root', 'hanhdoan', 'localhost', 'youtubecreatordb')
 Base = declarative_base(db_engine)
 
 

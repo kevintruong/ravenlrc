@@ -2,15 +2,14 @@ import os
 
 from flask_uploads import UploadSet, IMAGES, AUDIO
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired, FileAllowed
+from flask_wtf.file import FileRequired, FileAllowed
 from werkzeug.datastructures import FileStorage
 from wtforms import *
 from wtforms.fields.html5 import URLField
-import asyncio
-import async_timeout
 
-from backend.ass_customizor import create_ass_sub
-from backend.ffmpeg.ffmpegcli import FffmpegCli, Coordinate
+from backend.subcraw.ass_customizor import create_ass_sub
+from backend.ffmpeg.ffmpegcli import FfmpegCli, Coordinate
+from backend.subcraw.subcrawler import download_mp3_file
 
 UPLOAD_FOLDER = '/tmp/'
 
@@ -177,15 +176,13 @@ class MvInput(FlaskForm):
     def get_sub_font(self):
         return self.sub1st_font.data
 
-    async def handle_new_mv(self):
-        create_ass_sub(self.get_nct_url(), "/tmp/test.ass")
+    def handle_new_mv(self):
+        create_ass_sub(self.get_nct_url(), "D:\\Project\\ytcreatorservice\\backend\\Content\\Ass\\test.ass")
         bg_img_file = self.file_return(self.get_bg_img())
         title_img_file = self.file_return(self.get_title())
-
-
-        ffmpeg_cli = FffmpegCli()
+        download_mp3_file(self.get_nct_url())
+        ffmpeg_cli = FfmpegCli()
         ffmpeg_cli.add_logo_to_bg_img(bg_img_file,
                                       title_img_file,
                                       "/tmp/test.png",
                                       Coordinate(100, 100))
-

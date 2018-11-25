@@ -5,7 +5,6 @@ from flask import Flask, render_template, request, flash, redirect
 from werkzeug.datastructures import CombinedMultiDict
 from werkzeug.utils import secure_filename
 import asyncio
-import async_timeout
 from flask import Flask
 from Model.youtubemv import handle_input_video, handle_new_lyric
 from View.view import AffectForm, MvInput, LyricForm
@@ -112,6 +111,7 @@ def result():
             print("found file {} in files upload".format(request.files['affectMv']))
         return render_template('result.html', form=form)
     return render_template('result.html', form=form)
+
 
 @app.route('/newlyric', methods=['GET', 'POST'])
 def newlyric():
