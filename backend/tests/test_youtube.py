@@ -1,6 +1,11 @@
 import unittest
 from backend.youtube.youtube_uploader import *
 
+test_dir = os.path.dirname(__file__)
+sample_data = os.path.join(test_dir, "sample_data")
+
+test_video = os.path.join(sample_data, "in1.mp4")
+
 
 class TestYoutubeChanelAPI(unittest.TestCase):
 
@@ -19,11 +24,9 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         self.assertEqual(True, False)
 
     def test_upload_video_to_channel(self):
-        id = self.uploader.upload_video('D:\\Project\\ytcreatorservice\\backend\\tests\\sample_data\\in1.mp4')
+        id = self.uploader.upload_video(test_video)
         info = self.uploader.get_video_info_by_id(id)
         self.assertEqual(info['title', self.uploader.get_title()])
-
-        # self.assertEqual(True, False)
 
     def test_get_video_info(self):
         info = self.uploader.get_video_info_by_id("u2958BANJu0")

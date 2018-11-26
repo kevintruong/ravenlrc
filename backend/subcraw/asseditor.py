@@ -9,6 +9,10 @@ from backend.subcraw.pysubs2 import *
 from backend.subcraw.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
 from backend.subcraw.subcrawler import get_sub_from_url
 
+temp_dowload_dir = os.path.join(os.path.dirname(__file__), 'Download')
+if not os.path.isdir(temp_dowload_dir):
+    os.mkdir(temp_dowload_dir)
+
 
 class textrefactor(object):
     """
@@ -41,7 +45,7 @@ class textrefactor(object):
         return self.newtext
 
 
-class subcustomizor(object):
+class AssCustomizor(object):
     """
     this is the temple document for sub customizer
     """
@@ -138,15 +142,15 @@ def convert_lrf_to_ass(inputlrf: str, assoutput="/tmp/test.ass"):
     subs = pylrc.parse(lrc_string)
     srt = subs.toSRT()  # convert lrc to srt string
     srtfile = subs.save_to_file('/tmp/output_test.srt')
-    outputfile = subcustomizor.convert_to_ass(srtfile, assoutput)
+    outputfile = AssCustomizor.convert_to_ass(srtfile, assoutput)
     return outputfile
 
 
-def lrf_to_ass(lrccontent: str, output="test.ass"):
+def lrf_to_ass(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.ass")):
     subs = pylrc.parse(lrccontent)
     srt = subs.toSRT()  # convert lrc to srt string
-    srtfile = subs.save_to_file('output_test.srt')
-    outputfile = subcustomizor.convert_to_ass(srtfile, output)
+    srtfile = subs.save_to_file(os.path.join(temp_dowload_dir, 'output_test.srt'))
+    outputfile = AssCustomizor.convert_to_ass(srtfile, output)
     return outputfile
 
 
@@ -160,8 +164,8 @@ def create_ass_subtitile(inputfile: str,
     if resolution is None:
         resolution = [1920, 1080]
     outputfile = lrf_to_ass(inputfile)
-    subs = load(outputfile, encoding='utf-8')
-    sub_customizer = subcustomizor(subs, resolution[0], resolution[1])
+    subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
+    sub_customizer = AssCustomizor(subs, resolution[0], resolution[1])
     sub_customizer.setting_fonts(font_name)
     sub_customizer.setting_margin_val()
     sub_customizer.setting_primary_colour(subcorlor)
