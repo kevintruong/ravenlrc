@@ -1,0 +1,12 @@
+Flask==1.0.2
+Flask_Uploads==0.2.1
+SQLAlchemy==1.2.14
+requests==2.20.1
+selenium==3.141.0
+Werkzeug==0.14.1
+WTForms==2.2.1
+setuptools==28.8.0
+Flask_WTF==0.14.2
+future==0.17.1
+graphviz==0.10.1
+ntpath==1534770254.427198
