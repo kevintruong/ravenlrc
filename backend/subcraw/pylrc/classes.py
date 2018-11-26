@@ -1,5 +1,3 @@
-import os
-
 from .utilities import unpackTimecode, findEvenSplit
 
 
@@ -74,6 +72,7 @@ class Lyrics(list):
         self.offset = ""
 
         self.extend(items)
+        self.fullsrtlyric = ""
 
     def toSRT(self):
         """Returns an SRT string of the LRC data"""
@@ -100,19 +99,44 @@ class Lyrics(list):
                 end_hours = "%02d" % self[i + 1].hours
                 end_min = "%02d" % self[i + 1].minutes
                 end_sec = "%02d" % self[i + 1].seconds
+
+                if i + 2 < len(self):
+                    the_next_start = self[i + 2].minutes * 60 + self[i + 2].seconds
+                    the_curr_end_offset = self[i + 1].minutes * 60 + self[i + 1].seconds
+                    elapsetime = the_next_start - the_curr_end_offset
+                    if self[i + 1].text == '':
+                        if elapsetime > 4:
+                            end_sec = "{}".format(self[i + 1].seconds + 4)
+                        else:
+                            end_hours = "%02d" % self[i + 2].hours
+                            end_min = "%02d" % self[i + 2].minutes
+                            end_sec = "%02d" % self[i + 2].seconds
+                    elif elapsetime > 2:
+                        end_sec = "{}".format(self[i + 1].seconds + 2)
+
                 milliseconds = self[i + 1].milliseconds - 1
                 end_milli = "%03d" % (0 if milliseconds < 0 else milliseconds)
+
                 end_timecode = ''.join([end_hours, ':', end_min,
                                         ':', end_sec, ',', end_milli])
 
                 srt = srt + start_timecode + ' --> ' + end_timecode + '\n'
-                if len(self[i].text) > 31:
-                    srt = srt + findEvenSplit(self[i].text) + '\n'
-                else:
-                    srt = srt + self[i].text + '\n'
+                # if len(self[i].text) > 31:
+                #     srt = srt + findEvenSplit(self[i].text) + '\n'
+                # else:
+                srt = srt + self[i].text + '\n'
                 output.append(srt)
 
-        return '\n'.join(output).rstrip()
+        self.fullsrtlyric = '\n'.join(output).rstrip()
+
+        return self.fullsrtlyric
+
+    def save_to_file(self, output: str):
+        self.toSRT()
+        outputfile = open(output, 'wb')
+        outputfile.write(self.fullsrtlyric.encode('utf-8'))
+        outputfile.close()
+        return output
 
     def toLRC(self):
         output = []
