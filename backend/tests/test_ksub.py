@@ -1,6 +1,7 @@
 import shutil
 import unittest
 
+from backend.subcraw.asseditor import *
 from backend.subcraw.subcrawler import *
 
 curDir = os.path.dirname(__file__)
@@ -46,6 +47,12 @@ class ksub(unittest.TestCase):
     def test_get_audio_lossless(self):
         file = download_mp3_file(full_test, self.testDownloadDir, AudioQuanlity.AUDIO_QUANLITY_LOSSLESS)
         self.assertTrue(os.path.isfile(file))
+        pass
+
+    def test_create_ass_sub(self):
+        ass_out = os.path.join(self.testDownloadDir, "test.ass")
+        newass = create_ass_sub(full_test, ass_out)
+        self.assertTrue(os.path.isfile(newass))
         pass
 
 

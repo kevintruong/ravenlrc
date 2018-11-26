@@ -106,3 +106,13 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+/backend/subcraw/pylrc/LICENSE.txt
+/backend/subcraw/pylrc/README.rst
+/backend/subcraw/pylrc/setup.py
+/backend/subcraw/pylrc/tests/static/missing_endline.lrc
+/backend/subcraw/pylrc/tests/static/missing_endline.srt
+/backend/subcraw/pylrc/tests/static/nested.lrc
+/backend/subcraw/pylrc/tests/static/nested.srt
+/backend/subcraw/pylrc/tests/static/un_nested.lrc
+/backend/subcraw/pylrc/tests/static/un_nested.srt
+/backend/subcraw/pylrc/tests/test.py

@@ -9,6 +9,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
 from backend.subcraw.rc4_py3 import decrypt
+from backend.subcraw.asseditor import *
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)

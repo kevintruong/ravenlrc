@@ -1,16 +1,13 @@
 from __future__ import unicode_literals
 
 import os
-import sys
+import subprocess
 from urllib.parse import urlparse
 
 from backend.subcraw import pylrc
+from backend.subcraw.pysubs2 import *
 from backend.subcraw.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
 from backend.subcraw.subcrawler import get_sub_from_url
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import subprocess
-from backend.subcraw.pysubs2 import *
 
 
 class textrefactor(object):
@@ -145,10 +142,10 @@ def convert_lrf_to_ass(inputlrf: str, assoutput="/tmp/test.ass"):
     return outputfile
 
 
-def lrf_to_ass(lrccontent: str, output="/tmp/test.ass"):
+def lrf_to_ass(lrccontent: str, output="test.ass"):
     subs = pylrc.parse(lrccontent)
     srt = subs.toSRT()  # convert lrc to srt string
-    srtfile = subs.save_to_file('/tmp/output_test.srt')
+    srtfile = subs.save_to_file('output_test.srt')
     outputfile = subcustomizor.convert_to_ass(srtfile, output)
     return outputfile
 

@@ -1,7 +1,7 @@
 from .ssafile import SSAFile
 from .ssaevent import SSAEvent
 from .ssastyle import SSAStyle
-from pysubs2 import cli, time
+from backend.subcraw.pysubs2 import cli, time
 from .exceptions import *
 from .common import Color, VERSION
 
