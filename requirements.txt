@@ -1,3 +1,4 @@
+google-api-python-client
 Flask==1.0.2
 Flask_Uploads==0.2.1
 SQLAlchemy==1.2.14
