@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function
 
 import json
+import os
 import subprocess
 from pathlib import Path
 import platform
@@ -41,7 +42,14 @@ class FfmpegCli(object):
         else:
             print('not support yet')
 
+    def reset_ffmpeg_cmd(self):
+        self.ffmpeg_cli.clear()
+        # self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-loglevel', 'panic', '-y']
+        self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
+        self.__add_system_prefix()
+
     def __init__(self):
+        self.ffmpeg_cli = []
         self.default_resolution = '1920x1080'
         self.default_bitrate = 8000000
         self.youtube_options = ["-movflags", "+faststart"]
@@ -49,7 +57,7 @@ class FfmpegCli(object):
         self.ffmpeg_options = ["-threads", "8", "-y"]
         self.supperfast_profile = ["-preset", "ultrafast"]
         self.bitrate_configure = ["-b:v", "{}".format(self.default_bitrate)]
-        self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-loglevel', 'panic', '-y']
+        self.reset_ffmpeg_cmd()
         self.__add_system_prefix()
 
         pass
@@ -61,7 +69,7 @@ class FfmpegCli(object):
         :return:
         """
         # ffprobe - v quiet - print_format json - show_format
-        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', "-i",
+        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', "-i",
                         "{}".format(input)]
         output, err = self.run_cmd(ffproble_cmd)
         data = json.loads(output)
@@ -122,7 +130,9 @@ class FfmpegCli(object):
         p = subprocess.Popen(cmd)
         out, err = p.communicate(input)
         retcode = p.poll()
+        self.reset_ffmpeg_cmd()
         if retcode:
+            self.reset_ffmpeg_cmd()
             raise Exception('ffmpeg', out, err)
         return out, err
 
@@ -206,11 +216,15 @@ class FfmpegCli(object):
         :param output_vid:
         :return:
         '''
+
         FfmpegCli.check_file_exist(input_sub)
         FfmpegCli.check_file_exist(input_video)
         self._ffmpeg_input(input_video)
         self._ffmpeg_input_filter_complex_prefix()
-        cmd = 'subtitles="f={}"'.format(input_sub)
+        # Replace back slash -> forward slash
+        input_sub = input_sub.replace(os.sep, '/')
+        newass = input_sub[:1] + "\\" + input_sub[1:]
+        cmd = "subtitles=\'{}\'".format(newass)
         self._ffmpeg_input_fill_cmd(cmd)
         self._ffmpeg_input_fill_cmd('-shortest')
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
@@ -285,6 +299,7 @@ class FfmpegCli(object):
 
         print('{}'.format(self.ffmpeg_cli))
         self.run(self.ffmpeg_cli, output)
+        self.reset_ffmpeg_cmd()
 
     def add_affect_overlay_in_sub(self, input_src: str, affect: str, subframe: Coordinate):
         """

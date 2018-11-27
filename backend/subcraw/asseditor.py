@@ -189,9 +189,6 @@ def create_ass_sub(url: str, output: str):
     :return:
     """
     lyric_content = get_sub_from_url(url)
-    # html_file = get_url(url)
-    # output = os.path.join(output, html_file)
-    # print("output {} ".format(output))
     create_ass_subtitile(lyric_content, output)
     return output
 

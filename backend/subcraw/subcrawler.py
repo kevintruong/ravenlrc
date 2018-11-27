@@ -1,15 +1,14 @@
-import os
 import re
-import time
 import urllib
 from enum import IntEnum
+from time import sleep
 
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
-from backend.subcraw.rc4_py3 import decrypt
 from backend.subcraw.asseditor import *
+from backend.subcraw.rc4_py3 import decrypt
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)
@@ -77,7 +76,7 @@ def wait_for_start_download(directory, timeout, nfiles=None):
     seconds = 0
     dl_wait = True
     while dl_wait and seconds < timeout:
-        time.sleep(1)
+        sleep(1)
         files = os.listdir(directory)
         if nfiles and len(files) != nfiles:
             dl_wait = True
@@ -111,7 +110,7 @@ def wait_for_download(directory, timeout, nfiles=None):
     seconds = 0
     dl_wait = True
     while dl_wait and seconds < timeout:
-        time.sleep(1)
+        sleep(1)
         dl_wait = False
         files = os.listdir(directory)
         if nfiles and len(files) != nfiles:
@@ -155,7 +154,8 @@ def download_mp3_file(url: str, outputdir: str, quanlity: AudioQuanlity):
     print("Open url ")
     browser.get(url)
     browser.find_element_by_css_selector("#btnDownloadBox").click()
-    time.sleep(2)
+    import time
+    time.sleep(1)
     try:
         downloadbuttons = browser.find_elements_by_css_selector("#divDownloadBox > ul > li")
         # element = browser.find_element_by_css_selector("#divDownloadBox > ul > li:nth-child(3) > a")

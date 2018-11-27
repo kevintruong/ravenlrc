@@ -3,6 +3,9 @@ import unittest
 import os
 import shutil
 
+from backend.subcraw.asseditor import *
+from backend.subcraw.subcrawler import download_mp3_file, AudioQuanlity
+
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")
 
@@ -22,6 +25,9 @@ bg_img00 = os.path.join(sample_data_dir, "bg_img00.png")
 bg_img01 = os.path.join(sample_data_dir, "bg_img01.png")
 logo00 = os.path.join(sample_data_dir, "logo00.png")
 audio00 = os.path.join(sample_data_dir, "audio01.mp3")
+
+full_test = "https://www.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong.EoqsR1AFD4SG.html"
+test_url00 = "https://www.nhaccuatui.com/bai-hat/xin-loi-anh-qua-phien-dong-nhi.WX2iJD8VU9ve.html"
 
 
 class TestFFmpegCli(unittest.TestCase):
@@ -66,6 +72,15 @@ class TestFFmpegCli(unittest.TestCase):
         pass
 
     def test_add_sub_to_video(self):
+        media_output = os.path.join(sample_data_dir, "media_out.mp4")
+        ass_out = os.path.join(test_data_dir, "test.ass")
+        output = os.path.join(test_data_dir, "sub_output.mp4")
+
+        create_ass_sub(full_test, ass_out)
+        self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
+        length_in = self.ffmpeg.get_media_time_length(media_output)
+        length_out = self.ffmpeg.get_media_time_length(output)
+        self.assertEqual(length_out, length_in)
         pass
 
     def test_add_affect_to_video(self):
@@ -74,8 +89,31 @@ class TestFFmpegCli(unittest.TestCase):
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(outputLeng, inputLeng)
-
         pass
+
+    def create_mv_from_url(self, url: str):
+        bg_mv = os.path.join(test_data_dir, "bg_mv.mp4")
+        bg_img = os.path.join(test_data_dir, "bg_img_abc.png")
+        ass_out = os.path.join(test_data_dir, "test.ass")
+        output = os.path.join(test_data_dir, "sub_output.mp4")
+        final_mv = os.path.join(test_data_dir, "final_mv.mp4")
+
+        # download mp3 file
+        audiofile = download_mp3_file(url, test_data_dir, AudioQuanlity.AUDIO_QUANLITY_320)
+        audio_length = self.ffmpeg.get_media_time_length(audiofile)
+        self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_img)
+        self.ffmpeg.create_media_file_from_img(bg_img, audio_length, bg_mv)
+        # add sub to MV
+        create_ass_sub(url, ass_out)  # get sub
+        self.ffmpeg.adding_sub_to_video(ass_out, bg_mv, output)
+        # add audio to MV
+        self.ffmpeg.mux_audio_to_video(output, audiofile, final_mv)
+        final_length = self.ffmpeg.get_media_time_length(final_mv)
+        self.assertEqual(final_length, audio_length)
+
+    def test_full_create_mv(self):
+        # self.create_mv_from_url(full_test)
+        self.create_mv_from_url(test_url00)
 
 
 if __name__ == '__main__':
