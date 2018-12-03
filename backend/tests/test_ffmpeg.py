@@ -99,12 +99,13 @@ class TestFFmpegCli(unittest.TestCase):
         final_mv = os.path.join(test_data_dir, "final_mv.mp4")
 
         # download mp3 file
+        self.ffmpeg.set_resolution(FFmpegProfile.PROFILE_LOW)
         audiofile = download_mp3_file(url, test_data_dir, AudioQuanlity.AUDIO_QUANLITY_320)
         audio_length = self.ffmpeg.get_media_time_length(audiofile)
         self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_img)
         self.ffmpeg.create_media_file_from_img(bg_img, audio_length, bg_mv)
         # add sub to MV
-        create_ass_sub(url, ass_out)  # get sub
+        create_ass_sub(url, ass_out, resolution=[640, 480])  # get sub
         self.ffmpeg.adding_sub_to_video(ass_out, bg_mv, output)
         # add audio to MV
         self.ffmpeg.mux_audio_to_video(output, audiofile, final_mv)

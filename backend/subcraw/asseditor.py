@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 from backend.subcraw import pylrc
 from backend.subcraw.pysubs2 import *
 from backend.subcraw.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
-from backend.subcraw.subcrawler import get_sub_from_url
 
 temp_dowload_dir = os.path.join(os.path.dirname(__file__), 'Download')
 if not os.path.isdir(temp_dowload_dir):
@@ -54,7 +53,7 @@ class AssCustomizor(object):
         self.subs = this_subtile
         self.default_sub_width = 800
         self.setting_resolution(framewidth, frameheigh)
-        self.default_fontsize = int(frameheigh * 6 / 100)
+        self.default_fontsize = int(frameheigh * 5 / 100)
 
     def setting_fonts(self, fontname: str, size=None):
         '@:type fontname: str'
@@ -68,7 +67,7 @@ class AssCustomizor(object):
             default_style.fontsize = size
         pass
 
-    def setting_margin_val(self, l=200, v=70):
+    def setting_margin_val(self, x=0, y=0, w=300, h=200):
         """
            this function will setting the margin value of subtitle field
            for exampel : marginl the left margin offset from screen
@@ -78,23 +77,24 @@ class AssCustomizor(object):
            then the calculate for marginl,marginr,marginv should be
            if l > r => marginr = r, marginl= marginl - marginr - default_width(500)
            if r > l => marginl = l, marginr =marginr -marginl -default_width (500)
-           marginv = v
-        :param l:
-        :param v:
+           marginv = v retangle (x,y,w,h)
+            convert to (x,y) format =>  marginl =x
+                                        marginr =x + w
+                                        marginv = screen_heigh - y - h
+        :param x:
+        :param y:
+        :param w:
+        :param h:
         :return:
         """
-        default_style = self.subs.styles["Default"]
         sub_info = self.subs.info
-
         resX = sub_info["PlayResX"]
-        if resX < l + self.default_sub_width:
-            default_style.marginr = resX - l
-            default_style.marginl = resX - default_style.marginr - self.default_sub_width
-        else:
-            default_style.marginl = l
-            default_style.marginr = resX - default_style.marginl - self.default_sub_width
-        default_style.marginr = default_style.marginl
-        default_style.marginv = v
+        resY = sub_info["PlayResY"]
+
+        default_style = self.subs.styles["Default"]
+        default_style.marginr = resX - (x + w)
+        default_style.marginl = x
+        default_style.marginv = resY - (y + h)
 
     def setting_resolution(self, x, y):
         sub_info = self.subs.info
@@ -154,20 +154,32 @@ def lrf_to_ass(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.ass"
     return outputfile
 
 
+class SubRectangle:
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+
+
 def create_ass_subtitile(inputfile: str,
                          output: str,
+                         sub_rectangle: SubRectangle,
                          subcorlor=0x018CA7,
-                         sub_subcordinate=None,
                          font_name="SVN-Futura",
                          font_size=None,
                          resolution=None):
+    """
+
+    :type inputfile: str input file lrf
+    """
     if resolution is None:
         resolution = [1920, 1080]
     outputfile = lrf_to_ass(inputfile)
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
     sub_customizer = AssCustomizor(subs, resolution[0], resolution[1])
     sub_customizer.setting_fonts(font_name)
-    sub_customizer.setting_margin_val()
+    sub_customizer.setting_margin_val(sub_rectangle.x, sub_rectangle.y, sub_rectangle.w, sub_rectangle.h)
     sub_customizer.setting_primary_colour(subcorlor)
     sub_customizer.add_fad_affect_to_sub()
     sub_customizer.subs.save(output)
@@ -181,15 +193,20 @@ def get_url(url: str):
     return lyricfile + ".ass"
 
 
-def create_ass_sub(url: str, output: str):
+def create_ass_sub(url: str, output: str, sub_rect: SubRectangle, subcolor: int, fontname=None,
+                   resolution=[1920, 1080]):
     """
     create ass subtitle for
+    :param sub_rect:
+    :param resolution:
     :param url:
     :param output:
     :return:
     """
+    from backend.subcraw.subcrawler import get_sub_from_url
     lyric_content = get_sub_from_url(url)
-    create_ass_subtitile(lyric_content, output)
+    create_ass_subtitile(lyric_content, output, sub_rectangle=sub_rect, font_name=fontname,
+                         subcorlor=subcolor, resolution=resolution)
     return output
 
 # create_ass_subtitile(

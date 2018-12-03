@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function
 import json
 import os
 import subprocess
+from enum import Enum
 from pathlib import Path
 import platform
 
@@ -26,6 +27,14 @@ class Coordinate(object):
         self.h = h
 
 
+class FFmpegProfile(Enum):
+    PROFILE_LOW = '640x480'
+    PROFILE_FULLHD = '1920x1080'
+    PROFILE_2K = '2048x1080'
+    PROFILE_4K = '4096x2160'
+    pass
+
+
 class FfmpegCli(object):
     '''
     cli ffmpeg for process video and audio
@@ -47,6 +56,9 @@ class FfmpegCli(object):
         # self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-loglevel', 'panic', '-y']
         self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
         self.__add_system_prefix()
+
+    def set_resolution(self, resolution: FFmpegProfile):
+        self.default_resolution = resolution
 
     def __init__(self):
         self.ffmpeg_cli = []

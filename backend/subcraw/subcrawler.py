@@ -6,6 +6,7 @@ from time import sleep
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
 
 from backend.subcraw.asseditor import *
 from backend.subcraw.rc4_py3 import decrypt
@@ -112,19 +113,13 @@ def wait_for_download(directory, timeout, nfiles=None):
     while dl_wait and seconds < timeout:
         sleep(1)
         dl_wait = False
-        files = os.listdir(directory)
-        if nfiles and len(files) != nfiles:
+        if os.path.isfile(download_file):
             dl_wait = True
-
-        for fname in files:
-            extension = os.path.splitext(fname)[1][1:]
-            if extension == "crdownload":
-                dl_wait = True
-            file = fname
-
         seconds += 1
     print("Download complete after {}".format(seconds))
-    return os.path.join(directory, file)
+
+    return os.path.join(directory, os.path.splitext(download_file)[0])
+    # return download_file
 
 
 class AudioQuanlity(IntEnum):
@@ -135,9 +130,10 @@ class AudioQuanlity(IntEnum):
     AUDIO_QUANLITY_LOSSLESS = 0x08
 
 
-def download_mp3_file(url: str, outputdir: str, quanlity: AudioQuanlity):
+def download_mp3_file(url: str, quanlity: AudioQuanlity, outputdir=ChromeDownloadDir):
     """
     download an mp3 file using selenium
+    :param quanlity:
     :param outputdir:
     :param url:
     :return:
@@ -145,12 +141,12 @@ def download_mp3_file(url: str, outputdir: str, quanlity: AudioQuanlity):
     global losslessdownload, mediumdownload, lowdownload
     audioQuan = AudioQuanlity.AUDIO_UNKNOW
     print("start")
-    options = webdriver.ChromeOptions()
+    options = Options()
     # options.add_argument("--headless")
     options.add_argument('user-data-dir={}'.format(ChromeDataDir))
     prefs = {'download.default_directory': '{}'.format(outputdir)}
     options.add_experimental_option('prefs', prefs)
-    browser = webdriver.Chrome(chrome_options=options)
+    browser = webdriver.Chrome(options=options)
     print("Open url ")
     browser.get(url)
     browser.find_element_by_css_selector("#btnDownloadBox").click()
@@ -190,9 +186,8 @@ def download_mp3_file(url: str, outputdir: str, quanlity: AudioQuanlity):
     browser.close()
     return fileDonwload
 
-
-if __name__ == '__main__':
-    # download_mp3_file(
-    #     "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html");
-    get_sub_from_url(
-        "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
+# if __name__ == '__main__':
+# download_mp3_file(
+#     "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html");
+# get_sub_from_url(
+#     "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")

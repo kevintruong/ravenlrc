@@ -116,3 +116,4 @@ venv.bak/
 /backend/subcraw/pylrc/tests/static/un_nested.lrc
 /backend/subcraw/pylrc/tests/static/un_nested.srt
 /backend/subcraw/pylrc/tests/test.py
+/node_modules/
