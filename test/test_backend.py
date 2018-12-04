@@ -62,6 +62,24 @@ class My(unittest.TestCase):
         assert result.exit_code == 0
         self.assertTrue(os.path.isfile(get_return_value()))
 
+    def test_click_create_yt_mv(self):
+        assfile = os.path.join(os.path.dirname(__file__), "test.ass")
+        mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
+        assfile = os.path.join(os.path.dirname(__file__), "test.ass")
+        mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
+        titleimg = os.path.join(sample_data_dir, 'xinloi.png')
+        outputmp4 = os.path.join(sample_data_dir, 'youtube.mp4')
+        result = self.runner.invoke(get_sub_nct,
+                                    [self.url, assfile, "UTM Centur", "0x018CA7", "--subrect", "250,180,930,200"])
+        assert result.exit_code == 0
+
+        result = self.runner.invoke(create_youtube_mv,
+                                    [audio00, bg_img00,
+                                     titleimg, "--titlecoordinate", "[300,300]", assfile, 'abc', outputmp4
+                                     ])
+        assert result.exit_code == 0
+        # self.assertTrue(os.path.isfile(get_return_value()))
+
     def test_click_get_media_time_length(self):
         result = self.runner.invoke(get_media_length, [input_mp4_file])
         self.assertEqual(result.exit_code, 0)

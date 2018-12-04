@@ -193,7 +193,7 @@ def get_url(url: str):
     return lyricfile + ".ass"
 
 
-def create_ass_sub(url: str, output: str, sub_rect: SubRectangle, subcolor: int, fontname=None,
+def create_ass_sub(url: str, output: str, sub_rect: SubRectangle, subcolor=0x018CA7, fontname="Arial",
                    resolution=[1920, 1080]):
     """
     create ass subtitle for

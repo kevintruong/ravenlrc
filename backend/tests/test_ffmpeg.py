@@ -76,7 +76,7 @@ class TestFFmpegCli(unittest.TestCase):
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
 
-        create_ass_sub(full_test, ass_out)
+        create_ass_sub(full_test, ass_out, sub_rect=SubRectangle(300, 300, 500, 300))
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
         length_in = self.ffmpeg.get_media_time_length(media_output)
         length_out = self.ffmpeg.get_media_time_length(output)

@@ -54,7 +54,9 @@ class FfmpegCli(object):
     def reset_ffmpeg_cmd(self):
         self.ffmpeg_cli.clear()
         # self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-loglevel', 'panic', '-y']
-        self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
+
+        self.ffmpeg_cli = ['ffmpeg', '-y']
+        # self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
         self.__add_system_prefix()
 
     def set_resolution(self, resolution: FFmpegProfile):
@@ -236,7 +238,7 @@ class FfmpegCli(object):
         # Replace back slash -> forward slash
         input_sub = input_sub.replace(os.sep, '/')
         newass = input_sub[:1] + "\\" + input_sub[1:]
-        cmd = "subtitles=\'{}\'".format(newass)
+        cmd = "subtitles=\\'{}\\'".format(newass)
         self._ffmpeg_input_fill_cmd(cmd)
         self._ffmpeg_input_fill_cmd('-shortest')
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
