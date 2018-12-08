@@ -80,6 +80,10 @@ class My(unittest.TestCase):
         assert result.exit_code == 0
         # self.assertTrue(os.path.isfile(get_return_value()))
 
+    def test_click_hello_nodejs(self):
+        result = self.runner.invoke(hello_nodejs)
+        assert result.exit_code == 0
+
     def test_click_get_media_time_length(self):
         result = self.runner.invoke(get_media_length, [input_mp4_file])
         self.assertEqual(result.exit_code, 0)

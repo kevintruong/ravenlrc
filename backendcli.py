@@ -8,6 +8,10 @@ import ast
 import click
 from backend.ffmpeg.ffmpegcli import FfmpegCli, Coordinate
 from backend.subcraw.subcrawler import *
+import backend.ELinkLog
+import logging
+
+logger = logging.getLogger('kendebug')
 
 
 def set_return_value(value):
@@ -29,8 +33,11 @@ def cli():
 @click.argument('outdir')
 def download_content_from_nct(quality: str, ncturl: str, outdir: str):
     audio = AudioQuanlity(int(quality))
-    downloadfile = download_mp3_file(ncturl, audio, outdir)
+    logger.debug("{} {} {}".format(audio, ncturl, outdir))
+    downloadfile = 'hasdasdasjkdlashdjkashjkd'
+    # downloadfile = download_mp3_file(ncturl, audio, outdir)
     set_return_value(downloadfile)
+    click.echo(downloadfile)
 
 
 @cli.command('getsub')
@@ -95,6 +102,12 @@ def create_youtube_mv(audiofile, bgimgfile, titleimg, titlecoordinate, subfile, 
     ffmpeg.adding_sub_to_video(subfile, tempfile, vidsubmv)
     ffmpeg.mux_audio_to_video(vidsubmv, audiofile, outputmv)
     pass
+
+
+@cli.command('hello_nodejs')
+def hello_nodejs():
+    logger.debug("hello world")
+    click.echo("hello node js")
 
 
 if __name__ == '__main__':

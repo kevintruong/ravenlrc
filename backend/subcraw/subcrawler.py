@@ -21,6 +21,10 @@ if not os.path.isdir(ChromeDownloadDir):
     os.mkdir(ChromeDownloadDir)
 if not os.path.isdir(ChromeDataDir):
     os.mkdir(ChromeDataDir)
+import logging
+import backend.ELinkLog
+
+logger = logging.getLogger('kendebug')
 
 
 def download_lyric(url):
@@ -31,7 +35,7 @@ def download_lyric(url):
 
 def get_sub_from_url(url: str) -> object:
     response = requests.get(url)
-    # print("{}".format(response.headers))
+    # logger.debug("{}".format(response.headers))
     html_body = response._content.decode("utf-8")
     matched_lines = [line for line in html_body.split('\n') if "player.peConfig.xmlURL" in line]
     if matched_lines:
@@ -73,7 +77,7 @@ def wait_for_start_download(directory, timeout, nfiles=None):
            If provided, also wait for the expected number of files.
 
        """
-    print("Wait for download start")
+    logger.debug("Wait for download start")
     seconds = 0
     dl_wait = True
     while dl_wait and seconds < timeout:
@@ -85,8 +89,8 @@ def wait_for_start_download(directory, timeout, nfiles=None):
         for fname in files:
             extension = os.path.splitext(fname)[1][1:]
             if extension == "crdownload":
-                print("Download start after {}".format(seconds))
-                return fname
+                logger.debug("Download start after {}".format(seconds))
+                return os.path.join(directory, fname)
         seconds += 1
     return None
 
@@ -107,17 +111,17 @@ def wait_for_download(directory, timeout, nfiles=None):
     """
     global file
     download_file = wait_for_start_download(directory, 120)
-    print("wait for download copmplete")
+    logger.debug("wait for download copmplete {}".format(download_file))
     seconds = 0
     dl_wait = True
     while dl_wait and seconds < timeout:
         sleep(1)
         dl_wait = False
         if os.path.isfile(download_file):
+            logger.debug("wait for {} complete".format(download_file))
             dl_wait = True
         seconds += 1
-    print("Download complete after {}".format(seconds))
-
+    logger.debug("Download complete after {}".format(seconds))
     return os.path.join(directory, os.path.splitext(download_file)[0])
     # return download_file
 
@@ -140,51 +144,63 @@ def download_mp3_file(url: str, quanlity: AudioQuanlity, outputdir=ChromeDownloa
     """
     global losslessdownload, mediumdownload, lowdownload
     audioQuan = AudioQuanlity.AUDIO_UNKNOW
-    print("start")
+    logger.debug("start")
     options = Options()
     # options.add_argument("--headless")
     options.add_argument('user-data-dir={}'.format(ChromeDataDir))
     prefs = {'download.default_directory': '{}'.format(outputdir)}
     options.add_experimental_option('prefs', prefs)
     browser = webdriver.Chrome(options=options)
-    print("Open url ")
+    logger.debug("Open url ")
     browser.get(url)
     browser.find_element_by_css_selector("#btnDownloadBox").click()
     import time
-    time.sleep(1)
+    time.sleep(2)
     try:
         downloadbuttons = browser.find_elements_by_css_selector("#divDownloadBox > ul > li")
         # element = browser.find_element_by_css_selector("#divDownloadBox > ul > li:nth-child(3) > a")
     except NoSuchElementException:
-        print("not found loss less")
+        logger.debug("not found loss less")
         return None
     for each in downloadbuttons:
+        logger.debug("check {}".format(each.text))
         if each.text == 'Tải Nhạc 128 Kbps':
-            print("found 'Tải Nhạc 128 Kbps'")
+            logger.debug("found 'Tải Nhạc 128 Kbps'")
             audioQuan |= AudioQuanlity.AUDIO_QUANLITY_128
             lowdownload = each
         elif each.text == 'Tải Nhạc 320 Kbps':
-            print("Found 'Tải Nhạc 320 Kbps''")
+            logger.debug("Found 'Tải Nhạc 320 Kbps''")
             audioQuan |= AudioQuanlity.AUDIO_QUANLITY_320
             mediumdownload = each
         elif each.text == 'Tải Nhạc Lossless':
-            print("Found 'Tải Nhạc Lossless'")
+            logger.debug("Found 'Tải Nhạc Lossless'")
             losslessdownload = each
             audioQuan |= AudioQuanlity.AUDIO_QUANLITY_LOSSLESS
             break
         else:
-            print("not support yet: {}".format(each.text))
+            logger.debug("not support yet: {}".format(each.text))
     if audioQuan & AudioQuanlity.AUDIO_QUANLITY_LOSSLESS == quanlity:
+        logger.debug("AudioQuanlity.AUDIO_QUANLITY_LOSSLESS")
         losslessdownload.click()
     elif audioQuan & AudioQuanlity.AUDIO_QUANLITY_320 == quanlity:
+        logger.debug("AudioQuanlity.AUDIO_QUANLITY_320")
         mediumdownload.click()
     elif audioQuan & AudioQuanlity.AUDIO_QUANLITY_128 == quanlity:
+        logger.debug("AudioQuanlity.AUDIO_QUANLITY_128")
         lowdownload.click()
     else:
-        print("not support yest ")
+        logger.debug("not support yest ")
+        return None
     fileDonwload = wait_for_download(outputdir, 120)
-    browser.close()
-    return fileDonwload
+    try:
+        if browser.get_window_position():
+            logger.debug("check to close browser")
+            browser.close()
+        return fileDonwload
+    except:
+        logger.debug("Web browser is closed")
+        return fileDonwload
+    # browser.close()
 
 # if __name__ == '__main__':
 # download_mp3_file(

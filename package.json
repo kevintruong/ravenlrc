@@ -8,7 +8,8 @@
     "http": "0.0.0",
     "morgan": "^1.9.1",
     "multer": "0.1.6",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "python-shell": "^1.0.6"
   },
   "devDependencies": {
     "body-parser": "^1.18.3"

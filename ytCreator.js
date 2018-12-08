@@ -4,6 +4,11 @@ var path = require("path");
 var app = express();
 var bodyParser = require("body-parser");
 var fileUpload = require('express-fileupload');
+// Use python shell
+
+var myPythonScriptPath = 'backendcli.py';
+var PythonShell = require('python-shell');
+var pyshell = new PythonShell(myPythonScriptPath);
 
 
 /** bodyParser.urlencoded(options)
