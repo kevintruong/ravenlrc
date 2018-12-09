@@ -8,6 +8,7 @@ from pathlib import Path
 import platform
 
 
+
 class Coordinate(object):
     """
 

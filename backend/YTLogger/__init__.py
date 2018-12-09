@@ -2,6 +2,14 @@ import logging.config
 
 from pythonjsonlogger import jsonlogger
 from structlog import configure, processors, stdlib, threadlocal
+import os
+
+CurDir = os.path.dirname(__file__)
+DebugLogDir = os.path.join(CurDir, "..\\..\\Debug")
+if not os.path.isdir(DebugLogDir):
+    os.mkdir(DebugLogDir)
+ytDebugFile = os.path.join(DebugLogDir, "ytdebugfile.log")
+debugfile = str(ytDebugFile)
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
@@ -24,21 +32,25 @@ DEFAULT_CONFIGURE = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'json': {
+        'debug': {
             'format': '%(lineno)d %(message)s'
-            # 'class': 'pythonjsonlogger.jsonlogger.JsonFormatter'
         }
     },
     'handlers': {
-        'jsonfile': {
+        'debugfile': {
             'class': 'logging.FileHandler',
-            'formatter': 'json',
-            'filename': 'ytdebug.log'
+            'formatter': 'debug',
+            'filename': debugfile
+        },
+        'apiresult': {
+            'class': 'logging.FileHandler',
+            'formatter': 'debug',
+            'filename': debugfile
         }
     },
     'loggers': {
         'kendebug': {
-            'handlers': ['jsonfile'],
+            'handlers': ['debugfile'],
             'level': logging.DEBUG
         }
     }

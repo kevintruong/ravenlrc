@@ -1,9 +1,3 @@
-# TODO
-# ''' - Option args
-# '''
-#
-#
-
 import ast
 import click
 from backend.ffmpeg.ffmpegcli import FfmpegCli, Coordinate
@@ -34,8 +28,7 @@ def cli():
 def download_content_from_nct(quality: str, ncturl: str, outdir: str):
     audio = AudioQuanlity(int(quality))
     logger.debug("{} {} {}".format(audio, ncturl, outdir))
-    downloadfile = 'hasdasdasjkdlashdjkashjkd'
-    # downloadfile = download_mp3_file(ncturl, audio, outdir)
+    downloadfile = download_mp3_file(ncturl, audio, outdir)
     set_return_value(downloadfile)
     click.echo(downloadfile)
 
