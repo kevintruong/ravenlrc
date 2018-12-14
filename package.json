@@ -1,0 +1,7 @@
+{
+  "name": "ytcreatorservice",
+  "version": "1.0.0",
+  "dependencies": {
+    "shelljs": "latest"
+  }
+}

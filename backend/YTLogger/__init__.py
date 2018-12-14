@@ -5,7 +5,7 @@ from structlog import configure, processors, stdlib, threadlocal
 import os
 
 CurDir = os.path.dirname(__file__)
-DebugLogDir = os.path.join(CurDir, "..\\..\\Debug")
+DebugLogDir = os.path.join(CurDir, "..\\..\\log")
 if not os.path.isdir(DebugLogDir):
     os.mkdir(DebugLogDir)
 ytDebugFile = os.path.join(DebugLogDir, "ytdebugfile.log")
@@ -32,27 +32,29 @@ DEFAULT_CONFIGURE = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'debug': {
-            'format': '%(lineno)d %(message)s'
-        }
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
     },
     'handlers': {
-        'debugfile': {
+        'default': {
+            'level': 'DEBUG',
+            'formatter': 'standard',
             'class': 'logging.FileHandler',
-            'formatter': 'debug',
             'filename': debugfile
         },
-        'apiresult': {
-            'class': 'logging.FileHandler',
-            'formatter': 'debug',
-            'filename': debugfile
-        }
     },
     'loggers': {
-        'kendebug': {
-            'handlers': ['debugfile'],
-            'level': logging.DEBUG
-        }
+        'backend': {
+            'handlers': ['default'],
+            'level': logging.DEBUG,
+            'propagate': True
+        },
+        'django.request': {
+            'handlers': ['default'],
+            'level': 'WARN',
+            'propagate': False
+        },
     }
 }
 

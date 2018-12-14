@@ -22,7 +22,7 @@ if not os.path.isdir(ChromeDownloadDir):
 if not os.path.isdir(ChromeDataDir):
     os.mkdir(ChromeDataDir)
 import logging
-import backend.ELinkLog
+import backend.YTLogger
 
 logger = logging.getLogger('kendebug')
 
@@ -148,6 +148,7 @@ def download_mp3_file(url: str, quanlity: AudioQuanlity, outputdir=ChromeDownloa
     options = Options()
     # options.add_argument("--headless")
     options.add_argument('user-data-dir={}'.format(ChromeDataDir))
+    logger.debug("Chrome data dir {}".format(ChromeDataDir))
     prefs = {'download.default_directory': '{}'.format(outputdir)}
     options.add_experimental_option('prefs', prefs)
     browser = webdriver.Chrome(options=options)

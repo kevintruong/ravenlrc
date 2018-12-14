@@ -58,7 +58,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_create_background_affect_with_length(self):
         bg_output = os.path.join(test_data_dir, "bg_out.mp4")
-        length_media = 20
+        length_media = 40
         self.ffmpeg.create_background_affect_with_length(input_mp4_file, length_media, bg_output)
         leng_out = self.ffmpeg.get_media_time_length(bg_output)
         self.assertEqual(leng_out, length_media)
@@ -85,7 +85,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_add_affect_to_video(self):
         output = os.path.join(test_data_dir, "affect_bg.mp4")
-        self.ffmpeg.add_affect_to_video(input_mp4_file, input_mp4_file, output)
+        self.ffmpeg.add_affect_to_video(input_mp4_file, input_mp4_file, output, )
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(outputLeng, inputLeng)
@@ -100,7 +100,7 @@ class TestFFmpegCli(unittest.TestCase):
 
         # download mp3 file
         self.ffmpeg.set_resolution(FFmpegProfile.PROFILE_LOW)
-        audiofile = download_mp3_file(url, test_data_dir, AudioQuanlity.AUDIO_QUANLITY_320)
+        audiofile = download_mp3_file(url, AudioQuanlity.AUDIO_QUANLITY_320, test_data_dir)
         audio_length = self.ffmpeg.get_media_time_length(audiofile)
         self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_img)
         self.ffmpeg.create_media_file_from_img(bg_img, audio_length, bg_mv)

@@ -6,7 +6,10 @@ import subprocess
 from enum import Enum
 from pathlib import Path
 import platform
+import logging
+import backend.YTLogger
 
+logger = logging.getLogger('backend')
 
 
 class Coordinate(object):
@@ -50,7 +53,7 @@ class FfmpegCli(object):
             self.ffmpeg_cli.append('-hwaccel')
             self.ffmpeg_cli.append('vdpau')
         else:
-            print('not support yet')
+            logger.debug('not support yet')
 
     def reset_ffmpeg_cmd(self):
         self.ffmpeg_cli.clear()
@@ -72,9 +75,9 @@ class FfmpegCli(object):
         self.ffmpeg_options = ["-threads", "8", "-y"]
         self.supperfast_profile = ["-preset", "ultrafast"]
         self.bitrate_configure = ["-b:v", "{}".format(self.default_bitrate)]
+        self.copy_encode = ["-c", "copy"]
         self.reset_ffmpeg_cmd()
         self.__add_system_prefix()
-
         pass
 
     def _ffprobe_file_format(self, input: str):
@@ -121,7 +124,7 @@ class FfmpegCli(object):
     def run(self, cmd: list, output: str):
         cmd += self.bitrate_configure
         cmd.append(output)
-        print(' '.join(map(str, cmd)))
+        logger.debug(' '.join(map(str, cmd)))
 
         p = subprocess.Popen(cmd)
         out, err = p.communicate(input)
@@ -130,7 +133,7 @@ class FfmpegCli(object):
             raise Exception('ffmpeg', out, err)
         return out, err
 
-    def ffmpeg_cli_run(self, cmd: list, output: str, superfast=0, youtube=0):
+    def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
         cmd += self.ffmpeg_options
         if superfast == 1:
             cmd += self.supperfast_profile
@@ -140,7 +143,7 @@ class FfmpegCli(object):
             cmd += self.bitrate_configure
 
         cmd.append(output)
-        print(' '.join(map(str, cmd)))
+        logger.debug(' '.join(map(str, cmd)))
 
         p = subprocess.Popen(cmd)
         out, err = p.communicate(input)
@@ -155,7 +158,7 @@ class FfmpegCli(object):
     def check_file_exist(cls, inputfile: str):
         input_file = Path(inputfile)
         if not input_file.exists():
-            print("not found file {}".format(inputfile))
+            logger.debug("not found file {}".format(inputfile))
             exit(-1)
 
     def create_video_from_image(self, img: str, length: int):
@@ -184,10 +187,13 @@ class FfmpegCli(object):
         self._ffmpeg_input_fill_cmd('-loop')
         self._ffmpeg_input_fill_cmd('1')
         self._ffmpeg_input(input_img)
-        self._ffmpeg_input_filter_complex_prefix()
-        self._ffmpeg_input_fill_cmd("scale={}".format(self.default_resolution))
+        # self._ffmpeg_input_filter_complex_prefix()
+        # self._ffmpeg_input_fill_cmd("scale={}".format(self.default_resolution))
         self._ffmpeg_input_fill_cmd('-t')
         self._ffmpeg_input_fill_cmd("{}".format(time_length))
+        self._ffmpeg_input_fill_cmd('-c')
+        self._ffmpeg_input_fill_cmd('copy')
+
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_video)
 
         # ffmpeg_cmd = ["ffmpeg", "-y", "-loop", "1", "-i", "{}".format(input_img),
@@ -210,7 +216,9 @@ class FfmpegCli(object):
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input_fill_cmd('-t')
         self._ffmpeg_input_fill_cmd('{}'.format(time_length))
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg, superfast=1)
+        # self._ffmpeg_input_fill_cmd('-c')
+        # self._ffmpeg_input_fill_cmd('copy')
+        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
         # ffmpeg_cmd = ["ffmpeg", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
         #               "{}".format(time_length)]
@@ -245,8 +253,8 @@ class FfmpegCli(object):
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
         pass
 
-    def add_affect_to_video(self, bg_video: str, video: str, output: str):
-        '''
+    def add_affect_to_video(self, affect_vid: str, video: str, output: str, affectconf=50):
+        """
         input_bgvid=$1
         input_blendvid=$2
         output_mp4=$3
@@ -255,18 +263,21 @@ class FfmpegCli(object):
                                       [0:0]setdar=dar=0,format=rgba[b]; \
                                       [b][a]blend=all_mode='overlay':all_opacity=0.5" \
                                       $output_mp4
-        :param bg_video:
+        :param output:
+        :param affectconf:
+        :param affect_vid:
         :param video:
         :return:
-        '''
-        FfmpegCli.check_file_exist(bg_video)
+        """
+        FfmpegCli.check_file_exist(affect_vid)
         FfmpegCli.check_file_exist(video)
-        self._ffmpeg_input(bg_video)
+        self._ffmpeg_input(affect_vid)
         self._ffmpeg_input(video)
         self._ffmpeg_input_filter_complex_prefix()
+        opacity = float(affectconf / 100)
         filter_args = "[1:0]setdar=dar=0,format=rgba[a]; \
                        [0:0]setdar=dar=0,format=rgba[b]; \
-                       [b][a]blend=all_mode='overlay':all_opacity=0.5"
+                       [b][a]blend=all_mode='overlay':all_opacity={}".format(opacity)
         self._ffmpeg_input_fill_cmd(filter_args)
         # ffmpeg_cmd = ["ffmpeg", "-y", "-i", "{}".format(video), "-i", "{}".format(bg_video), "-filter_complex",
         #               "{}".format(filter_args)]
@@ -286,6 +297,8 @@ class FfmpegCli(object):
                       "-i", "{}".format(input_vid),
                       "-i", "{}".format(input_audio),
                       "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest"]
+        self._ffmpeg_input_fill_cmd('-c')
+        self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
 
     def add_logo_to_bg_img(self, input_bg: str, input_logo: str, output: str,
@@ -312,17 +325,19 @@ class FfmpegCli(object):
                     [0:v][zork]overlay={}:{}".format(transparent, coordinate.x, coordinate.y)
         self._ffmpeg_input_fill_cmd(filter)
 
-        print('{}'.format(self.ffmpeg_cli))
+        logger.debug('{}'.format(self.ffmpeg_cli))
         self.run(self.ffmpeg_cli, output)
         self.reset_ffmpeg_cmd()
 
-    def add_affect_overlay_in_sub(self, input_src: str, affect: str, subframe: Coordinate):
+    def add_affect_overlay_in_sub(self, input_src: str, affect: str, subframe: Coordinate,
+                                  outdir=os.path.dirname(__file__)):
         """
         ffmpeg -ss 00:01:00.680 -i "INPUT.mp4" -i overlay.apng -ss 00:00:10.000 -t 00:11:39.759
        -filter_complex "[0]crop=in_w-8:in_h-8[a];[a][1]overlay,scale=1280:-1"
        -c:a copy -c:v libx264 -preset slow -crf 25 "OUTPUT.mp4"
         crop the affect to subframe
         overlay affect to input_src with subframe coordinate
+        :param outdir:
         :param input_src:
         :param affect:
         :type subframe: Coordinate
@@ -342,8 +357,8 @@ class FfmpegCli(object):
 
         self._ffmpeg_input_fill_cmd(filter)
 
-        print("{}".format(self.ffmpeg_cli))
-        self.run(self.ffmpeg_cli, '/tmp/test.mp4')
+        logger.debug("{}".format(self.ffmpeg_cli))
+        self.run(self.ffmpeg_cli, outdir)
         pass
 
     # parser = argparse.ArgumentParser(description='Get video information')
@@ -353,7 +368,7 @@ class FfmpegCli(object):
     #     args = parser.parse_args()
     # ffmpeg_cli = FffmpegCli()
     #     time_length = ffmpeg_cli.get_media_time_length(args.in_filename)
-    #     print("time length " + str(time_length))
+    #     logger.debug("time length " + str(time_length))
     # ffmpeg_cli.add_logo_to_bg_img(
     #     '/mnt/775AD44933621551/Project/MMO/youtube/Content/CoverImage/NhamMatThayMuaHe_Background.png',
     #     '/mnt/775AD44933621551/Project/MMO/youtube/Content/Titile/Xinloi.png', Coordinate(100, 100))
@@ -383,17 +398,17 @@ class FfmpegCli(object):
 # try:
 #     probe = ffmpeg.probe(args.in_filename)
 # except ffmpeg.Error as e:
-#     print(e.stderr, file=sys.stderr)
+#     logger.debug(e.stderr, file=sys.stderr)
 #     sys.exit(1)
 
 # video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
 # if video_stream is None:
-#     print('No video stream found', file=sys.stderr)
+#     logger.debug('No video stream found', file=sys.stderr)
 #     sys.exit(1)
 #
 # width = int(video_stream['width'])
 # height = int(video_stream['height'])
 # # num_frames = int(video_stream['nb_frames'])
-# print('width: {}'.format(width))
-# print('height: {}'.format(height))
-# print('num_frames: {}'.format(num_frames))
+# logger.debug('width: {}'.format(width))
+# logger.debug('height: {}'.format(height))
+# logger.debug('num_frames: {}'.format(num_frames))

@@ -3,6 +3,8 @@ import unittest
 import os
 from click.testing import CliRunner
 
+from backend.TempFileMnger import *
+
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")
 
@@ -23,6 +25,8 @@ bg_img00 = os.path.join(sample_data_dir, "bg_img00.png")
 bg_img01 = os.path.join(sample_data_dir, "bg_img01.png")
 logo00 = os.path.join(sample_data_dir, "logo00.png")
 audio00 = os.path.join(sample_data_dir, "audio01.mp3")
+affect_file = os.path.join(sample_data_dir, "affect_file.mp4")
+titlefile = os.path.join(sample_data_dir, "Xinloi.png")
 
 from backendcli import *
 
@@ -45,7 +49,9 @@ class My(unittest.TestCase):
     def test_click_get_sub_nct(self):
         assfile = os.path.join(os.path.dirname(__file__), "test.ass")
         result = self.runner.invoke(get_sub_nct,
-                                    [self.url, assfile, "Arial", "0x018CA7", "--subrect", "150,150,600,200"])
+                                    [self.url, assfile,
+                                     "Arial", "0x018CA7",
+                                     "--subrect", "150,150,600,200"])
         assert result.exit_code == 0
         self.assertTrue(os.path.isfile(get_return_value()))
 
@@ -63,19 +69,18 @@ class My(unittest.TestCase):
         self.assertTrue(os.path.isfile(get_return_value()))
 
     def test_click_create_yt_mv(self):
-        assfile = os.path.join(os.path.dirname(__file__), "test.ass")
-        mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
-        assfile = os.path.join(os.path.dirname(__file__), "test.ass")
-        mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
-        titleimg = os.path.join(sample_data_dir, 'xinloi.png')
+        assfile = AssTempFile().getfullpath()
         outputmp4 = os.path.join(sample_data_dir, 'youtube.mp4')
+
         result = self.runner.invoke(get_sub_nct,
                                     [self.url, assfile, "UTM Centur", "0x018CA7", "--subrect", "250,180,930,200"])
         assert result.exit_code == 0
-
         result = self.runner.invoke(create_youtube_mv,
                                     [audio00, bg_img00,
-                                     titleimg, "--titlecoordinate", "[300,300]", assfile, 'abc', outputmp4
+                                     titlefile, "--titlecoordinate", "[300,300]",
+                                     assfile,
+                                     affect_file, "50",
+                                     outputmp4
                                      ])
         assert result.exit_code == 0
         # self.assertTrue(os.path.isfile(get_return_value()))
@@ -88,6 +93,13 @@ class My(unittest.TestCase):
         result = self.runner.invoke(get_media_length, [input_mp4_file])
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(get_return_value(), str(7))
+
+    def test_templatefile(self):
+        tmp_video = MvTempFile()
+        print(tmp_video.getfullpath())
+        MvTempFile.list_all_file()
+        self.assertTrue(os.path.isfile(tmp_video.getfullpath()))
+        self.assertFalse(os.path.isfile(tmp_video.getfullpath()))
 
     if __name__ == '__main__':
         unittest.main()
