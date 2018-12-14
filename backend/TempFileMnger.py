@@ -56,7 +56,3 @@ class SrtTempfile(YtTempFile):
 class Mp3TempFile(YtTempFile):
     def __init__(self, pre='audio', sub='.mp3', autodel=False) -> None:
         super().__init__(pre, sub, autodel)
-
-
-def tempfile_cleanup():
-    # MvTempFile.delete_all()
