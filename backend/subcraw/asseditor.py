@@ -178,7 +178,7 @@ def create_ass_subtitile(inputfile: str,
     outputfile = lrf_to_ass(inputfile)
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
     sub_customizer = AssCustomizor(subs, resolution[0], resolution[1])
-    sub_customizer.setting_fonts(font_name)
+    sub_customizer.setting_fonts(font_name, font_size)
     sub_customizer.setting_margin_val(sub_rectangle.x, sub_rectangle.y, sub_rectangle.w, sub_rectangle.h)
     sub_customizer.setting_primary_colour(subcorlor)
     sub_customizer.add_fad_affect_to_sub()

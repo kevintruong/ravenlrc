@@ -63,6 +63,14 @@ def get_sub_file(url: str, dir: str):
     return subfiletmp
 
 
+def crawl_lyric(url: str, lyric_outfile: str):
+    import codecs
+    sub_ass = get_sub_from_url(url)
+    with codecs.open(lyric_outfile, 'w', "utf-8") as f:
+        f.write(sub_ass)
+    return lyric_outfile
+
+
 def wait_for_start_download(directory, timeout, nfiles=None):
     """
        Wait for downloads to finish with a specified timeout.

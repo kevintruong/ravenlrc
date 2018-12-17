@@ -1,12 +1,15 @@
 from tempfile import *
 import os
 
+cur_dir = os.path.dirname(__file__)
+
+
 
 class YtTempFile:
     tempfilelst = []
 
     def __init__(self, pre, sub, autodel=False) -> None:
-        self.tempfile = NamedTemporaryFile(prefix=pre, suffix=sub, delete=autodel)
+        self.tempfile = NamedTemporaryFile(prefix=pre, suffix=sub, delete=autodel, dir=cur_dir)
         YtTempFile.tempfilelst.append(self)
         self.tempfile.close()
 
@@ -44,6 +47,11 @@ class PngTempFile(YtTempFile):
 
 class AssTempFile(YtTempFile):
     def __init__(self, pre='sub', sub='.ass', autodel=False) -> None:
+        super().__init__(pre, sub, autodel)
+
+
+class LrcTempFile(YtTempFile):
+    def __init__(self, pre='sub', sub='.lrc', autodel=False) -> None:
         super().__init__(pre, sub, autodel)
 
 

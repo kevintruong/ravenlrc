@@ -55,11 +55,19 @@ class My(unittest.TestCase):
         assert result.exit_code == 0
         self.assertTrue(os.path.isfile(get_return_value()))
 
+    def test_cllick_get_lyric_nct(self):
+        lrcfile = LrcTempFile().getfullpath()
+        result = self.runner.invoke(get_lyric_nct, [self.url, lrcfile])
+
     def test_click_add_sub_to_mv(self):
         assfile = os.path.join(os.path.dirname(__file__), "test.ass")
         mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
         result = self.runner.invoke(get_sub_nct,
-                                    [self.url, assfile, "UTM Centur", "0x018CA7", "--subrect", "250,180,530,200"])
+                                    [self.url,
+                                     assfile,
+                                     "UTM Centur",
+                                     "0x018CA7",
+                                     "--subrect", "250,180,530,200"])
         assert result.exit_code == 0
         self.assertTrue(os.path.isfile(get_return_value()))
 
@@ -71,9 +79,12 @@ class My(unittest.TestCase):
     def test_click_create_yt_mv(self):
         assfile = AssTempFile().getfullpath()
         outputmp4 = os.path.join(sample_data_dir, 'youtube.mp4')
-
         result = self.runner.invoke(get_sub_nct,
-                                    [self.url, assfile, "UTM Centur", "0x018CA7", "--subrect", "250,180,930,200"])
+                                    [self.url,
+                                     assfile,
+                                     "UTM Centur",
+                                     "0x018CA7",
+                                     "--subrect", "250,180,930,200"])
         assert result.exit_code == 0
         result = self.runner.invoke(create_youtube_mv,
                                     [audio00, bg_img00,
@@ -100,6 +111,18 @@ class My(unittest.TestCase):
         MvTempFile.list_all_file()
         self.assertTrue(os.path.isfile(tmp_video.getfullpath()))
         self.assertFalse(os.path.isfile(tmp_video.getfullpath()))
+
+    def test_buildmv(self):
+        result = self.runner.invoke(build_mv,
+                                    ["1", "--bg_id", "bg_id_01", "--affect_id", "affect_id_01", "--affect_conf", "50",
+                                     "--song_id", "song_id_01", "hello"])
+        assert result.exit_code == 0
+
+    def test_build_mv_with_template(self):
+        result = self.runner.invoke(build_mv_with_template,
+                                    ["1", "--template_id", "template_id_01",
+                                     "--song_id", "song_id_01", "hello"])
+        assert result.exit_code == 0
 
     if __name__ == '__main__':
         unittest.main()
