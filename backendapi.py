@@ -1,24 +1,33 @@
 import hug
+import sys
+
+from backend.BackendCmder import *
+
+sys.path.append("pycharm-debug-py3k.egg")
+import pydevd
+
+
+# pydevd.settrace('172.27.39.177', port=1234, stdoutToServer=True,
+#                 stderrToServer=True)
 
 
 @hug.post('/crawl')
-def upload_file(body):
-    """accepts file uploads"""
-    # <body> is a simple dictionary of {filename: b'content'}
-    print('body: ', body)
-    return {'filename': list(body.keys()).pop(), 'filesize': len(list(body.values()).pop())}
+def crawl(body):
+    # body is dictbuild_mv
+    cmder: Cmder = CrawlCmder.get_crawlcmder(body)
+    return cmder.run()
 
 
 @hug.post('/build_mv')
 def build_mv(body):
-    """accepts file uploads"""
-    # <body> is a simple dictionary of {filename: b'content'}
     return {'post_message': body}
 
 
 @hug.post('/build_template')
 def build_template(body):
-    """accepts file uploads"""
-    # <body> is a simple dictionary of {filename: b'content'}
+    return {'post_message': body}
 
+
+@hug.post('/build_album')
+def build_album(body):
     return {'post_message': body}
