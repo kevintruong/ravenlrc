@@ -40,70 +40,70 @@ class My(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_click_download_nct(self):
-        result = self.runner.invoke(download_content_from_nct,
-                                    ["1", self.url, os.path.dirname(__file__)])
-        assert result.exit_code == 0
-        self.assertTrue(os.path.isfile(get_return_value()))
+    # def test_click_download_nct(self):
+    #     result = self.runner.invoke(download_content_from_nct,
+    #                                 ["1", self.url, os.path.dirname(__file__)])
+    #     assert result.exit_code == 0
+    #     self.assertTrue(os.path.isfile(get_return_value()))
 
-    def test_click_get_sub_nct(self):
-        assfile = os.path.join(os.path.dirname(__file__), "test.ass")
-        result = self.runner.invoke(get_sub_nct,
-                                    [self.url, assfile,
-                                     "Arial", "0x018CA7",
-                                     "--subrect", "150,150,600,200"])
-        assert result.exit_code == 0
-        self.assertTrue(os.path.isfile(get_return_value()))
+    # def test_click_get_sub_nct(self):
+    #     assfile = os.path.join(os.path.dirname(__file__), "test.ass")
+    #     result = self.runner.invoke(get_sub_nct,
+    #                                 [self.url, assfile,
+    #                                  "Arial", "0x018CA7",
+    #                                  "--subrect", "150,150,600,200"])
+    #     assert result.exit_code == 0
+    #     self.assertTrue(os.path.isfile(get_return_value()))
 
-    def test_cllick_get_lyric_nct(self):
-        lrcfile = LrcTempFile().getfullpath()
-        result = self.runner.invoke(get_lyric_nct, [self.url, lrcfile])
-
-    def test_click_add_sub_to_mv(self):
-        assfile = os.path.join(os.path.dirname(__file__), "test.ass")
-        mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
-        result = self.runner.invoke(get_sub_nct,
-                                    [self.url,
-                                     assfile,
-                                     "UTM Centur",
-                                     "0x018CA7",
-                                     "--subrect", "250,180,530,200"])
-        assert result.exit_code == 0
-        self.assertTrue(os.path.isfile(get_return_value()))
-
-        result = self.runner.invoke(adding_sub_to_mv,
-                                    [assfile, mvfile, "output.mp4"])
-        assert result.exit_code == 0
-        self.assertTrue(os.path.isfile(get_return_value()))
-
-    def test_click_create_yt_mv(self):
-        assfile = AssTempFile().getfullpath()
-        outputmp4 = os.path.join(sample_data_dir, 'youtube.mp4')
-        result = self.runner.invoke(get_sub_nct,
-                                    [self.url,
-                                     assfile,
-                                     "UTM Centur",
-                                     "0x018CA7",
-                                     "--subrect", "250,180,930,200"])
-        assert result.exit_code == 0
-        result = self.runner.invoke(create_youtube_mv,
-                                    [audio00, bg_img00,
-                                     titlefile, "--titlecoordinate", "[300,300]",
-                                     assfile,
-                                     affect_file, "50",
-                                     outputmp4
-                                     ])
-        assert result.exit_code == 0
-        # self.assertTrue(os.path.isfile(get_return_value()))
-
-    def test_click_hello_nodejs(self):
-        result = self.runner.invoke(hello_nodejs)
-        assert result.exit_code == 0
-
-    def test_click_get_media_time_length(self):
-        result = self.runner.invoke(get_media_length, [input_mp4_file])
-        self.assertEqual(result.exit_code, 0)
-        self.assertEqual(get_return_value(), str(7))
+    # def test_cllick_get_lyric_nct(self):
+    #     lrcfile = LrcTempFile().getfullpath()
+    #     result = self.runner.invoke(get_lyric_nct, [self.url, lrcfile])
+    #
+    # def test_click_add_sub_to_mv(self):
+    #     assfile = os.path.join(os.path.dirname(__file__), "test.ass")
+    #     mvfile = os.path.join(os.path.dirname(__file__), "sample_data\\media_out.mp4")
+    #     result = self.runner.invoke(get_sub_nct,
+    #                                 [self.url,
+    #                                  assfile,
+    #                                  "UTM Centur",
+    #                                  "0x018CA7",
+    #                                  "--subrect", "250,180,530,200"])
+    #     assert result.exit_code == 0
+    #     self.assertTrue(os.path.isfile(get_return_value()))
+    #
+    #     result = self.runner.invoke(adding_sub_to_mv,
+    #                                 [assfile, mvfile, "output.mp4"])
+    #     assert result.exit_code == 0
+    #     self.assertTrue(os.path.isfile(get_return_value()))
+    #
+    # def test_click_create_yt_mv(self):
+    #     assfile = AssTempFile().getfullpath()
+    #     outputmp4 = os.path.join(sample_data_dir, 'youtube.mp4')
+    #     result = self.runner.invoke(get_sub_nct,
+    #                                 [self.url,
+    #                                  assfile,
+    #                                  "UTM Centur",
+    #                                  "0x018CA7",
+    #                                  "--subrect", "250,180,930,200"])
+    #     assert result.exit_code == 0
+    #     result = self.runner.invoke(create_youtube_mv,
+    #                                 [audio00, bg_img00,
+    #                                  titlefile, "--titlecoordinate", "[300,300]",
+    #                                  assfile,
+    #                                  affect_file, "50",
+    #                                  outputmp4
+    #                                  ])
+    #     assert result.exit_code == 0
+    #     # self.assertTrue(os.path.isfile(get_return_value()))
+    #
+    # def test_click_hello_nodejs(self):
+    #     result = self.runner.invoke(hello_nodejs)
+    #     assert result.exit_code == 0
+    #
+    # def test_click_get_media_time_length(self):
+    #     result = self.runner.invoke(get_media_length, [input_mp4_file])
+    #     self.assertEqual(result.exit_code, 0)
+    #     self.assertEqual(get_return_value(), str(7))
 
     def test_templatefile(self):
         tmp_video = MvTempFile()
@@ -118,11 +118,11 @@ class My(unittest.TestCase):
                                      "--song_id", "song_id_01", "hello"])
         assert result.exit_code == 0
 
-    def test_build_mv_with_template(self):
-        result = self.runner.invoke(build_mv_with_template,
-                                    ["1", "--template_id", "template_id_01",
-                                     "--song_id", "song_id_01", "hello"])
-        assert result.exit_code == 0
+    # def test_build_mv_with_template(self):
+    #     result = self.runner.invoke(build_mv_with_template,
+    #                                 ["1", "--template_id", "template_id_01",
+    #                                  "--song_id", "song_id_01", "hello"])
+    #     assert result.exit_code == 0
 
     if __name__ == '__main__':
         unittest.main()
