@@ -4,9 +4,11 @@ import os
 import subprocess
 from urllib.parse import urlparse
 
+from backend.ffmpeg.ffmpegcli import FFmpegProfile
 from backend.subcraw import pylrc
 from backend.subcraw.pysubs2 import *
 from backend.subcraw.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
+from backend.TempFileMnger import *
 
 temp_dowload_dir = os.path.join(os.path.dirname(__file__), 'Download')
 if not os.path.isdir(temp_dowload_dir):
@@ -162,20 +164,46 @@ class SubRectangle:
         self.h = h
 
 
-def create_ass_subtitile(inputfile: str,
-                         output: str,
-                         sub_rectangle: SubRectangle,
-                         subcorlor=0x018CA7,
-                         font_name="SVN-Futura",
-                         font_size=None,
-                         resolution=None):
+class SubtitleInfo:
+    def __init__(self, subinfo: dict):
+        self.rectangle: SubRectangle = SubRectangle(subinfo['rectangle'])
+        self.fontname = subinfo['fontname']
+        self.fontcolor = subinfo['fontcolor']
+        self.fontsize = subinfo['fontsize']
+
+    def scale(self, resolution: FFmpegProfile):
+        if resolution == FFmpegProfile.PROFILE_LOW:
+            pass
+        elif resolution == FFmpegProfile.PROFILE_2K:
+            pass
+        elif resolution == FFmpegProfile.PROFILE_4K:
+            pass
+
+
+def create_ass_subtitle(inputfile: str,
+                        output: str,
+                        subinfo: SubtitleInfo,
+                        resolution=None):
+    sub_rectangle = subinfo.rectangle
+    subcorlor = subinfo.fontcolor
+    font_name = subinfo.fontname
+    font_size = subinfo.fontsize
+
+    # def create_ass_subtitile(inputfile: str,
+    #                          output: str,
+    #                          sub_rectangle: SubRectangle,
+    #                          subcorlor=0x018CA7,
+    #                          font_name="SVN-Futura",
+    #                          font_size=None,
+    #                          resolution=None):
     """
 
     :type inputfile: str input file lrf
     """
     if resolution is None:
         resolution = [1920, 1080]
-    outputfile = lrf_to_ass(inputfile)
+    asstempfile = AssTempFile().getfullpath()
+    outputfile = lrf_to_ass(inputfile, asstempfile)
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
     sub_customizer = AssCustomizor(subs, resolution[0], resolution[1])
     sub_customizer.setting_fonts(font_name, font_size)
@@ -193,7 +221,7 @@ def get_url(url: str):
     return lyricfile + ".ass"
 
 
-def create_ass_sub(url: str, output: str, sub_rect: SubRectangle, subcolor=0x018CA7, fontname="Arial",
+def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
                    resolution=[1920, 1080]):
     """
     create ass subtitle for
@@ -205,8 +233,6 @@ def create_ass_sub(url: str, output: str, sub_rect: SubRectangle, subcolor=0x018
     """
     from backend.subcraw.subcrawler import get_sub_from_url
     lyric_content = get_sub_from_url(url)
-    create_ass_subtitile(lyric_content, output, sub_rectangle=sub_rect, font_name=fontname,
-                         subcorlor=subcolor, resolution=resolution)
     return output
 
 # create_ass_subtitile(

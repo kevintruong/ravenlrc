@@ -1,7 +1,11 @@
 import json
 from enum import Enum, IntEnum
 import abc
+
+from backend.ffmpeg.ffmpegcli import FfmpegCli, FFmpegProfile
 from backend.subcraw.subcrawler import *
+from backend.TempFileMnger import *
+from backend.subcraw.asseditor import *
 
 
 class Cmder:
@@ -91,25 +95,12 @@ class SongInfo:
         self.title_file = songinfo['title_file']
 
 
-class Coordinate:
+class Rectangle:
     def __init__(self, coordinate: list):
         self.x = coordinate[0]
         self.y = coordinate[1]
-
-
-class RectSize:
-    def __init__(self, rectsize: list):
-        self.w = rectsize[0]
-        self.h = rectsize[1]
-
-
-class SubtitleInfo:
-    def __init__(self, subinfo: dict):
-        self.coordinate = Coordinate(subinfo['coordinate'])
-        self.size = RectSize(subinfo['size'])
-        self.fontname = subinfo['fontname']
-        self.fontcolor = subinfo['fontcolor']
-        self.fontsize = subinfo['fontsize']
+        self.w = coordinate[2]
+        self.h = coordinate[3]
 
 
 class TitleInfo(SubtitleInfo):
@@ -121,7 +112,7 @@ class TitleInfo(SubtitleInfo):
 class BackgroundInfo:
     def __init__(self, bginfo: dict):
         self.bg_file = bginfo['bg_file']
-        self.subinfo = SubtitleInfo['sub_info']
+        self.subinfo: SubtitleInfo = SubtitleInfo['sub_info']
         self.titleinfo = TitleInfo['title_info']
 
 
@@ -134,6 +125,10 @@ class AffectInfo:
 class BuildCmder(Cmder):
 
     def run(self):
+        if self.build_type == BuildType.BUILD_PREVIEW:
+            return self.build_preview()
+        elif self.build_type == BuildType.BUILD_RELEASE:
+            return self.build_release()
         pass
 
     def __init__(self, cmd: dict):
@@ -142,3 +137,32 @@ class BuildCmder(Cmder):
         self.songinfo = SongInfo(cmd['song_info'])
         self.bginfo = BackgroundInfo(cmd['background_info'])
         self.affinfo = AffectInfo(cmd['affect_info'])
+        self.ffmpegcli = FfmpegCli()
+        self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file)
+
+    def build_preview(self):
+        self.ffmpegcli.set_resolution(FFmpegProfile.PROFILE_LOW.value)
+        preview_asstempfile = AssTempFile().getfullpath()
+        preview_bgtempfile = PngTempFile().getfullpath()
+
+        create_ass_subtitle(self.songinfo.lyric_file,
+                            preview_asstempfile,
+                            self.bginfo.subinfo,
+                            FFmpegProfile.PROFILE_LOW.value)
+
+        preview_bgtempfile = self.ffmpegcli.scale_input(self.bginfo.bg_file,
+                                                        FFmpegProfile.PROFILE_LOW.value,
+                                                        preview_bgtempfile)
+        time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file) / 2
+
+        bgmv = BgMvTemplateFile().getfullpath()
+        bgmv = self.ffmpegcli.create_media_file_from_img(preview_bgtempfile, time_length, bgmv)
+        affectmv = AffMvTemplateFile().getfullpath()
+        affectmv = self.ffmpegcli.scale_input(self.affinfo.affect_file,
+                                              FFmpegProfile.PROFILE_LOW.value,
+                                              affectmv)
+
+        pass
+
+    def build_release(self):
+        pass

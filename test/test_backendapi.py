@@ -39,7 +39,7 @@ class MyTestCase(unittest.TestCase):
         crawl_cmd = {
             'crawl_type': 0,
             'crawl_url': nct_url,
-            'output': 'test.lrc'  # crawl_tool will store lyric file to output
+            'output': lyric  # crawl_tool will store lyric file to output
         }
         response = requests.post('http://localhost:8000/crawl',
                                  json=crawl_cmd)
@@ -113,18 +113,16 @@ class MyTestCase(unittest.TestCase):
             "background_info": {
                 "bg_file": bg_img00,
                 "sub_info": {
-                    'coordinate': [100, 100],
-                    'size': [200, 300],
+                    'rectangle': [100, 100, 200, 300],
                     'fontname': 'UTM Centur',
                     'fontcolor': 0x018CA7,
                     'fontsize': 20
                 },
                 "title_info": {
-                    'coordinate': [100, 100],
-                    'size': [200, 300],
-                    'fontname': 'UTM Centur',
-                    'fontcolor': 0x018CA7,
-                    'fontsize': 20
+                    'rectangle': [100, 100, 0, 0],  # must has
+                    'fontname': 'UTM Centur',  # Can be None
+                    'fontcolor': 0x018CA7,  # Can be None
+                    'fontsize': 20  # Can be None
                 }
             },
             "affect_info": {

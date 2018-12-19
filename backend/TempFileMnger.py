@@ -2,14 +2,16 @@ from tempfile import *
 import os
 
 cur_dir = os.path.dirname(__file__)
-
+temp_dir = os.path.join(cur_dir, 'tmp')
+if not os.path.isdir(temp_dir):
+    os.mkdir(temp_dir)
 
 
 class YtTempFile:
     tempfilelst = []
 
     def __init__(self, pre, sub, autodel=False) -> None:
-        self.tempfile = NamedTemporaryFile(prefix=pre, suffix=sub, delete=autodel, dir=cur_dir)
+        self.tempfile = NamedTemporaryFile(prefix=pre, suffix=sub, delete=autodel, dir=temp_dir)
         YtTempFile.tempfilelst.append(self)
         self.tempfile.close()
 
@@ -35,8 +37,15 @@ class MvTempFile(YtTempFile):
     def __init__(self, pre='mv_', sub=".mp4", autodel=False) -> None:
         super().__init__(pre, sub, autodel)
 
-    def __del__(self):
-        os.remove(self.tempfile.name)
+
+class BgMvTemplateFile(YtTempFile):
+    def __init__(self, pre='bgmv_', sub=".webp", autodel=False) -> None:
+        super().__init__(pre, sub, autodel)
+
+
+class AffMvTemplateFile(YtTempFile):
+    def __init__(self, pre='affmv_', sub=".webp", autodel=False) -> None:
+        super().__init__(pre, sub, autodel)
 
 
 class PngTempFile(YtTempFile):
