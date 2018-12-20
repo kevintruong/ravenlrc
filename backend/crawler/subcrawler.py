@@ -8,8 +8,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 
-from backend.subcraw.asseditor import *
-from backend.subcraw.rc4_py3 import decrypt
+from backend.crawler.asseditor import *
+from backend.crawler.rc4_py3 import decrypt
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)

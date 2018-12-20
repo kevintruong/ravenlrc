@@ -3,8 +3,8 @@ import unittest
 import os
 import shutil
 
-from backend.subcraw.asseditor import *
-from backend.subcraw.subcrawler import download_mp3_file, AudioQuanlity
+from backend.crawler.asseditor import *
+from backend.crawler.subcrawler import download_mp3_file, AudioQuanlity
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")

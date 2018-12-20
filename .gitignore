@@ -106,14 +106,14 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-/backend/subcraw/pylrc/LICENSE.txt
-/backend/subcraw/pylrc/README.rst
-/backend/subcraw/pylrc/setup.py
-/backend/subcraw/pylrc/tests/static/missing_endline.lrc
-/backend/subcraw/pylrc/tests/static/missing_endline.srt
-/backend/subcraw/pylrc/tests/static/nested.lrc
-/backend/subcraw/pylrc/tests/static/nested.srt
-/backend/subcraw/pylrc/tests/static/un_nested.lrc
-/backend/subcraw/pylrc/tests/static/un_nested.srt
-/backend/subcraw/pylrc/tests/test.py
+/backend/crawler/pylrc/LICENSE.txt
+/backend/crawler/pylrc/README.rst
+/backend/crawler/pylrc/setup.py
+/backend/crawler/pylrc/tests/static/missing_endline.lrc
+/backend/crawler/pylrc/tests/static/missing_endline.srt
+/backend/crawler/pylrc/tests/static/nested.lrc
+/backend/crawler/pylrc/tests/static/nested.srt
+/backend/crawler/pylrc/tests/static/un_nested.lrc
+/backend/crawler/pylrc/tests/static/un_nested.srt
+/backend/crawler/pylrc/tests/test.py
 /node_modules/
