@@ -6,6 +6,7 @@ from backend.ffmpeg.ffmpegcli import FfmpegCli, FFmpegProfile
 from backend.subcraw.subcrawler import *
 from backend.TempFileMnger import *
 from backend.subcraw.asseditor import *
+from backend.Utility import *
 
 
 class Cmder:
@@ -90,9 +91,12 @@ class BuildType(IntEnum):
 class SongInfo:
     def __init__(self, songinfo: dict):
         self.song_file = songinfo['song_file']
+        check_file_existed(self.song_file)
         self.lyric_file = songinfo['lyric_file']
+        check_file_existed(self.lyric_file)
         self.song_name = songinfo['song_name']
         self.title_file = songinfo['title_file']
+        check_file_existed(self.title_file)
 
 
 class Rectangle:
@@ -112,8 +116,8 @@ class TitleInfo(SubtitleInfo):
 class BackgroundInfo:
     def __init__(self, bginfo: dict):
         self.bg_file = bginfo['bg_file']
-        self.subinfo: SubtitleInfo = SubtitleInfo['sub_info']
-        self.titleinfo = TitleInfo['title_info']
+        self.subinfo: SubtitleInfo = SubtitleInfo(bginfo['sub_info'])
+        self.titleinfo = TitleInfo(bginfo['title_info'])
 
 
 class AffectInfo:
@@ -137,32 +141,63 @@ class BuildCmder(Cmder):
         self.songinfo = SongInfo(cmd['song_info'])
         self.bginfo = BackgroundInfo(cmd['background_info'])
         self.affinfo = AffectInfo(cmd['affect_info'])
+        self.output = cmd['output']
         self.ffmpegcli = FfmpegCli()
         self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file)
 
-    def build_preview(self):
-        self.ffmpegcli.set_resolution(FFmpegProfile.PROFILE_LOW.value)
+    def build_mv(self, profile):
+        preview_profile = profile
+
+        self.ffmpegcli.set_resolution(preview_profile)
         preview_asstempfile = AssTempFile().getfullpath()
         preview_bgtempfile = PngTempFile().getfullpath()
 
-        create_ass_subtitle(self.songinfo.lyric_file,
-                            preview_asstempfile,
-                            self.bginfo.subinfo,
-                            FFmpegProfile.PROFILE_LOW.value)
+        create_ass(self.songinfo.lyric_file,
+                   preview_asstempfile,
+                   self.bginfo.subinfo,
+                   FFmpegProfile.PROFILE_LOW.value)
 
-        preview_bgtempfile = self.ffmpegcli.scale_input(self.bginfo.bg_file,
-                                                        FFmpegProfile.PROFILE_LOW.value,
-                                                        preview_bgtempfile)
         time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file) / 2
 
-        bgmv = BgMvTemplateFile().getfullpath()
-        bgmv = self.ffmpegcli.create_media_file_from_img(preview_bgtempfile, time_length, bgmv)
-        affectmv = AffMvTemplateFile().getfullpath()
-        affectmv = self.ffmpegcli.scale_input(self.affinfo.affect_file,
-                                              FFmpegProfile.PROFILE_LOW.value,
-                                              affectmv)
+        preview_affect = AffMvTemplateFile().getfullpath()
+        logger.debug(preview_profile)
+        if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
+            self.ffmpegcli.scale_input(self.bginfo.bg_file,
+                                       preview_profile,
+                                       preview_bgtempfile)
+            self.ffmpegcli.scale_input(self.affinfo.affect_file,
+                                       preview_profile,
+                                       preview_affect)
+
+        else:
+            preview_affect = self.affinfo.affect_file
+            preview_bgtempfile = self.bginfo.bg_file
+
+        preview_bgmv = BgMvTemplateFile().getfullpath()
+        self.ffmpegcli.create_media_file_from_img(preview_bgtempfile, time_length, preview_bgmv)
+
+        preview_affectmv = AffMvTemplateFile().getfullpath()
+        self.ffmpegcli.create_background_affect_with_length(preview_affect,
+                                                            time_length,
+                                                            preview_affectmv)
+        preview_bg_affect_mv = MvTempFile().getfullpath()
+        self.ffmpegcli.add_affect_to_video(preview_bgmv,
+                                           preview_affectmv,
+                                           preview_bg_affect_mv,
+                                           self.affinfo.opacity)
+        preview_bg_aff_sub_mv = MvTempFile().getfullpath()
+        self.ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                           preview_bg_affect_mv,
+                                           preview_bg_aff_sub_mv)
+        self.ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
+                                          self.songinfo.song_file,
+                                          self.output
+                                          )
 
         pass
+
+    def build_preview(self):
+        return self.build_mv(FFmpegProfile.PROFILE_LOW.value)
 
     def build_release(self):
-        pass
+        return self.build_mv(FFmpegProfile.PROFILE_2K.value)

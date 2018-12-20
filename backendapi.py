@@ -20,7 +20,8 @@ def crawl(body):
 
 @hug.post('/build_mv')
 def build_mv(body):
-    cmder:Cmder = BuildCmder(body)
+    cmder: Cmder = BuildCmder(body)
+    cmder.run()
     return {'post_message': body}
 
 

@@ -75,8 +75,11 @@ class TestFFmpegCli(unittest.TestCase):
         media_output = os.path.join(sample_data_dir, "media_out.mp4")
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
-
-        create_ass_sub(full_test, ass_out, sub_rect=SubRectangle(300, 300, 500, 300))
+        subinfo = SubtitleInfo({'rectangle': [100, 100, 200, 300],
+                                'fontname': 'UTM Centur',
+                                'fontcolor': 0x018CA7,
+                                'fontsize': 20})
+        create_ass_sub(full_test, ass_out, subinfo)
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
         length_in = self.ffmpeg.get_media_time_length(media_output)
         length_out = self.ffmpeg.get_media_time_length(output)

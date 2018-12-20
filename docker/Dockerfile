@@ -2,7 +2,8 @@ FROM ubuntu:18.04
 
 #run apt update and install all uefi components
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends python3-setuptools python3 python3-pip openssh-server &&\
+RUN apt-get install -y --no-install-recommends python3-setuptools python3 \
+    software-properties-commonpython3-pip openssh-server &&\
     pip3 install wheel &&\
     pip3 install hug --upgrade
 #RUN    rm -rf /var/lib/apt/lists/*

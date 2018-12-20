@@ -24,6 +24,7 @@ bg_img00 = os.path.join(sample_data_dir, "bg_img00.png")
 bg_img01 = os.path.join(sample_data_dir, "bg_img01.png")
 logo00 = os.path.join(sample_data_dir, "logo00.png")
 audio00 = os.path.join(sample_data_dir, "audio01.mp3")
+ngaychuagiongbao_audiofile = os.path.join(sample_data_dir, "NgayChuaGiongBaoNguoiBatTuOst-BuiLanHuong-5708274_hq.mp3")
 affect_file = os.path.join(sample_data_dir, "affect_file.mp4")
 titlefile = os.path.join(sample_data_dir, "Xinloi.png")
 lyric_file = os.path.join(sample_data_dir, "xinloi.lrc")
@@ -76,38 +77,9 @@ class MyTestCase(unittest.TestCase):
         build_template = {
             "type": 0,
             "song_info": {
-                "song_file": audio00,
+                "song_file": ngaychuagiongbao_audiofile,
                 "lyric_file": lyric_file,
-                "song_name": "Nhắm mắt thấy mùa hè"
-            },
-            "background_inf": {
-                "bg_file": bg_img00,
-                "sub_info": {
-                    'coordinate': [100, 100],
-                    'size': [200, 300],
-                    'fontname': 'UTM Centur',
-                    'fontcolor': 0x018CA7,
-                    'fontsize': 20
-                }
-            },
-            "affect_inf": {
-                'affect_file': affect_file,
-                'opacity': 50
-            },
-            'output': os.path.join(test_data_dir, 'preview_template.mp4')
-        }
-        response = requests.post('http://localhost:8000/build_mv',
-                                 json=build_template)
-        print(response.headers)
-        print(response.content)
-
-    def test_build_mv_release(self):
-        build_mv = {
-            "type": 1,
-            "song_info": {
-                "song_file": audio00,
-                "lyric_file": lyric_file,
-                "song_name": "Nhắm mắt thấy mùa hè",
+                "song_name": "Ngày chưa giông bão",
                 "title_file": titlefile
             },
             "background_info": {
@@ -129,6 +101,46 @@ class MyTestCase(unittest.TestCase):
                 'affect_file': affect_file,
                 'opacity': 50
             }
+            ,
+            'output': os.path.join(test_data_dir, 'preview_nhammatthaymuahe.mp4')
+        }
+        response = requests.post('http://localhost:8000/build_mv',
+                                 json=build_template)
+        print(response.headers)
+        print(response.content)
+
+    def test_build_mv_release(self):
+        """
+
+        """
+        build_mv = {
+            "type": 1,
+            "song_info": {
+                "song_file": ngaychuagiongbao_audiofile,
+                "lyric_file": lyric_file,
+                "song_name": "Ngày chưa giông bão",
+                "title_file": titlefile
+            },
+            "background_info": {
+                "bg_file": bg_img00,
+                "sub_info": {
+                    'rectangle': [100, 100, 400, 300],
+                    'fontname': 'UTM Centur',
+                    'fontcolor': 0x018CA7,
+                    'fontsize': 40
+                },
+                "title_info": {
+                    'rectangle': [100, 100, 0, 0],  # must has
+                    'fontname': 'UTM Centur',  # Can be None
+                    'fontcolor': 0x018CA7,  # Can be None
+                    'fontsize': 40  # Can be None
+                }
+            },
+            "affect_info": {
+                'affect_file': affect_file,
+                'opacity': 25
+            }
+            , 'output': os.path.join(test_data_dir, 'release_nhammatthaymuahe.mp4')
         }
         response = requests.post('http://localhost:8000/build_mv',
                                  json=build_mv)

@@ -39,18 +39,24 @@ class MvTempFile(YtTempFile):
 
 
 class BgMvTemplateFile(YtTempFile):
-    def __init__(self, pre='bgmv_', sub=".webp", autodel=False) -> None:
+    def __init__(self, pre='bgmv_', sub=".mp4", autodel=False) -> None:
         super().__init__(pre, sub, autodel)
 
 
 class AffMvTemplateFile(YtTempFile):
-    def __init__(self, pre='affmv_', sub=".webp", autodel=False) -> None:
+    def __init__(self, pre='affmv_', sub=".mp4", autodel=False) -> None:
         super().__init__(pre, sub, autodel)
 
 
 class PngTempFile(YtTempFile):
 
     def __init__(self, pre='img_', sub='.png', autodel=False) -> None:
+        super().__init__(pre, sub, autodel)
+
+
+class JpegTempFile(YtTempFile):
+
+    def __init__(self, pre='img_', sub='.jpg', autodel=False) -> None:
         super().__init__(pre, sub, autodel)
 
 

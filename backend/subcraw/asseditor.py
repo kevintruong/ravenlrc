@@ -1,14 +1,13 @@
 from __future__ import unicode_literals
 
-import os
 import subprocess
 from urllib.parse import urlparse
 
+from backend.TempFileMnger import *
 from backend.ffmpeg.ffmpegcli import FFmpegProfile
 from backend.subcraw import pylrc
 from backend.subcraw.pysubs2 import *
 from backend.subcraw.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
-from backend.TempFileMnger import *
 
 temp_dowload_dir = os.path.join(os.path.dirname(__file__), 'Download')
 if not os.path.isdir(temp_dowload_dir):
@@ -157,11 +156,11 @@ def lrf_to_ass(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.ass"
 
 
 class SubRectangle:
-    def __init__(self, x, y, w, h):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
+    def __init__(self, subrect: list):
+        self.x = subrect[0]
+        self.y = subrect[1]
+        self.w = subrect[2]
+        self.h = subrect[3]
 
 
 class SubtitleInfo:
@@ -180,10 +179,27 @@ class SubtitleInfo:
             pass
 
 
-def create_ass_subtitle(inputfile: str,
+def create_ass(lrcfile: str, output: str,
+               subinfo: SubtitleInfo,
+               resolution=None):
+    with open(lrcfile, 'r', encoding='utf-8') as lrcfd:
+        lrccontent = lrcfd.read()
+        create_ass_subtitle(lrccontent, output, subinfo, resolution)
+
+
+def create_ass_subtitle(lrccontent: str,
                         output: str,
                         subinfo: SubtitleInfo,
                         resolution=None):
+    if resolution is None:
+        res = [1920, 1080]
+    elif resolution == FFmpegProfile.PROFILE_LOW:
+        res = [640, 480]
+    elif resolution == FFmpegProfile.PROFILE_FULLHD:
+        res = [1920, 1080]
+    else:
+        res = [1920, 1080]
+
     sub_rectangle = subinfo.rectangle
     subcorlor = subinfo.fontcolor
     font_name = subinfo.fontname
@@ -200,12 +216,10 @@ def create_ass_subtitle(inputfile: str,
 
     :type inputfile: str input file lrf
     """
-    if resolution is None:
-        resolution = [1920, 1080]
     asstempfile = AssTempFile().getfullpath()
-    outputfile = lrf_to_ass(inputfile, asstempfile)
+    outputfile = lrf_to_ass(lrccontent, asstempfile)
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
-    sub_customizer = AssCustomizor(subs, resolution[0], resolution[1])
+    sub_customizer = AssCustomizor(subs, res[0], res[1])
     sub_customizer.setting_fonts(font_name, font_size)
     sub_customizer.setting_margin_val(sub_rectangle.x, sub_rectangle.y, sub_rectangle.w, sub_rectangle.h)
     sub_customizer.setting_primary_colour(subcorlor)
@@ -225,14 +239,17 @@ def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
                    resolution=[1920, 1080]):
     """
     create ass subtitle for
-    :param sub_rect:
+    :param subinfo:
     :param resolution:
     :param url:
     :param output:
     :return:
     """
+    # lrc_temp = LrcTempFile().getfullpath()
     from backend.subcraw.subcrawler import get_sub_from_url
-    lyric_content = get_sub_from_url(url)
+    lrc_content = get_sub_from_url(url)
+    # crawl_lyric(url, lrc_temp)
+    create_ass_subtitle(lrc_content, output, subinfo, resolution)
     return output
 
 # create_ass_subtitile(

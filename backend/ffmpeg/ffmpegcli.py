@@ -136,7 +136,8 @@ class FfmpegCli(object):
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
         cmd += self.ffmpeg_options
         if superfast == 1:
-            cmd += self.supperfast_profile
+            # cmd += self.supperfast_profile
+            pass
         if youtube == 1:
             cmd += self.youtube_codec
             cmd += self.youtube_options
@@ -184,39 +185,34 @@ class FfmpegCli(object):
         self._ffmpeg_input_fill_cmd('-loop')
         self._ffmpeg_input_fill_cmd('1')
         self._ffmpeg_input(input_img)
-        # self._ffmpeg_input_filter_complex_prefix()
-        # self._ffmpeg_input_fill_cmd("scale={}".format(self.default_resolution))
         self._ffmpeg_input_fill_cmd('-t')
         self._ffmpeg_input_fill_cmd("{}".format(time_length))
-        self._ffmpeg_input_fill_cmd('-c')
-        self._ffmpeg_input_fill_cmd('copy')
-
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_video)
 
-    def create_media_file_from_img(self, input_img: str, time_length: int, output_video: str):
+    def create_background_affect_with_length(self, input_bg, time_length: int, output_bg):
         '''
-        ffmpeg -loop 1 -i $input_img -c:v libx264 -t $length -pix_fmt yuvj422p -vf scale=$fullhd $output_mp4
-        :param output_video:
-        :param input_img:
+        the function will create an output backgound effect from input backround image
+        ffmpeg -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
         :param time_length:
+        :param input_bg:
+        :param output_bg:
         :return:
         '''
-        FfmpegCli.check_file_exist(input_img)
-        self._ffmpeg_input_fill_cmd('-loop')
-        self._ffmpeg_input_fill_cmd('1')
-        self._ffmpeg_input(input_img)
-        # self._ffmpeg_input_filter_complex_prefix()
-        # self._ffmpeg_input_fill_cmd("scale={}".format(self.default_resolution))
+        FfmpegCli.check_file_exist(input_bg)
+        self._ffmpeg_input_fill_cmd('-re')
+        self._ffmpeg_input_fill_cmd('-stream_loop')
+        self._ffmpeg_input_fill_cmd('-1')
+        self._ffmpeg_input(input_bg)
         self._ffmpeg_input_fill_cmd('-t')
-        self._ffmpeg_input_fill_cmd("{}".format(time_length))
-        self._ffmpeg_input_fill_cmd('-c')
-        self._ffmpeg_input_fill_cmd('copy')
+        self._ffmpeg_input_fill_cmd('{}'.format(time_length))
+        # self._ffmpeg_input_fill_cmd('-c')
+        # self._ffmpeg_input_fill_cmd('copy')
+        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_video)
-
-        # ffmpeg_cmd = ["ffmpeg", "-y", "-loop", "1", "-i", "{}".format(input_img),
-        #               "-vf", "scale={}".format(self.default_resolution), "-t", "{}".format(time_length)]
-        # self.run(ffmpeg_cmd, output_video)
+        # ffmpeg_cmd = ["ffmpeg", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
+        #               "{}".format(time_length)]
+        #
+        # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)l l l l
 
     def scale_input(self, input_bg, resolution: str, output_bg):
         '''
