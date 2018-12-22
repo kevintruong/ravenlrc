@@ -36,16 +36,16 @@ class ksub(unittest.TestCase):
         self.assertTrue(os.path.isfile(file))
 
     def test_get_audio_low(self):
-        file = download_mp3_file(full_test, self.testDownloadDir, AudioQuanlity.AUDIO_QUANLITY_128)
+        file = download_mp3_file(full_test, AudioQuanlity.AUDIO_QUANLITY_128, self.testDownloadDir)
         self.assertTrue(os.path.isfile(file))
 
     def test_get_audio_medium(self):
-        file = download_mp3_file(full_test, self.testDownloadDir, AudioQuanlity.AUDIO_QUANLITY_320)
+        file = download_mp3_file(full_test, AudioQuanlity.AUDIO_QUANLITY_320, self.testDownloadDir)
         self.assertTrue(os.path.isfile(file))
         pass
 
     def test_get_audio_lossless(self):
-        file = download_mp3_file(full_test, self.testDownloadDir, AudioQuanlity.AUDIO_QUANLITY_LOSSLESS)
+        file = download_mp3_file(full_test, AudioQuanlity.AUDIO_QUANLITY_LOSSLESS, self.testDownloadDir)
         self.assertTrue(os.path.isfile(file))
         pass
 

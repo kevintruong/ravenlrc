@@ -23,11 +23,11 @@ class textrefactor(object):
         self.text = text
         self.duration = duration
         self.df_alpha_1 = 0xff
-        self.df_alpha_2 = 0x10
+        self.df_alpha_2 = 0x00
         self.df_plpha_3 = 0xff
         self.df_t1 = 0
-        self.df_t2 = 0.30
-        self.df_t3 = 0.50
+        self.df_t2 = 0.20
+        self.df_t3 = 0.75
         self.df_t4 = 0.20
         self.newtext = None
 
@@ -36,8 +36,11 @@ class textrefactor(object):
         t2 = int(self.duration * self.df_t2)
         t3 = int(self.duration * self.df_t3)
         t4 = 5000
-        fade_affect = "{{\\fade({},{},{},{},{},{},{})}}".format(self.df_alpha_1, self.df_alpha_2, self.df_plpha_3, t1,
-                                                                t2, t3, t4)
+        fade_affect = "{{\\fade({},{},{},{},{},{},{})}}". \
+            format(self.df_alpha_1,
+                   self.df_alpha_2,
+                   self.df_plpha_3,
+                   t1, t2, t3, t4)
         self.newtext = fade_affect + self.text
         pass
 
@@ -121,6 +124,7 @@ class AssCustomizor(object):
 
         for line in self.subs:
             newtext = textrefactor(line.plaintext, line.duration)
+            line.end = line.end + 1500
             newtext.add_fade_effect()
             line.text = newtext.get_newtext()
         pass
@@ -153,6 +157,14 @@ def lrf_to_ass(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.ass"
     srtfile = subs.save_to_file(os.path.join(temp_dowload_dir, 'output_test.srt'))
     outputfile = AssCustomizor.convert_to_ass(srtfile, output)
     return outputfile
+
+
+def lrf_to_srt(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.srt")):
+    subs = pylrc.parse(lrccontent)
+    srt = subs.toSRT()  # convert lrc to srt string
+    srtfile = subs.save_to_file(output)
+    # outputfile = AssCustomizor.convert_to_ass(srtfile, output)
+    return output
 
 
 class SubRectangle:
@@ -205,25 +217,24 @@ def create_ass_subtitle(lrccontent: str,
     font_name = subinfo.fontname
     font_size = subinfo.fontsize
 
-    # def create_ass_subtitile(inputfile: str,
-    #                          output: str,
-    #                          sub_rectangle: SubRectangle,
-    #                          subcorlor=0x018CA7,
-    #                          font_name="SVN-Futura",
-    #                          font_size=None,
-    #                          resolution=None):
-    """
-
-    :type inputfile: str input file lrf
-    """
     asstempfile = AssTempFile().getfullpath()
-    outputfile = lrf_to_ass(lrccontent, asstempfile)
+    srttempfile = SrtTempfile().getfullpath()
+
+    # outputfile = lrf_to_ass(lrccontent, asstempfile)
+    outputfile = lrf_to_srt(lrccontent, srttempfile)
+
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
     sub_customizer = AssCustomizor(subs, res[0], res[1])
     sub_customizer.setting_fonts(font_name, font_size)
-    sub_customizer.setting_margin_val(sub_rectangle.x, sub_rectangle.y, sub_rectangle.w, sub_rectangle.h)
+
+    sub_customizer.setting_margin_val(sub_rectangle.x,
+                                      sub_rectangle.y,
+                                      sub_rectangle.w,
+                                      sub_rectangle.h)
     sub_customizer.setting_primary_colour(subcorlor)
+
     sub_customizer.add_fad_affect_to_sub()
+
     sub_customizer.subs.save(output)
     pass
 
@@ -245,30 +256,12 @@ def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
     :param output:
     :return:
     """
-    # lrc_temp = LrcTempFile().getfullpath()
     from backend.crawler.subcrawler import get_sub_from_url
-    lrc_content = get_sub_from_url(url)
-    # crawl_lyric(url, lrc_temp)
+    lrc_content: str = get_sub_from_url(url)
     create_ass_subtitle(lrc_content, output, subinfo, resolution)
     return output
 
-# create_ass_subtitile(
-#     "/mnt/775AD44933621551/Project/MMO/youtube/Content/Lyric/Nham_mat_thay_mua_he.lrc",
-#     "/mnt/775AD44933621551/Project/MMO/youtube/Content/Ass/Nham_mat_thay_mua_he.ass")
-# subs = load(outputfile, encoding='utf-8')
-# sub_customizer = subcustomizor(subs)
-# sub_customizer.setting_fonts("SVN-Futura", 64)
-# sub_customizer.setting_resolution(1920, 1080)
-# sub_customizer.setting_margin_val(200, 70)
-# sub_customizer.setting_primary_colour(0x018CA7)
-# sub_customizer.add_fad_affect_to_sub()
-# sub_customizer.subs.save("output_file.ass")
 
-# my_style = subs.styles["Default"].copy()
-# my_style.italic = True
-# my_style.fontname = "UTM Bustamalaka"
-# subs.styles["Default"] = my_style
-# sub_info = subs.info
-# sub_info["PlayResX"] = 1920
-# sub_info["PlayResY"] = 1080
-# subs.save("change_font_xinloi.ass")
+class LyricProfile:
+    # TODO add some profile configure for lyric
+    pass

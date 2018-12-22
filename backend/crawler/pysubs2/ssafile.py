@@ -37,12 +37,12 @@ class SSAFile(MutableSequence):
         ("Collisions", "Normal")])
 
     def __init__(self):
-        self.events = [] #: List of :class:`SSAEvent` instances, ie. individual subtitles.
-        self.styles = OrderedDict([("Default", SSAStyle.DEFAULT_STYLE.copy())]) #: Dict of :class:`SSAStyle` instances.
-        self.info = self.DEFAULT_INFO.copy() #: Dict with script metadata, ie. ``[Script Info]``.
-        self.aegisub_project = OrderedDict() #: Dict with Aegisub project, ie. ``[Aegisub Project Garbage]``.
-        self.fps = None #: Framerate used when reading the file, if applicable.
-        self.format = None #: Format of source subtitle file, if applicable, eg. ``"srt"``.
+        self.events = []  #: List of :class:`SSAEvent` instances, ie. individual subtitles.
+        self.styles = OrderedDict([("Default", SSAStyle.DEFAULT_STYLE.copy())])  #: Dict of :class:`SSAStyle` instances.
+        self.info = self.DEFAULT_INFO.copy()  #: Dict with script metadata, ie. ``[Script Info]``.
+        self.aegisub_project = OrderedDict()  #: Dict with Aegisub project, ie. ``[Aegisub Project Garbage]``.
+        self.fps = None  #: Framerate used when reading the file, if applicable.
+        self.format = None  #: Format of source subtitle file, if applicable, eg. ``"srt"``.
 
     # ------------------------------------------------------------------------
     # I/O methods
@@ -146,7 +146,7 @@ class SSAFile(MutableSequence):
             fp = io.StringIO(text)
 
         impl = get_format_class(format_)
-        subs = cls() # an empty subtitle file
+        subs = cls()  # an empty subtitle file
         subs.format = format_
         subs.fps = fps
         impl.from_file(subs, fp, format_, fps=fps, **kwargs)
@@ -382,7 +382,7 @@ class SSAFile(MutableSequence):
         if self.events:
             max_time = max(ev.end for ev in self)
             s = "<SSAFile with %d events and %d styles, last timestamp %s>" % \
-                    (len(self), len(self.styles), ms_to_str(max_time))
+                (len(self), len(self.styles), ms_to_str(max_time))
         else:
             s = "<SSAFile with 0 events and %d styles>" % len(self.styles)
 

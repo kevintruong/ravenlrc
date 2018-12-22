@@ -100,26 +100,10 @@ class Lyrics(list):
                 end_min = "%02d" % self[i + 1].minutes
                 end_sec = "%02d" % self[i + 1].seconds
 
-                if i + 2 < len(self):
-                    the_next_start = self[i + 2].minutes * 60 + self[i + 2].seconds
-                    the_curr_end_offset = self[i + 1].minutes * 60 + self[i + 1].seconds
-                    elapsetime = the_next_start - the_curr_end_offset
-                    if self[i + 1].text == '':
-                        if elapsetime > 4:
-                            end_sec = "{}".format(self[i + 1].seconds + 4)
-                        else:
-                            end_hours = "%02d" % self[i + 2].hours
-                            end_min = "%02d" % self[i + 2].minutes
-                            end_sec = "%02d" % self[i + 2].seconds
-                    elif elapsetime > 2:
-                        end_sec = "{}".format(self[i + 1].seconds + 2)
-
                 milliseconds = self[i + 1].milliseconds - 1
                 end_milli = "%03d" % (0 if milliseconds < 0 else milliseconds)
-
                 end_timecode = ''.join([end_hours, ':', end_min,
                                         ':', end_sec, ',', end_milli])
-
                 srt = srt + start_timecode + ' --> ' + end_timecode + '\n'
                 # if len(self[i].text) > 31:
                 #     srt = srt + findEvenSplit(self[i].text) + '\n'

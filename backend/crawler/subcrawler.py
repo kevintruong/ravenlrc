@@ -6,10 +6,12 @@ from time import sleep
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 
 from backend.crawler.asseditor import *
 from backend.crawler.rc4_py3 import decrypt
+import logging
+import backend.YTLogger
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)
@@ -21,8 +23,6 @@ if not os.path.isdir(ChromeDownloadDir):
     os.mkdir(ChromeDownloadDir)
 if not os.path.isdir(ChromeDataDir):
     os.mkdir(ChromeDataDir)
-import logging
-import backend.YTLogger
 
 logger = logging.getLogger('kendebug')
 
@@ -158,8 +158,10 @@ def download_mp3_file(url: str, quanlity: AudioQuanlity, outputdir=ChromeDownloa
     options.add_argument('user-data-dir={}'.format(ChromeDataDir))
     logger.debug("Chrome data dir {}".format(ChromeDataDir))
     prefs = {'download.default_directory': '{}'.format(outputdir)}
-    options.add_experimental_option('prefs', prefs)
-    browser = webdriver.Chrome(options=options)
+    # options.add_experimental_option('prefs', prefs)
+    # options.set_headless(True)
+    fp = webdriver.FirefoxProfile(r'C:\Users\84935\AppData\Local\Temp\rust_mozprofile.rHEUxruhVTGb')
+    browser = webdriver.Firefox(fp, options=options, executable_path=r'D:\chromedriver\geckodriver.exe')
     logger.debug("Open url ")
     browser.get(url)
     browser.find_element_by_css_selector("#btnDownloadBox").click()

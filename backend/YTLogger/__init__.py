@@ -1,5 +1,4 @@
 import logging.config
-
 from pythonjsonlogger import jsonlogger
 from structlog import configure, processors, stdlib, threadlocal
 import os
