@@ -217,10 +217,8 @@ def create_ass_subtitle(lrccontent: str,
     font_name = subinfo.fontname
     font_size = subinfo.fontsize
 
-    asstempfile = AssTempFile().getfullpath()
     srttempfile = SrtTempfile().getfullpath()
 
-    # outputfile = lrf_to_ass(lrccontent, asstempfile)
     outputfile = lrf_to_srt(lrccontent, srttempfile)
 
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
@@ -262,6 +260,23 @@ def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
     return output
 
 
-class LyricProfile:
-    # TODO add some profile configure for lyric
+class KeyWord:
     pass
+
+
+class KeyWordFormatter:
+    pass
+
+
+class LyricProfile:
+    def __init__(self,
+                 subinfo: SubtitleInfo,
+                 resolution: list,
+                 keywork: KeyWord,
+                 keyworkformat: KeyWordFormatter,
+                 ) -> None:
+        self.subinfo = subinfo
+        self.resolution = resolution
+        super().__init__()
+
+    # TODO add some profile configure for lyric
