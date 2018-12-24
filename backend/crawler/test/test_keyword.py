@@ -54,7 +54,6 @@ class testAssDialogueTextProcessor(unittest.TestCase):
                         'an yên',
                         'mây ngàn']
         super().setUp()
-        self.textprocessor = AssDialogueTextProcessor(keyword=self.keywork)
         self.ass_lyric = open('test.ass', 'r', encoding='utf-8')
         keywork_config = {
             'fontname': 'UTM Scriptina KT',
@@ -62,22 +61,40 @@ class testAssDialogueTextProcessor(unittest.TestCase):
             'fontcolor': 0x028CF7,
             'alignment': SubtitleAlignment.SUB_ALIGN_RIGHT_JUSTIFIED
         }
+        configure_dict = {
+            'effect_start': [FontSize(10), PrimaryFillColor(0xff0000)],
+            'effect_transform': [FontSize(50), PrimaryFillColor(0xffeeff)],
+            'timing': [0, 5000],
+            'accel': 0.3
+        }
         self.formatter = AssDialogueTextKeyWordFormatter(keywork_config)
 
+        self.textprocessor = AssDialogueTextProcessor(keyword=self.keywork,
+                                                      formater=keywork_config,
+                                                      animatedconf=configure_dict)
+
     def test_processkeyword(self):
-        replace_keyword = []
         content = self.ass_lyric.read()
-        for each_keyword in self.keywork:
-            replaceword = self.formatter.format_keyword(each_keyword)
-            replace_keyword.append(replaceword)
-            self.textprocessor.kwprocessor.add_keyword(each_keyword, replaceword)
-            content = self.textprocessor.kwprocessor.replace_keywords(content)
-            self.textprocessor.kwprocessor.remove_keyword(each_keyword)
-            self.textprocessor.kwprocessor.remove_keyword(replaceword)
+        content = self.textprocessor.keyword_process(content)
         with open('newtest.ass', 'w', encoding='utf-8') as filewr:
             filewr.write(content)
         print(content)
 
 
-if __name__ == '__main__':
-    unittest.main()
+
+class testAssDialueTextAnimatedTransform(unittest.TestCase):
+    def setUp(self):
+        configure_dict = {
+            'effect_start': [FontSize(10), PrimaryFillColor(0xff0000)],
+            'effect_transform': [FontSize(50), PrimaryFillColor(0xffeeff)],
+            'timing': [0, 5000],
+            'accel': 0.3
+        }
+        self.assdialogueanimatedtransform = AssDialueTextAnimatedTransform(configure_dict)
+
+    def test_create_full_transfer(self):
+        fulltransfer = self.assdialogueanimatedtransform.create_full_transform()
+        print(fulltransfer)
+        self.assertEqual(fulltransfer, r'{\fs10\c&H0000ff&\t(0,5000,0.3,\fs50\c&Hffeeff&)}')
+        if __name__ == '__main__':
+            unittest.main()

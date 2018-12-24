@@ -52,7 +52,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_add_sub_to_video(self):
         media_output = os.path.join(sample_data_dir, "audio_output.mp4")
-        ass_out = os.path.join(sample_data_dir, "test.ass")
+        ass_out = r'D:\Project\ytcreatorservice\backend\crawler\test\newtest.ass'
         output = os.path.join(sample_data_dir, "sub_output.mp4")
 
         subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],

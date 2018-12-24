@@ -1,5 +1,6 @@
 from flashtext import *
 from enum import IntEnum
+from backend.crawler.asseffect.animated_transform import *
 
 
 class SubtitleAlignment(IntEnum):
@@ -57,6 +58,46 @@ class KeyWorkd:
         self.keyworkd = []
 
 
+class AssDialueTextAnimatedTransform:
+    def __init__(self, conf: dict):
+        """
+        effect : {'effect_id': EnumEffect,'effect_conf'=[<effect_conf>]}
+        conf : dict
+        conf {
+            'pre':{ [] Pre Animation (effect before animated transform
+            },
+            'post': {[] Animated transform.
+            },
+            'timing': [t0,t1],
+            'accel' : [0,1]
+        }
+        :param conf:
+        """
+        self.animatedtransform = AnimatedTransform()
+        self.effect_start = None
+        self.effect_transform = None
+        self.timing = None
+        self.accel = None
+
+        for each_key in conf.keys():
+            if 'effect_start' in each_key:
+                self.effect_start = conf['effect_start']
+            elif 'effect_transform' in each_key:
+                self.effect_transform = conf['effect_transform']
+            elif 'timing' in each_key:
+                self.timing = conf['timing']
+            elif 'accel' in each_key:
+                self.accel = conf['accel']
+            pass
+
+    def create_full_transform(self):
+        return self.animatedtransform.transform_from_effect_to_effect(orgeffect=self.effect_start,
+                                                                      nexteffect=self.effect_transform,
+                                                                      timing=Timing(self.timing[0], self.timing[1]),
+                                                                      accel=self.accel)
+        pass
+
+
 class AssDialogueTextKeyWordFormatter:
 
     def __init__(self, formatinfo: dict) -> None:
@@ -74,9 +115,27 @@ class AssDialogueTextKeyWordFormatter:
         newword = fontname_code + fontsize + fontcolor + subalign + keyword + reset + '\\N'
         return newword
 
+    def font_formatter(self):
+        fontname_code = DialogueTextStyleCode.create_fontname_style_code(self.fontname)
+        fontsize = DialogueTextStyleCode.create_fontsize_style_code(self.fontsize)
+        fontcolor = DialogueTextStyleCode.create_fontcolor_style_code(self.fontcolor)
+        subalign = DialogueTextStyleCode.create_subtitle_align_style_code(self.alignment)
+        return fontname_code + fontsize + fontcolor + subalign
+
 
 class AssDialogueTextProcessor:
-    def __init__(self, keyword: list) -> None:
+    def __init__(self, keyword: list, formater: dict, animatedconf: dict) -> None:
         self.kwprocessor = KeywordProcessor()
-        # self.kwprocessor.add_keywords_from_list(keyword)
+        self.keyword = keyword
+        self.keywordformatter = AssDialogueTextKeyWordFormatter(formater)
+        self.keywordanimatedtransform = AssDialueTextAnimatedTransform(animatedconf)
+        keyword_formatter = self.keywordformatter.font_formatter()
+        animated_formatter = self.keywordanimatedtransform.create_full_transform()
+        reset = DialogueTextStyleCode.create_reset_style_code()
+        for each_keyword in self.keyword:
+            replace_keyword = keyword_formatter + animated_formatter + each_keyword + reset
+            self.kwprocessor.add_keyword(each_keyword, replace_keyword)
         super().__init__()
+
+    def keyword_process(self, content):
+        return self.kwprocessor.replace_keywords(content)
