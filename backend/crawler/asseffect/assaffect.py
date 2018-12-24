@@ -120,7 +120,7 @@ class AnimationTransform:
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
 
-    class PrimaryFillAlpha:
+    class PrimaryFillAlpha(Affect):
         def get_affect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
@@ -130,6 +130,121 @@ class AnimationTransform:
             alpha = hex(alphavalue)[2:4]
             self.effect_param = "H{}".format(alpha)
             pass
+
+    class SecondaryFillAlpha(Affect):
+        def get_affect_type_code(self):
+            return self.effect_code + "&{}&".format(self.effect_param)
+            pass
+
+        def __init__(self, alphavalue: int):
+            self.effect_code = AnimationTransform.FontAffect.SECONDARY_FILL_ALPHA.value
+            alpha = hex(alphavalue)[2:4]
+            self.effect_param = "H{}".format(alpha)
+            pass
+
+    class BorderFillAlpha(Affect):
+        def get_affect_type_code(self):
+            return self.effect_code + "&{}&".format(self.effect_param)
+            pass
+
+        def __init__(self, alphavalue: int):
+            self.effect_code = AnimationTransform.FontAffect.BORDER_FILL_ALPHA.value
+            alpha = hex(alphavalue)[2:4]
+            self.effect_param = "H{}".format(alpha)
+            pass
+
+    class ShadowFillAlpha(Affect):
+        def get_affect_type_code(self):
+            return self.effect_code + "&{}&".format(self.effect_param)
+            pass
+
+        def __init__(self, alphavalue: int):
+            self.effect_code = AnimationTransform.FontAffect.SHADOWN_ALPHA.value
+            alpha = hex(alphavalue)[2:4]
+            self.effect_param = "H{}".format(alpha)
+            pass
+
+    class Border(Affect):
+        def get_affect_type_code(self):
+            return self.effect_code + "&{}&".format(self.effect_param)
+            pass
+
+        def set_border_code_style(self):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_BORDER_WIDTH.value
+
+        def __init__(self, borderval: int):
+            self.effect_code = ""
+            self.set_border_code_style()
+            self.effect_param = "{}".format(borderval)
+            pass
+
+    class BorderX(Border):
+
+        def set_border_code_style(self):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_BORDER_WIDTH_X.value
+
+    class BorderY(Border):
+
+        def set_border_code_style(self):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_BORDER_WIDTH_Y
+
+    class ShadowDistance(Affect):
+        def get_affect_type_code(self):
+            return self.effect_code + "&{}&".format(self.effect_param)
+            pass
+
+        def set_border_code_style(self):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_SHADOW_WIDTH.value
+
+        def __init__(self, shadvalue: int):
+            self.effect_code = ""
+            self.set_border_code_style()
+            self.effect_param = "{}".format(shadvalue)
+            pass
+
+    class ShadowDistanceX(ShadowDistance):
+
+        def set_border_code_style(self):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_SHADOW_WIDTH_X.value
+
+    class ShadowDistanceY(ShadowDistance):
+
+        def set_border_code_style(self):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_SHADOW_WIDTH_Y
+
+    class RectangleClip(Affect):
+
+        def get_affect_type_code(self):
+            return self.effect_code + self.parameter
+            pass
+
+        def __init__(self, x1, y1, x2, y2):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_CLIP.value
+            self.parameter = "({},{},{},{})".format(x1, y1, x2, y2)
+            pass
+
+    class RectangleiClip(RectangleClip):
+
+        def __init__(self, x1, y1, x2, y2):
+            super().__init__(x1, y1, x2, y2)
+
+    class BlurEdges(Affect):
+
+        def get_affect_type_code(self):
+            pass
+
+        def __init__(self, strength):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_BLUR_EDGES.value
+            self.paramter = '{}'.format(strength)
+
+    class BlurEdgesGaussian(Affect):
+
+        def get_affect_type_code(self):
+            pass
+
+        def __init__(self, strength):
+            self.effect_code = AnimationTransform.OtherAffect.TEXT_BLUR_EDGES_GAUSSIAN.value
+            self.paramter = '{}'.format(strength)
 
     class Timing:
         def __init__(self, t0: int, t1: int) -> None:
@@ -160,7 +275,7 @@ class AnimationTransform:
         for each in affectlist:
             code_style = each.get_affect_type_code()
             effecttypecodes += code_style
-        return "\\t{{{},{}}}".format(accel, effecttypecodes)
+        return "{{\\t({},{})}}".format(accel, effecttypecodes)
         pass
 
     def timer_linear_transform(self, timing: Timing, affectlist: [Affect]):
@@ -174,7 +289,7 @@ class AnimationTransform:
             code_style = each.get_affect_type_code()
             effecttypecodes += code_style
         timing_code = "{},{}".format(timing.t0, timing.t1)
-        return "\\t{{{},{}}}".format(timing_code, effecttypecodes)
+        return "{{\\t({},{})}}".format(timing_code, effecttypecodes)
 
         # \t{0,5000,0.5,\frz3600}Whell
         # Same as above, but it will start fast and slow down,
@@ -190,7 +305,7 @@ class AnimationTransform:
             code_style = each.get_affect_type_code()
             effecttypecodes += code_style
         timing_code = "{},{}".format(timing.t0, timing.t1)
-        return "\\t{{{},{},{}}}".format(timing_code, accel, effecttypecodes)
+        return "{{\\t({},{},{})}}".format(timing_code, accel, effecttypecodes)
 
         # \t{0,5000,0.5,\frz3600}Whell
         # Same as above, but it will start fast and slow down,
