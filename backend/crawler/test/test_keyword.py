@@ -4,7 +4,7 @@ from backend.crawler.asseditor import SubtitleInfo
 from backend.crawler.keyword.keyword import *
 from backend.ffmpeg.ffmpegcli import FfmpegCli
 
-from backend.crawler.asseffect.AnimatedAffect import AnimatedAffect
+from backend.crawler.asseffect.AnimatedEffect import AnimatedEffect
 
 
 class TestKeyword(unittest.TestCase):
@@ -115,8 +115,8 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_zoom_in(self):
         configure_dict = {
-            'effect_start': [AnimatedAffect.FontSize(20)],
-            'effect_transform': [AnimatedAffect.FontSize(40)],
+            'effect_start': [AnimatedEffect.FontSize(20)],
+            'effect_transform': [AnimatedEffect.FontSize(40)],
             'timing': [0, 5000],
             'accel': 0.3
         }
@@ -124,11 +124,11 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_zoom_out(self):
         configure_dict = {
-            'effect_start': [AnimatedAffect.FontSize(50),
-                             AnimatedAffect.BlurEdgesGaussian(2)],
+            'effect_start': [AnimatedEffect.FontSize(50),
+                             AnimatedEffect.BlurEdgesGaussian(2)],
 
-            'effect_transform': [AnimatedAffect.FontSize(10),
-                                 AnimatedAffect.BlurEdgesGaussian(20)],
+            'effect_transform': [AnimatedEffect.FontSize(10),
+                                 AnimatedEffect.BlurEdgesGaussian(20)],
             'timing': [0, 5000],
             'accel': 0.8
         }
@@ -136,10 +136,10 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_border_increase(self):
         configure_dict = {
-            'effect_start': [AnimatedAffect.ShadowDistanceX(50),
-                             AnimatedAffect.ShadowDistanceY(50)],
-            'effect_transform': [AnimatedAffect.ShadowDistanceX(0),
-                                 AnimatedAffect.ShadowDistanceY(0)],
+            'effect_start': [AnimatedEffect.ShadowDistanceX(50),
+                             AnimatedEffect.ShadowDistanceY(50)],
+            'effect_transform': [AnimatedEffect.ShadowDistanceX(0),
+                                 AnimatedEffect.ShadowDistanceY(0)],
             'timing': [0, 5000],
             'accel': 0.8
         }
@@ -159,10 +159,10 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 class testAssDialueTextAnimatedTransform(unittest.TestCase):
     def setUp(self):
         configure_dict = {
-            'effect_start': [AnimatedAffect.FontSize(10),
-                             AnimatedAffect.PrimaryFillColor(0xff0000)],
-            'effect_transform': [AnimatedAffect.FontSize(30),
-                                 AnimatedAffect.PrimaryFillColor(0xffeeff)],
+            'effect_start': [AnimatedEffect.FontSize(10),
+                             AnimatedEffect.PrimaryFillColor(0xff0000)],
+            'effect_transform': [AnimatedEffect.FontSize(30),
+                                 AnimatedEffect.PrimaryFillColor(0xffeeff)],
             'timing': [0, 5000],
             'accel': 0.3
         }

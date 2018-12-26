@@ -1,6 +1,6 @@
 from enum import *
 
-from backend.crawler.asseffect.AnimatedAffect import AnimatedAffect
+from backend.crawler.asseffect.AnimatedEffect import AnimatedEffect
 
 
 class Timing:
@@ -17,37 +17,37 @@ class AnimatedTransform:
         super().__init__()
         self.animationtransform_typecode = '\\t'
 
-    def linear_transform(self, affectlist: [AnimatedAffect.Affect]):
+    def linear_transform(self, effectlist: [AnimatedEffect.Effect]):
         # linear transform from before /t to after /t animation
         # {\1c&HFF0000&\t(\1c&H0000FF&)}Hello!
         # The text starts out blue,
         # but fades towards red so it is completely red when the line ends.
         effecttypecodes = ""
-        for each in affectlist:
-            code_style = each.get_affect_type_code()
+        for each in effectlist:
+            code_style = each.get_effect_type_code()
             effecttypecodes += code_style
         return "\\t{{{}}}".format(effecttypecodes)
         pass
 
-    def non_linear_transform(self, affectlist: [AnimatedAffect.Affect], accel=0):
+    def non_linear_transform(self, effectlist: [AnimatedEffect.Effect], accel=0):
         # non linear transform from before /t to after /t animation
         # \t{(0.5,\frz3600)}Wheel # transform accel 0.5 (non linear) frz3600
         effecttypecodes = ""
-        for each in affectlist:
-            code_style = each.get_affect_type_code()
+        for each in effectlist:
+            code_style = each.get_effect_type_code()
             effecttypecodes += code_style
         return "{{\\t({},{})}}".format(accel, effecttypecodes)
         pass
 
-    def timer_linear_transform(self, timing: Timing, affectlist: [AnimatedAffect.Affect]):
+    def timer_linear_transform(self, timing: Timing, effectlist: [AnimatedEffect.Effect]):
         # \t{0,5000,\frz3600}Whell
         # Same as above
         # still doing the 10 rotations in 5 seconds.
         if timing is None:
             raise Exception("timing is None")
         effecttypecodes = ""
-        for each in affectlist:
-            code_style = each.get_affect_type_code()
+        for each in effectlist:
+            code_style = each.get_effect_type_code()
             effecttypecodes += code_style
         timing_code = "{},{}".format(timing.t0, timing.t1)
         return "{{\\t({},{})}}".format(timing_code, effecttypecodes)
@@ -58,12 +58,12 @@ class AnimatedTransform:
         pass
         pass
 
-    def timer_non_linear_transform(self, timing: Timing, affectlist: [AnimatedAffect.Affect], accel=0):
+    def timer_non_linear_transform(self, timing: Timing, effectlist: [AnimatedEffect.Effect], accel=0):
         if timing is None:
             raise Exception("timing is None")
         effecttypecodes = ""
-        for each in affectlist:
-            code_style = each.get_affect_type_code()
+        for each in effectlist:
+            code_style = each.get_effect_type_code()
             effecttypecodes += code_style
         timing_code = "{},{}".format(timing.t0, timing.t1)
         return "{{\\t({},{},{})}}".format(timing_code, accel, effecttypecodes)
@@ -74,7 +74,7 @@ class AnimatedTransform:
         pass
 
     def transform_from_effect_to_effect(self, orgeffect: [],
-                                        nexteffect: [AnimatedAffect.Affect],
+                                        nexteffect: [AnimatedEffect.Effect],
                                         timing: Timing,
                                         accel=1):
         """
@@ -89,12 +89,12 @@ class AnimatedTransform:
         # if len(orgeffect) == 0:
         #     raise Exception("no item in orgeffect")
         for each_effect in orgeffect:
-            typecode = each_effect.get_affect_type_code()
+            typecode = each_effect.get_effect_type_code()
             org_type_code += typecode
         # if len(nexteffect) == 0:
         #     raise Exception("no item in nexeffect")
         for each_effect in nexteffect:
-            typecode = each_effect.get_affect_type_code()
+            typecode = each_effect.get_effect_type_code()
             nex_type_code += typecode
         if timing is None:
             raise Exception("timing is none")

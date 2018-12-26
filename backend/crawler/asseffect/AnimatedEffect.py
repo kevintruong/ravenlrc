@@ -51,16 +51,16 @@ class OtherAffect(Enum):
     TEXT_BLUR_EDGES_GAUSSIAN = '\\blur'
 
 
-class AnimatedAffect:
-    class Affect(abc.ABC):
+class AnimatedEffect:
+    class Effect(abc.ABC):
 
         @abc.abstractmethod
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             pass
 
-    class FontSize(Affect):
+    class FontSize(Effect):
 
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + str(self.effect_value)
 
         def __init__(self, config: int) -> None:
@@ -68,9 +68,9 @@ class AnimatedAffect:
             self.effect_code = FontAffect.FONT_SIZE.value
             self.effect_value = config
 
-    class LetterSpace(Affect):
+    class LetterSpace(Effect):
 
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + self.effect_param
             pass
 
@@ -80,7 +80,7 @@ class AnimatedAffect:
             pass
 
     class PrimaryFillColor:
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -91,7 +91,7 @@ class AnimatedAffect:
             pass
 
     class SecondaryFillColor:
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -102,7 +102,7 @@ class AnimatedAffect:
             pass
 
     class BorderFillColor:
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -113,7 +113,7 @@ class AnimatedAffect:
             pass
 
     class ShadowFillColor:
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -123,8 +123,8 @@ class AnimatedAffect:
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
 
-    class PrimaryFillAlpha(Affect):
-        def get_affect_type_code(self):
+    class PrimaryFillAlpha(Effect):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -134,8 +134,8 @@ class AnimatedAffect:
             self.effect_param = "H{}".format(alpha)
             pass
 
-    class SecondaryFillAlpha(Affect):
-        def get_affect_type_code(self):
+    class SecondaryFillAlpha(Effect):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -145,8 +145,8 @@ class AnimatedAffect:
             self.effect_param = "H{}".format(alpha)
             pass
 
-    class BorderFillAlpha(Affect):
-        def get_affect_type_code(self):
+    class BorderFillAlpha(Effect):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -156,8 +156,8 @@ class AnimatedAffect:
             self.effect_param = "H{}".format(alpha)
             pass
 
-    class ShadowFillAlpha(Affect):
-        def get_affect_type_code(self):
+    class ShadowFillAlpha(Effect):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -167,8 +167,8 @@ class AnimatedAffect:
             self.effect_param = "H{}".format(alpha)
             pass
 
-    class Border(Affect):
-        def get_affect_type_code(self):
+    class Border(Effect):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -191,8 +191,8 @@ class AnimatedAffect:
         def set_border_code_style(self):
             self.effect_code = OtherAffect.TEXT_BORDER_WIDTH_Y
 
-    class ShadowDistance(Affect):
-        def get_affect_type_code(self):
+    class ShadowDistance(Effect):
+        def get_effect_type_code(self):
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
@@ -215,9 +215,9 @@ class AnimatedAffect:
         def set_border_code_style(self):
             self.effect_code = OtherAffect.TEXT_SHADOW_WIDTH_Y.value
 
-    class RectangleClip(Affect):
+    class RectangleClip(Effect):
 
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + self.parameter
             pass
 
@@ -231,18 +231,18 @@ class AnimatedAffect:
         def __init__(self, x1, y1, x2, y2):
             super().__init__(x1, y1, x2, y2)
 
-    class BlurEdges(Affect):
+    class BlurEdges(Effect):
 
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + self.paramter
 
         def __init__(self, strength):
             self.effect_code = OtherAffect.TEXT_BLUR_EDGES.value
             self.paramter = '{}'.format(strength)
 
-    class BlurEdgesGaussian(Affect):
+    class BlurEdgesGaussian(Effect):
 
-        def get_affect_type_code(self):
+        def get_effect_type_code(self):
             return self.effect_code + self.paramter
             pass
 
