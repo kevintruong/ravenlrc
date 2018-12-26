@@ -1,10 +1,9 @@
 from backend.render.ffmpegcli import *
 import unittest
-import os
 import shutil
 
 from backend.subeffect.asseditor import *
-from backend.subeffect.subcrawler import download_mp3_file, AudioQuanlity
+from backend.crawler.subcrawler import download_mp3_file, AudioQuanlity
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")

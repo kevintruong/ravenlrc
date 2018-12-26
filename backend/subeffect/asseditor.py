@@ -254,7 +254,7 @@ def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
     :param output:
     :return:
     """
-    from backend.subeffect.subcrawler import get_sub_from_url
+    from backend.crawler.subcrawler import get_sub_from_url
     lrc_content: str = get_sub_from_url(url)
     create_ass_subtitle(lrc_content, output, subinfo, resolution)
     return output

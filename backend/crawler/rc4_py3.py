@@ -100,7 +100,6 @@ def decrypt(key, ciphertext):
 
 
 def main():
-
     key = 'not-so-random-key'  # plaintext
     plaintext = 'Good work! Your implementation is correct'  # plaintext
     # encrypt the plaintext, using key and RC4 algorithm
@@ -110,8 +109,8 @@ def main():
     # ..
     # Let's check the implementation
     # ..
-    ciphertext = '2D7FEE79FFCE80B7DDB7BDA5A7F878CE298615'\
-        '476F86F3B890FD4746BE2D8F741395F884B4A35CE979'
+    ciphertext = '2D7FEE79FFCE80B7DDB7BDA5A7F878CE298615' \
+                 '476F86F3B890FD4746BE2D8F741395F884B4A35CE979'
     # change ciphertext to string again
     decrypted = decrypt(key, ciphertext)
     print('decrypted:', decrypted)
@@ -125,30 +124,29 @@ def main():
 
 
 def test():
-
     # Test case 1
     # key = '4B6579' # 'Key' in hex
     # key = 'Key'
     # plaintext = 'Plaintext'
     # ciphertext = 'BBF316E8D940AF0AD3'
-    assert(encrypt('Key', 'Plaintext')) == 'BBF316E8D940AF0AD3'
-    assert(decrypt('Key', 'BBF316E8D940AF0AD3')) == 'Plaintext'
+    assert (encrypt('Key', 'Plaintext')) == 'BBF316E8D940AF0AD3'
+    assert (decrypt('Key', 'BBF316E8D940AF0AD3')) == 'Plaintext'
 
     # Test case 2
     # key = 'Wiki' # '57696b69'in hex
     # plaintext = 'pedia'
     # ciphertext should be 1021BF0420
-    assert(encrypt('Wiki', 'pedia')) == '1021BF0420'
-    assert(decrypt('Wiki', '1021BF0420')) == 'pedia'
+    assert (encrypt('Wiki', 'pedia')) == '1021BF0420'
+    assert (decrypt('Wiki', '1021BF0420')) == 'pedia'
 
     # Test case 3
     # key = 'Secret' # '536563726574' in hex
     # plaintext = 'Attack at dawn'
     # ciphertext should be 45A01F645FC35B383552544B9BF5
-    assert(encrypt('Secret',
-                   'Attack at dawn')) == '45A01F645FC35B383552544B9BF5'
-    assert(decrypt('Secret',
-                   '45A01F645FC35B383552544B9BF5')) == 'Attack at dawn'
+    assert (encrypt('Secret',
+                    'Attack at dawn')) == '45A01F645FC35B383552544B9BF5'
+    assert (decrypt('Secret',
+                    '45A01F645FC35B383552544B9BF5')) == 'Attack at dawn'
 
 # if __name__ == '__main__':
 #     main()

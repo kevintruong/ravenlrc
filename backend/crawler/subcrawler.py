@@ -9,9 +9,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
 
 from backend.subeffect.asseditor import *
-from backend.subeffect.rc4_py3 import decrypt
+from backend.crawler.rc4_py3 import decrypt
 import logging
-import backend.yclogger
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)
@@ -208,10 +207,9 @@ def download_mp3_file(url: str, quanlity: AudioQuanlity, outputdir=ChromeDownloa
             logger.debug("check to close browser")
             browser.close()
         return fileDonwload
-    except:
+    except Exception as e:
         logger.debug("Web browser is closed")
         return fileDonwload
-    # browser.close()
 
 # if __name__ == '__main__':
 # download_mp3_file(

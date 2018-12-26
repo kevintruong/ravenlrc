@@ -192,10 +192,6 @@ class testAssDialogueTextProcessor(unittest.TestCase):
         self.process_ass_with_effect(configure_dict)
 
 
-
-    
-
-
 class testAssDialueTextAnimatedTransform(unittest.TestCase):
     def setUp(self):
         configure_dict = {

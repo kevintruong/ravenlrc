@@ -1,7 +1,7 @@
 import shutil
 
 import click
-from backend.subeffect.subcrawler import *
+from backend.crawler.subcrawler import *
 import logging
 from backend.utility.TempFileMnger import *
 
