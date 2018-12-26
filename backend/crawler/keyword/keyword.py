@@ -1,6 +1,6 @@
 from flashtext import *
 from enum import IntEnum
-from backend.crawler.asseffect.animated_transform import *
+from backend.crawler.asseffect.AnimatedTransform import *
 
 
 class SubtitleAlignment(IntEnum):
@@ -124,18 +124,21 @@ class AssDialogueTextKeyWordFormatter:
 
 
 class AssDialogueTextProcessor:
-    def __init__(self, keyword: list, formater: dict, animatedconf: dict) -> None:
+    def __init__(self, keyword: list, formatter: dict, animatedconf: dict) -> None:
         self.kwprocessor = KeywordProcessor()
         self.keyword = keyword
-        self.keywordformatter = AssDialogueTextKeyWordFormatter(formater)
+        self.keywordformatter = AssDialogueTextKeyWordFormatter(formatter)
         self.keywordanimatedtransform = AssDialueTextAnimatedTransform(animatedconf)
+        self.__config_keywords()
+        super().__init__()
+
+    def __config_keywords(self):
         keyword_formatter = self.keywordformatter.font_formatter()
         animated_formatter = self.keywordanimatedtransform.create_full_transform()
         reset = DialogueTextStyleCode.create_reset_style_code()
         for each_keyword in self.keyword:
             replace_keyword = keyword_formatter + animated_formatter + each_keyword + reset
             self.kwprocessor.add_keyword(each_keyword, replace_keyword)
-        super().__init__()
 
     def keyword_process(self, content):
         return self.kwprocessor.replace_keywords(content)

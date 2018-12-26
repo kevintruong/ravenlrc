@@ -37,7 +37,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_create_media_file_from_img(self):
         media_output = os.path.join(sample_data_dir, "media_out.mp4")
-        timelength = int(self.ffmpeg.get_media_time_length(audio00) / 3)
+        timelength = int(self.ffmpeg.get_media_time_length(audio00) / 6)
 
         self.ffmpeg.create_media_file_from_img(bg_img00, timelength, media_output)
         length_output = self.ffmpeg.get_media_time_length(media_output)
