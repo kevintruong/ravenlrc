@@ -1,4 +1,4 @@
-from backend.ffmpeg.ffmpegcli import *
+from backend.render.ffmpegcli import *
 import unittest
 import os
 import shutil

@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 import subprocess
 from urllib.parse import urlparse
 
-from backend.TempFileMnger import *
-from backend.ffmpeg.ffmpegcli import FFmpegProfile
+from backend.utility.TempFileMnger import *
+from backend.render.ffmpegcli import FFmpegProfile
 from backend.subeffect import pylrc
 from backend.subeffect.pysubs2 import *
 from backend.subeffect.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
@@ -131,12 +131,12 @@ class AssCustomizor(object):
 
     @classmethod
     def convert_to_ass(cls, srtfile: str, assfile: str):
-        cmd = ["ffmpeg", "-hide_banner", "-loglevel", "panic", "-i", "{}".format(srtfile), "{}".format(assfile), "-y"]
+        cmd = ["render", "-hide_banner", "-loglevel", "panic", "-i", "{}".format(srtfile), "{}".format(assfile), "-y"]
         p = subprocess.Popen(cmd)
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
-            raise Exception('ffmpeg', out, err)
+            raise Exception('render', out, err)
         return assfile
 
 

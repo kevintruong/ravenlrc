@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 import platform
 import logging
-import backend.YTLogger
+import backend.yclogger
 
 logger = logging.getLogger('backend')
 
@@ -41,7 +41,7 @@ class FFmpegProfile(Enum):
 
 class FfmpegCli(object):
     '''
-    cli ffmpeg for process video and audio
+    cli render for process video and audio
     '''
 
     def __add_system_prefix(self):
@@ -57,10 +57,10 @@ class FfmpegCli(object):
 
     def reset_ffmpeg_cmd(self):
         self.ffmpeg_cli.clear()
-        # self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-loglevel', 'panic', '-y']
+        # self.ffmpeg_cli = ['render', '-hide_banner', '-loglevel', 'panic', '-y']
 
         self.ffmpeg_cli = ['ffmpeg', '-y']
-        # self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
+        # self.ffmpeg_cli = ['render', '-hide_banner', '-y']
         self.__add_system_prefix()
 
     def set_resolution(self, resolution: FFmpegProfile):
@@ -95,7 +95,7 @@ class FfmpegCli(object):
 
     def _ffmpeg_input(self, input: str):
         """
-        add input to ffmpeg command line
+        add input to render command line
         :param input:
         :return:
         """
@@ -105,7 +105,7 @@ class FfmpegCli(object):
 
     def _ffmpeg_input_filter_complex_prefix(self):
         """
-        add filter_complex to ffmpeg
+        add filter_complex to render
         :return:
         """
         self.ffmpeg_cli.append("-filter_complex")
@@ -118,7 +118,7 @@ class FfmpegCli(object):
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
-            raise Exception('ffmpeg', out, err)
+            raise Exception('render', out, err)
         return out, err
 
     def run(self, cmd: list, output: str):
@@ -130,7 +130,7 @@ class FfmpegCli(object):
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
-            raise Exception('ffmpeg', out, err)
+            raise Exception('render', out, err)
         return out, err
 
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
@@ -152,7 +152,7 @@ class FfmpegCli(object):
         self.reset_ffmpeg_cmd()
         if retcode:
             self.reset_ffmpeg_cmd()
-            raise Exception('ffmpeg', out, err)
+            raise Exception('render', out, err)
         return out, err
 
     @classmethod
@@ -175,7 +175,7 @@ class FfmpegCli(object):
 
     def create_media_file_from_img(self, input_img: str, time_length: int, output_video: str):
         '''
-        ffmpeg -loop 1 -i $input_img -c:v libx264 -t $length -pix_fmt yuvj422p -vf scale=$fullhd $output_mp4
+        render -loop 1 -i $input_img -c:v libx264 -t $length -pix_fmt yuvj422p -vf scale=$fullhd $output_mp4
         :param output_video:
         :param input_img:
         :param time_length:
@@ -192,7 +192,7 @@ class FfmpegCli(object):
     def create_background_affect_with_length(self, input_bg, time_length: int, output_bg):
         '''
         the function will create an output backgound effect from input backround image
-        ffmpeg -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
+        render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
         :param time_length:
         :param input_bg:
         :param output_bg:
@@ -209,7 +209,7 @@ class FfmpegCli(object):
         # self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
-        # ffmpeg_cmd = ["ffmpeg", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
+        # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
         #               "{}".format(time_length)]
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)l l l l
@@ -217,7 +217,7 @@ class FfmpegCli(object):
     def scale_input(self, input_bg, resolution: str, output_bg):
         '''
         the function will create an output backgound effect from input backround image
-        ffmpeg -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
+        render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
         :param time_length:
         :param input_bg:
         :param output_bg:
@@ -230,7 +230,7 @@ class FfmpegCli(object):
         self._ffmpeg_input_fill_cmd(cmd)
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
-        # ffmpeg_cmd = ["ffmpeg", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
+        # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
         #               "{}".format(time_length)]
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)
@@ -239,10 +239,10 @@ class FfmpegCli(object):
         '''
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
-        ffmpeg_cmd=$(echo ffmpeg -y -i ${input_vid} -vf subtitles='"'${ffmpeg_sub_cmd}"'"${ffmpeg_font_att}"'"'"':original_size=${FULLHD} ${output_mp4})
+        ffmpeg_cmd=$(echo render -y -i ${input_vid} -vf subtitles='"'${ffmpeg_sub_cmd}"'"${ffmpeg_font_att}"'"'"':original_size=${FULLHD} ${output_mp4})
         echo ${ffmpeg_cmd} | bash
 
-        ffmpeg -y -i input.mp4 -vf subtitles="f=/mnt/775AD44933621551/Project/MMO/youtube/test.ass:force_style='FontName=UTM Bustamalaka,FontSi
+        render -y -i input.mp4 -vf subtitles="f=/mnt/775AD44933621551/Project/MMO/youtube/test.ass:force_style='FontName=UTM Bustamalaka,FontSi
         ze=10,OutlineColour=&H66000000,BorderStyle=3'":original_size=1920x1080 002.mp4
         :param input_sub:
         :param input_video:
@@ -268,7 +268,7 @@ class FfmpegCli(object):
         input_bgvid=$1
         input_blendvid=$2
         output_mp4=$3
-        ffmpeg -i ${input_bgvid} -i ${input_blendvid} -filter_complex \
+        render -i ${input_bgvid} -i ${input_blendvid} -filter_complex \
                                      "[1:0]setdar=dar=0,format=rgba[a]; \
                                       [0:0]setdar=dar=0,format=rgba[b]; \
                                       [b][a]blend=all_mode='overlay':all_opacity=0.5" \
@@ -289,13 +289,13 @@ class FfmpegCli(object):
                        [0:0]setdar=dar=0,format=rgba[b]; \
                        [b][a]blend=all_mode='overlay':all_opacity={}".format(opacity)
         self._ffmpeg_input_fill_cmd(filter_args)
-        # ffmpeg_cmd = ["ffmpeg", "-y", "-i", "{}".format(video), "-i", "{}".format(bg_video), "-filter_complex",
+        # ffmpeg_cmd = ["render", "-y", "-i", "{}".format(video), "-i", "{}".format(bg_video), "-filter_complex",
         #               "{}".format(filter_args)]
         self.ffmpeg_cli_run(self.ffmpeg_cli, output)
 
     def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str):
         '''
-        ffmpeg -i ${input_vid} -i $input_aud -map 0:v -map 1:a -c copy -shortest ${output_mv}
+        render -i ${input_vid} -i $input_aud -map 0:v -map 1:a -c copy -shortest ${output_mv}
         :param input_vid:
         :param input_audio:
         :param output_vid:
@@ -303,7 +303,7 @@ class FfmpegCli(object):
         '''
         FfmpegCli.check_file_exist(input_vid)
         FfmpegCli.check_file_exist(input_audio)
-        ffmpeg_cmd = ["ffmpeg", "-y",
+        ffmpeg_cmd = ["render", "-y",
                       "-i", "{}".format(input_vid),
                       "-i", "{}".format(input_audio),
                       "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest"]
@@ -314,7 +314,7 @@ class FfmpegCli(object):
     def add_logo_to_bg_img(self, input_bg: str, input_logo: str, output: str,
                            coordinate=Coordinate(512, 512), transparent=0.9):
         """
-        ffmpeg -i small.mp4 -i avatar.png -filter_complex
+        render -i small.mp4 -i avatar.png -filter_complex
                     "[1:v]format=argb,colorchannelmixer=aa=0.5[zork];
                     [0:v][zork]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2"
                     -codec:a copy output.mp4
@@ -342,7 +342,7 @@ class FfmpegCli(object):
     def add_affect_overlay_in_sub(self, input_src: str, affect: str, subframe: Coordinate,
                                   outdir=os.path.dirname(__file__)):
         """
-        ffmpeg -ss 00:01:00.680 -i "INPUT.mp4" -i overlay.apng -ss 00:00:10.000 -t 00:11:39.759
+        render -ss 00:01:00.680 -i "INPUT.mp4" -i overlay.apng -ss 00:00:10.000 -t 00:11:39.759
        -filter_complex "[0]crop=in_w-8:in_h-8[a];[a][1]overlay,scale=1280:-1"
        -c:a copy -c:v libx264 -preset slow -crf 25 "OUTPUT.mp4"
         crop the affect to subframe
@@ -406,8 +406,8 @@ class FfmpegCli(object):
 #     "temp/xin_loi.mp4",
 #     "xin_loi_final.mp4")
 # try:
-#     probe = ffmpeg.probe(args.in_filename)
-# except ffmpeg.Error as e:
+#     probe = render.probe(args.in_filename)
+# except render.Error as e:
 #     logger.debug(e.stderr, file=sys.stderr)
 #     sys.exit(1)
 

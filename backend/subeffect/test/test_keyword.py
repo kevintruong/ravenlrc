@@ -2,7 +2,7 @@ import unittest
 
 from backend.subeffect.asseditor import SubtitleInfo
 from backend.subeffect.keyword.keyword import *
-from backend.ffmpeg.ffmpegcli import FfmpegCli
+from backend.render.ffmpegcli import FfmpegCli
 
 from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
 

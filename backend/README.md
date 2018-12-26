@@ -132,7 +132,7 @@ The background color is in a HEX format. The alpha channel is represented by the
 
 Customizing the font, color, size, background color, etc. of the subtitles can be hard. The options for customizations are actually option names from the ASS subtitles spec ("Advanced SubStation Alpha"). This is what FFmpeg uses internally (via `libass`). These can be applied both with the `ass` and `subtitles` filters. When using the `subtitles` video filter, FFmpeg converts the subtitles internally to ASS.
 
-To see the available subtitle styling options, download this [Word doc file](http://moodub.free.fr/video/ass-specs.doc) (yes, indeed). I've also included [a PDF version of the Advanced SubStation Alpha (ASS) standard here](Docs/ass-specs.pdf). Use this to learn the meaning of the the different fields and their values present in the `force_style` setting from the example above.
+To see the available subtitle styling options, download this [Word doc file](http://moodub.free.fr/video/ass-specs.doc) (yes, indeed). I've also included [a PDF version of the Advanced SubStation Alpha (ASS) standard here](../Docs/ass-specs.pdf). Use this to learn the meaning of the the different fields and their values present in the `force_style` setting from the example above.
 
 The example below prepares a video for burning on a video DVD. The subtitles have a semi-opaque rectangular back background. The `original_size` differs from the resize option because the input is assumed to be 16:9, even though it's stored in a physical resolution of 720x576 (if this confuses you, you're not alone; Google for "SAR" and "DAR").
 

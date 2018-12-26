@@ -29,7 +29,6 @@ RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnecte
                         http.client.IncompleteRead, http.client.ImproperConnectionState,
                         http.client.CannotSendRequest, httplib.CannotSendHeader,
                         httplib.ResponseNotReady, httplib.BadStatusLine)
-
 MAX_RETRIES = 10
 
 

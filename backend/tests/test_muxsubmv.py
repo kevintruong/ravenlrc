@@ -3,7 +3,7 @@ import shutil
 import unittest
 
 from backend.subeffect.asseditor import SubtitleInfo, create_ass_sub
-from backend.ffmpeg.ffmpegcli import FfmpegCli
+from backend.render.ffmpegcli import FfmpegCli
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")

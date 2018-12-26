@@ -11,7 +11,7 @@ from selenium.webdriver.firefox.options import Options
 from backend.subeffect.asseditor import *
 from backend.subeffect.rc4_py3 import decrypt
 import logging
-import backend.YTLogger
+import backend.yclogger
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)

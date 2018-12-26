@@ -1,14 +1,9 @@
-import ast
-import inspect
 import shutil
-import tempfile
 
 import click
-from backend.ffmpeg.ffmpegcli import FfmpegCli, Coordinate
 from backend.subeffect.subcrawler import *
-import backend.YTLogger
 import logging
-from backend.TempFileMnger import *
+from backend.utility.TempFileMnger import *
 
 logger = logging.getLogger('backend')
 
@@ -78,8 +73,8 @@ def cli():
 # @cli.command('medialength')
 # @click.argument('mediafile', required=True)
 # def get_media_length(mediafile):
-#     ffmpeg = FfmpegCli()
-#     timelength = ffmpeg.get_media_time_length(mediafile)
+#     render = FfmpegCli()
+#     timelength = render.get_media_time_length(mediafile)
 #     set_return_value(timelength)
 #
 #
@@ -88,8 +83,8 @@ def cli():
 # @click.argument('mvfile')
 # @click.argument('output')
 # def adding_sub_to_mv(subfile, mvfile, output):
-#     ffmpeg = FfmpegCli()
-#     ffmpeg.adding_sub_to_video(subfile, mvfile, output)
+#     render = FfmpegCli()
+#     render.adding_sub_to_video(subfile, mvfile, output)
 #     set_return_value(output)
 #
 #
@@ -138,14 +133,14 @@ def cli():
 #     affectfull = MvTempFile().getfullpath()
 #
 #     sub_rect = ast.literal_eval(titlecoordinate)
-#     ffmpeg = FfmpegCli()
-#     timelength = ffmpeg.get_media_time_length(audiofile)
-#     ffmpeg.add_logo_to_bg_img(bgimgfile, titleimg, addedtitleimg, Coordinate(sub_rect[0], sub_rect[1]))
-#     ffmpeg.create_media_file_from_img(addedtitleimg, timelength, bg_vid)
-#     ffmpeg.create_background_affect_with_length(affectfile, timelength, affectfull)
-#     ffmpeg.add_affect_to_video(bg_vid, affectfull, affectmv, int(affconfig, 10))
-#     ffmpeg.adding_sub_to_video(subfile, affectmv, vidsubmv)
-#     ffmpeg.mux_audio_to_video(vidsubmv, audiofile, outputmv)
+#     render = FfmpegCli()
+#     timelength = render.get_media_time_length(audiofile)
+#     render.add_logo_to_bg_img(bgimgfile, titleimg, addedtitleimg, Coordinate(sub_rect[0], sub_rect[1]))
+#     render.create_media_file_from_img(addedtitleimg, timelength, bg_vid)
+#     render.create_background_affect_with_length(affectfile, timelength, affectfull)
+#     render.add_affect_to_video(bg_vid, affectfull, affectmv, int(affconfig, 10))
+#     render.adding_sub_to_video(subfile, affectmv, vidsubmv)
+#     render.mux_audio_to_video(vidsubmv, audiofile, outputmv)
 #
 #     pass
 

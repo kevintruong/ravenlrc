@@ -1,8 +1,7 @@
-import os
 import shutil
 import unittest
 import requests
-from backend.TempFileMnger import *
+from backend.utility.TempFileMnger import *
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")
