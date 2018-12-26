@@ -1,6 +1,6 @@
 from enum import *
 
-from backend.crawler.asseffect.AnimatedEffect import AnimatedEffect
+from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
 
 
 class Timing:

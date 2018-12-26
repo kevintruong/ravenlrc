@@ -1,10 +1,10 @@
 import unittest
 
-from backend.crawler.asseditor import SubtitleInfo
-from backend.crawler.keyword.keyword import *
+from backend.subeffect.asseditor import SubtitleInfo
+from backend.subeffect.keyword.keyword import *
 from backend.ffmpeg.ffmpegcli import FfmpegCli
 
-from backend.crawler.asseffect.AnimatedEffect import AnimatedEffect
+from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
 
 
 class TestKeyword(unittest.TestCase):
@@ -98,7 +98,7 @@ class testAssDialogueTextProcessor(unittest.TestCase):
     def run_ffmpeg_mux_sub(self):
         self.ffmpeg = FfmpegCli()
         media_output = "audio_output.mp4"
-        ass_out = r'D:\Project\ytcreatorservice\backend\crawler\test\newtest.ass'
+        ass_out = r'D:\Project\ytcreatorservice\backend\subeffect\test\newtest.ass'
         output = "sub_output.mp4"
 
         subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],

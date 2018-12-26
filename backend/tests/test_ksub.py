@@ -1,8 +1,8 @@
 import shutil
 import unittest
 
-from backend.crawler.asseditor import *
-from backend.crawler.subcrawler import *
+from backend.subeffect.asseditor import *
+from backend.subeffect.subcrawler import *
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")

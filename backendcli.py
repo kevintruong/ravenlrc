@@ -5,7 +5,7 @@ import tempfile
 
 import click
 from backend.ffmpeg.ffmpegcli import FfmpegCli, Coordinate
-from backend.crawler.subcrawler import *
+from backend.subeffect.subcrawler import *
 import backend.YTLogger
 import logging
 from backend.TempFileMnger import *

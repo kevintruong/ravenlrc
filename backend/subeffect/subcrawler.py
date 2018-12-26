@@ -8,8 +8,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
 
-from backend.crawler.asseditor import *
-from backend.crawler.rc4_py3 import decrypt
+from backend.subeffect.asseditor import *
+from backend.subeffect.rc4_py3 import decrypt
 import logging
 import backend.YTLogger
 

@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from backend.crawler.asseditor import SubtitleInfo, create_ass_sub
+from backend.subeffect.asseditor import SubtitleInfo, create_ass_sub
 from backend.ffmpeg.ffmpegcli import FfmpegCli
 
 curDir = os.path.dirname(__file__)

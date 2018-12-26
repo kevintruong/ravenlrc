@@ -5,9 +5,9 @@ from urllib.parse import urlparse
 
 from backend.TempFileMnger import *
 from backend.ffmpeg.ffmpegcli import FFmpegProfile
-from backend.crawler import pylrc
-from backend.crawler.pysubs2 import *
-from backend.crawler.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
+from backend.subeffect import pylrc
+from backend.subeffect.pysubs2 import *
+from backend.subeffect.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
 
 temp_dowload_dir = os.path.join(os.path.dirname(__file__), 'Download')
 if not os.path.isdir(temp_dowload_dir):
@@ -254,7 +254,7 @@ def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
     :param output:
     :return:
     """
-    from backend.crawler.subcrawler import get_sub_from_url
+    from backend.subeffect.subcrawler import get_sub_from_url
     lrc_content: str = get_sub_from_url(url)
     create_ass_subtitle(lrc_content, output, subinfo, resolution)
     return output
