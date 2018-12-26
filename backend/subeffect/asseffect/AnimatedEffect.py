@@ -34,6 +34,7 @@ class GeometryAffect(Enum):
     TEXT_ROTATION_X = '\\frx'
     TEXT_ROTATION_Y = '\\fry'
     TEXT_ROTATION_Z = '\\frz'  # \fry-45 Rotate the text 45 degrees in opposite direction on the Y axis.
+    TEXT_ROTATION = '\\fr'
     TEXT_SHEARING_X = '\\fax'
     TEXT_SHEARING_Y = '\\fay'
 
@@ -57,6 +58,74 @@ class AnimatedEffect:
         @abc.abstractmethod
         def get_effect_type_code(self):
             pass
+
+    class FontScaleX(Effect):
+
+        def get_effect_type_code(self):
+            return self.effect_code + self.effect_value
+            pass
+
+        def set_effect_code(self):
+            self.effect_code = GeometryAffect.FONT_SCALE_X.value
+
+        def __init__(self, scale: int):
+            self.effect_code = ""
+            self.set_effect_code()
+            self.effect_value = '{}'.format(scale)
+
+    class FontScaleY(FontScaleX):
+
+        def set_effect_code(self):
+            self.effect_code = GeometryAffect.FONT_SCALE_Y.value
+
+    class TextRotationd(Effect):
+        def get_effect_type_code(self):
+            return self.effect_type_code + self.effect_value
+            pass
+
+        def set_effect_type_code(self):
+            self.effect_type_code = GeometryAffect.TEXT_ROTATION.value
+            pass
+
+        def __init__(self, value: int) -> None:
+            self.effect_type_code = ""
+            self.set_effect_type_code()
+            self.effect_value = '{}'.format(value)
+            pass
+
+    class TextShearingX(Effect):
+        def get_effect_type_code(self):
+            return self.effect_type_code + self.effect_value
+            pass
+
+        def set_effect_type_code(self):
+            self.effect_type_code = GeometryAffect.TEXT_SHEARING_X.value
+            pass
+
+        def __init__(self, value: int) -> None:
+            self.effect_type_code = ""
+            self.set_effect_type_code()
+            self.effect_value = '{}'.format(value)
+            pass
+
+    class TextShearingY(TextShearingX):
+        def set_effect_type_code(self):
+            self.effect_type_code = GeometryAffect.TEXT_SHEARING_Y.value
+
+    class TextRotationX(TextRotationd):
+
+        def set_effect_type_code(self):
+            self.effect_type_code = GeometryAffect.TEXT_ROTATION_X.value
+
+    class TextRotationY(TextRotationd):
+
+        def set_effect_type_code(self):
+            self.effect_type_code = GeometryAffect.TEXT_ROTATION_Y.value
+
+    class TextRotationZ(TextRotationd):
+
+        def set_effect_type_code(self):
+            self.effect_type_code = GeometryAffect.TEXT_ROTATION_Z.value
 
     class FontSize(Effect):
 
