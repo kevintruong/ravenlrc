@@ -12,7 +12,6 @@ class Timing:
 
 class AnimatedTransform:
 
-
     def __init__(self) -> None:
         super().__init__()
         self.animationtransform_typecode = '\\t'
@@ -73,7 +72,7 @@ class AnimatedTransform:
         # still doing the 10 rotations in 5 seconds.
         pass
 
-    def transform_from_effect_to_effect(self, orgeffect: [],
+    def transform_from_effect_to_effect(self, orgeffect: [AnimatedEffect.Effect],
                                         nexteffect: [AnimatedEffect.Effect],
                                         timing: Timing,
                                         accel=1):
@@ -88,14 +87,16 @@ class AnimatedTransform:
         nex_type_code = ""
         # if len(orgeffect) == 0:
         #     raise Exception("no item in orgeffect")
-        for each_effect in orgeffect:
-            typecode = each_effect.get_effect_type_code()
-            org_type_code += typecode
+        if orgeffect is not None:
+            for each_effect in orgeffect:
+                typecode = each_effect.get_effect_type_code()
+                org_type_code += typecode
         # if len(nexteffect) == 0:
         #     raise Exception("no item in nexeffect")
-        for each_effect in nexteffect:
-            typecode = each_effect.get_effect_type_code()
-            nex_type_code += typecode
+        if nexteffect is not None:
+            for each_effect in nexteffect:
+                typecode = each_effect.get_effect_type_code()
+                nex_type_code += typecode
         if timing is None:
             raise Exception("timing is none")
         timing = '{},{}'.format(timing.t0, timing.t1)

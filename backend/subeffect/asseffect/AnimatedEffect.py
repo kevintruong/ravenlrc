@@ -15,7 +15,7 @@ class RGB:
         self.b = rgb[2]
 
 
-class FontAffect(Enum):
+class FontEffect(Enum):
     FONT_SIZE = '\\fs'
     LETTER_SPACE = '\\fsp'
     PRIMARY_FILL_COLOR = '\\c'
@@ -28,7 +28,7 @@ class FontAffect(Enum):
     SHADOWN_ALPHA = '\\4a'
 
 
-class GeometryAffect(Enum):
+class GeometryEffect(Enum):
     FONT_SCALE_X = '\\fscx'
     FONT_SCALE_Y = '\\fscy'
     TEXT_ROTATION_X = '\\frx'
@@ -39,7 +39,7 @@ class GeometryAffect(Enum):
     TEXT_SHEARING_Y = '\\fay'
 
 
-class OtherAffect(Enum):
+class OtherEffect(Enum):
     TEXT_BORDER_WIDTH = '\\bord'
     TEXT_BORDER_WIDTH_X = '\\xbord'
     TEXT_BORDER_WIDTH_Y = '\\ybord'
@@ -66,7 +66,7 @@ class AnimatedEffect:
             pass
 
         def set_effect_code(self):
-            self.effect_code = GeometryAffect.FONT_SCALE_X.value
+            self.effect_code = GeometryEffect.FONT_SCALE_X.value
 
         def __init__(self, scale: int):
             self.effect_code = ""
@@ -76,7 +76,7 @@ class AnimatedEffect:
     class FontScaleY(FontScaleX):
 
         def set_effect_code(self):
-            self.effect_code = GeometryAffect.FONT_SCALE_Y.value
+            self.effect_code = GeometryEffect.FONT_SCALE_Y.value
 
     class TextRotationd(Effect):
         def get_effect_type_code(self):
@@ -84,7 +84,7 @@ class AnimatedEffect:
             pass
 
         def set_effect_type_code(self):
-            self.effect_type_code = GeometryAffect.TEXT_ROTATION.value
+            self.effect_type_code = GeometryEffect.TEXT_ROTATION.value
             pass
 
         def __init__(self, value: int) -> None:
@@ -99,10 +99,10 @@ class AnimatedEffect:
             pass
 
         def set_effect_type_code(self):
-            self.effect_type_code = GeometryAffect.TEXT_SHEARING_X.value
+            self.effect_type_code = GeometryEffect.TEXT_SHEARING_X.value
             pass
 
-        def __init__(self, value: int) -> None:
+        def __init__(self, value: float) -> None:
             self.effect_type_code = ""
             self.set_effect_type_code()
             self.effect_value = '{}'.format(value)
@@ -110,22 +110,22 @@ class AnimatedEffect:
 
     class TextShearingY(TextShearingX):
         def set_effect_type_code(self):
-            self.effect_type_code = GeometryAffect.TEXT_SHEARING_Y.value
+            self.effect_type_code = GeometryEffect.TEXT_SHEARING_Y.value
 
     class TextRotationX(TextRotationd):
 
         def set_effect_type_code(self):
-            self.effect_type_code = GeometryAffect.TEXT_ROTATION_X.value
+            self.effect_type_code = GeometryEffect.TEXT_ROTATION_X.value
 
     class TextRotationY(TextRotationd):
 
         def set_effect_type_code(self):
-            self.effect_type_code = GeometryAffect.TEXT_ROTATION_Y.value
+            self.effect_type_code = GeometryEffect.TEXT_ROTATION_Y.value
 
     class TextRotationZ(TextRotationd):
 
         def set_effect_type_code(self):
-            self.effect_type_code = GeometryAffect.TEXT_ROTATION_Z.value
+            self.effect_type_code = GeometryEffect.TEXT_ROTATION_Z.value
 
     class FontSize(Effect):
 
@@ -134,7 +134,7 @@ class AnimatedEffect:
 
         def __init__(self, config: int) -> None:
             super().__init__()
-            self.effect_code = FontAffect.FONT_SIZE.value
+            self.effect_code = FontEffect.FONT_SIZE.value
             self.effect_value = config
 
     class LetterSpace(Effect):
@@ -144,7 +144,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, space_param):
-            self.effect_code = FontAffect.LETTER_SPACE.value
+            self.effect_code = FontEffect.LETTER_SPACE.value
             self.effect_param = str(space_param)
             pass
 
@@ -154,7 +154,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, colorvalue: int):
-            self.effect_code = FontAffect.PRIMARY_FILL_COLOR.value
+            self.effect_code = FontEffect.PRIMARY_FILL_COLOR.value
             rgb = RGB(colorvalue)
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
@@ -165,7 +165,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, colorvalue: int):
-            self.effect_code = FontAffect.SECONDARY_FILL_COLOR.value
+            self.effect_code = FontEffect.SECONDARY_FILL_COLOR.value
             rgb = RGB(colorvalue)
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
@@ -176,7 +176,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, colorvalue: int):
-            self.effect_code = FontAffect.BORDER_FILL_COLOR.value
+            self.effect_code = FontEffect.BORDER_FILL_COLOR.value
             rgb = RGB(colorvalue)
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
@@ -187,7 +187,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, colorvalue: int):
-            self.effect_code = FontAffect.SHADOW_COLOR.value
+            self.effect_code = FontEffect.SHADOW_COLOR.value
             rgb = RGB(colorvalue)
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
@@ -198,7 +198,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, alphavalue: int):
-            self.effect_code = FontAffect.PRIMARY_FILL_ALPHA.value
+            self.effect_code = FontEffect.PRIMARY_FILL_ALPHA.value
             alpha = hex(alphavalue)[2:4]
             self.effect_param = "H{}".format(alpha)
             pass
@@ -209,7 +209,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, alphavalue: int):
-            self.effect_code = FontAffect.SECONDARY_FILL_ALPHA.value
+            self.effect_code = FontEffect.SECONDARY_FILL_ALPHA.value
             alpha = hex(alphavalue)[2:4]
             self.effect_param = "H{}".format(alpha)
             pass
@@ -220,7 +220,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, alphavalue: int):
-            self.effect_code = FontAffect.BORDER_FILL_ALPHA.value
+            self.effect_code = FontEffect.BORDER_FILL_ALPHA.value
             alpha = hex(alphavalue)[2:4]
             self.effect_param = "H{}".format(alpha)
             pass
@@ -231,7 +231,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, alphavalue: int):
-            self.effect_code = FontAffect.SHADOWN_ALPHA.value
+            self.effect_code = FontEffect.SHADOWN_ALPHA.value
             alpha = hex(alphavalue)[2:4]
             self.effect_param = "H{}".format(alpha)
             pass
@@ -242,7 +242,7 @@ class AnimatedEffect:
             pass
 
         def set_border_code_style(self):
-            self.effect_code = OtherAffect.TEXT_BORDER_WIDTH.value
+            self.effect_code = OtherEffect.TEXT_BORDER_WIDTH.value
 
         def __init__(self, borderval: int):
             self.effect_code = ""
@@ -253,12 +253,12 @@ class AnimatedEffect:
     class BorderX(Border):
 
         def set_border_code_style(self):
-            self.effect_code = OtherAffect.TEXT_BORDER_WIDTH_X.value
+            self.effect_code = OtherEffect.TEXT_BORDER_WIDTH_X.value
 
     class BorderY(Border):
 
         def set_border_code_style(self):
-            self.effect_code = OtherAffect.TEXT_BORDER_WIDTH_Y
+            self.effect_code = OtherEffect.TEXT_BORDER_WIDTH_Y
 
     class ShadowDistance(Effect):
         def get_effect_type_code(self):
@@ -266,7 +266,7 @@ class AnimatedEffect:
             pass
 
         def set_border_code_style(self):
-            self.effect_code = OtherAffect.TEXT_SHADOW_WIDTH.value
+            self.effect_code = OtherEffect.TEXT_SHADOW_WIDTH.value
 
         def __init__(self, shadvalue: int):
             self.effect_code = ""
@@ -277,12 +277,12 @@ class AnimatedEffect:
     class ShadowDistanceX(ShadowDistance):
 
         def set_border_code_style(self):
-            self.effect_code = OtherAffect.TEXT_SHADOW_WIDTH_X.value
+            self.effect_code = OtherEffect.TEXT_SHADOW_WIDTH_X.value
 
     class ShadowDistanceY(ShadowDistance):
 
         def set_border_code_style(self):
-            self.effect_code = OtherAffect.TEXT_SHADOW_WIDTH_Y.value
+            self.effect_code = OtherEffect.TEXT_SHADOW_WIDTH_Y.value
 
     class RectangleClip(Effect):
 
@@ -291,7 +291,7 @@ class AnimatedEffect:
             pass
 
         def __init__(self, x1, y1, x2, y2):
-            self.effect_code = OtherAffect.TEXT_CLIP.value
+            self.effect_code = OtherEffect.TEXT_CLIP.value
             self.parameter = "({},{},{},{})".format(x1, y1, x2, y2)
             pass
 
@@ -306,7 +306,7 @@ class AnimatedEffect:
             return self.effect_code + self.paramter
 
         def __init__(self, strength):
-            self.effect_code = OtherAffect.TEXT_BLUR_EDGES.value
+            self.effect_code = OtherEffect.TEXT_BLUR_EDGES.value
             self.paramter = '{}'.format(strength)
 
     class BlurEdgesGaussian(Effect):
@@ -316,5 +316,5 @@ class AnimatedEffect:
             pass
 
         def __init__(self, strength):
-            self.effect_code = OtherAffect.TEXT_BLUR_EDGES_GAUSSIAN.value
+            self.effect_code = OtherEffect.TEXT_BLUR_EDGES_GAUSSIAN.value
             self.paramter = '{}'.format(strength)

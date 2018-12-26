@@ -98,7 +98,7 @@ class testAssDialogueTextProcessor(unittest.TestCase):
     def run_ffmpeg_mux_sub(self):
         self.ffmpeg = FfmpegCli()
         media_output = "audio_output.mp4"
-        ass_out = r'D:\Project\ytcreatorservice\backend\subeffect\test\newtest.ass'
+        ass_out = 'newtest.ass'
         output = "sub_output.mp4"
 
         subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],
@@ -136,24 +136,64 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_border_increase(self):
         configure_dict = {
-            'effect_start': [AnimatedEffect.ShadowDistanceX(50),
-                             AnimatedEffect.ShadowDistanceY(50)],
-            'effect_transform': [AnimatedEffect.ShadowDistanceX(0),
-                                 AnimatedEffect.ShadowDistanceY(0)],
+            'effect_start': [AnimatedEffect.Border(50)],
+            'effect_transform': [AnimatedEffect.Border(0)],
             'timing': [0, 5000],
-            'accel': 0.8
+            'accel': 1
         }
         self.process_ass_with_effect(configure_dict)
 
-    def test_processkeyword_effect_text_rotate(self):
-        # TODO
+    def test_processkeyword_effect_text_rotate_X(self):
         # \t{0,5000,\frz3600}Whell
-        configure_dict = {
-            'effect_transform': [],
-            'timing': [0, 5000],
-            'accel': 0.8
-        }
+        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                           AnimatedEffect.FontSize(20)],
+                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                               AnimatedEffect.FontSize(40),
+                                               AnimatedEffect.TextRotationX(360 * 3)],
+                          'timing': [0, 6000],
+                          'accel': 0.8
+                          }
         self.process_ass_with_effect(configure_dict)
+
+    def test_processkeyword_effect_text_rotate_Y(self):
+        # \t{0,5000,\frz3600}Whell
+        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                           AnimatedEffect.FontSize(20)],
+                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                               AnimatedEffect.FontSize(40),
+                                               AnimatedEffect.TextRotationY(360 * 3)],
+                          'timing': [0, 6000],
+                          'accel': 0.8
+                          }
+        self.process_ass_with_effect(configure_dict)
+
+    def test_processkeyword_effect_text_rotate_Z(self):
+        # \t{0,5000,\frz3600}Whell
+        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                           AnimatedEffect.FontSize(20)],
+                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                               AnimatedEffect.FontSize(40),
+                                               AnimatedEffect.TextRotationZ(60)],
+                          'timing': [0, 6000],
+                          'accel': 0.8
+                          }
+        self.process_ass_with_effect(configure_dict)
+
+    def test_animated_effect_text_shearing(self):
+        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                           AnimatedEffect.FontSize(20)],
+                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                               AnimatedEffect.FontSize(40),
+                                               AnimatedEffect.TextShearingX(1),
+                                               AnimatedEffect.TextShearingY(0.5)],
+                          'timing': [0, 6000],
+                          'accel': 0.8
+                          }
+        self.process_ass_with_effect(configure_dict)
+
+
+
+    
 
 
 class testAssDialueTextAnimatedTransform(unittest.TestCase):
