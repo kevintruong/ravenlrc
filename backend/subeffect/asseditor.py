@@ -26,16 +26,16 @@ class textrefactor(object):
         self.df_alpha_2 = 0x00
         self.df_plpha_3 = 0xff
         self.df_t1 = 0
-        self.df_t2 = 0.20
-        self.df_t3 = 0.75
-        self.df_t4 = 0.20
+        self.df_t2 = 0.40
+        self.df_t3 = 0.80
+        self.df_t4 = 1.1
         self.newtext = None
 
     def add_fade_effect(self):
         t1 = 0
         t2 = int(self.duration * self.df_t2)
         t3 = int(self.duration * self.df_t3)
-        t4 = 5000
+        t4 = int(self.duration * self.df_t4)
         fade_affect = "{{\\fade({},{},{},{},{},{},{})}}". \
             format(self.df_alpha_1,
                    self.df_alpha_2,
@@ -124,7 +124,7 @@ class AssCustomizor(object):
 
         for line in self.subs:
             newtext = textrefactor(line.plaintext, line.duration)
-            line.end = line.end + 1500
+            line.end = line.end + 1000
             newtext.add_fade_effect()
             line.text = newtext.get_newtext()
         pass

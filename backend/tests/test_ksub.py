@@ -49,8 +49,12 @@ class ksub(unittest.TestCase):
         pass
 
     def test_create_ass_sub(self):
-        ass_out = os.path.join(self.testDownloadDir, "test.ass")
-        newass = create_ass_sub(full_test, ass_out)
+        ass_out = os.path.join(curDir, "test.ass")
+        subinfo = SubtitleInfo({'rectangle': [100, 100, 200, 300],
+                                'fontname': 'UTM Centur',
+                                'fontcolor': 0x018CA7,
+                                'fontsize': 20})
+        newass = create_ass_sub(full_test, ass_out, subinfo=subinfo)
         self.assertTrue(os.path.isfile(newass))
         pass
 
