@@ -97,6 +97,38 @@ class AssDialueTextAnimatedTransform:
                                                                       accel=self.accel)
         pass
 
+    @classmethod
+    def get_effect(cls, value: set):
+        effect_id = value.pop()
+
+    @classmethod
+    def json2dict(cls, effectinfo: dict):
+        effect_start = []
+        transform_effect = []
+        timing = []
+        accel = None
+        for key in effectinfo.keys():
+            if 'effect_start' in key:
+                effect_start: list = effectinfo[key]
+                if len(effect_start):
+                    for value in effect_start:
+                        effect_start.append(cls.get_effect(value))
+            if 'transform_effect' in key:
+                trans_effect: list = effectinfo[key]
+                if len(trans_effect):
+                    for effect in trans_effect:
+                        transform_effect.append(cls.get_effect())
+            if 'timing' in key:
+                timing = effectinfo[key]
+            if 'accel' in key:
+                accel = effectinfo[key]
+        return {
+            'effect_start': effect_start,
+            'transform_effect': transform_effect,
+            'timming': timing,
+            'accel': accel
+        }
+
 
 class AssDialogueTextKeyWordFormatter:
 
@@ -124,7 +156,9 @@ class AssDialogueTextKeyWordFormatter:
 
 
 class AssDialogueTextProcessor:
-    def __init__(self, keyword: list, formatter: dict, animatedconf: dict) -> None:
+    def __init__(self, keyword: list,
+                 formatter: dict,
+                 animatedconf: dict) -> None:
         self.kwprocessor = KeywordProcessor()
         self.keyword = keyword
         self.keywordformatter = AssDialogueTextKeyWordFormatter(formatter)

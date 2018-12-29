@@ -66,7 +66,6 @@ class NctCrawler(Crawler):
         mp3file = requests.get(songinfo.localtion, allow_redirects=True)
         localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singerTitle)).encode('utf-8')
         locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title)).encode('utf-8')
-        print('{}'.format(localmp3file))
         with open(localmp3file, 'wb') as mp3filefd:
             mp3filefd.write(mp3file.content)
             mp3filefd.close()
@@ -77,7 +76,6 @@ class NctCrawler(Crawler):
         # open(locallyricfile, 'w').write(returndata)
         songinfo.localtion = localmp3file.decode('utf-8')
         songinfo.lyric = locallyricfile.decode('utf-8')
-        print(songinfo.toJSON())
         return songinfo.toJSON()
 
 

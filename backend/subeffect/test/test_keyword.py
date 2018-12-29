@@ -73,7 +73,7 @@ class testAssDialogueTextProcessor(unittest.TestCase):
                         ]
         super().setUp()
         self.ass_lyric = open('test.ass', 'r', encoding='utf-8')
-        self.keywork_config = {
+        self.keyword_formatter = {
             'fontname': 'UTMAmericanaItalic',
             'fontsize': 30,
             'fontcolor': 0x028CF7,
@@ -82,10 +82,10 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def process_ass_with_effect(self, effectconf_dict: dict):
         configure_dict = effectconf_dict
-        self.formatter = AssDialogueTextKeyWordFormatter(self.keywork_config)
+        self.formatter = AssDialogueTextKeyWordFormatter(self.keyword_formatter)
 
         self.textprocessor = AssDialogueTextProcessor(keyword=self.keywork,
-                                                      formatter=self.keywork_config,
+                                                      formatter=self.keyword_formatter,
                                                       animatedconf=configure_dict)
 
         content = self.ass_lyric.read()

@@ -51,34 +51,62 @@ class MyTestCase(unittest.TestCase):
     def test_build_mv_preview(self):
         build_template = {
             "type": 0,
-            "song_info":
+            "song_info": {
                 {
-                    "mp3_file": "https://aredir.nixcdn.com/NhacCuaTui953/DaiLoTanVo-UyenLinh-5277096.mp3?st=Ojo3_8n4AoKDpqZdBuGwUw&e=1546047613",
-                    "lyric": "https://lrc-nct.nixcdn.com/2017/11/17/7/b/0/d/1510867528432.lrc",
-                    "singerTitle": r"Uyên Linh",
-                    "songurl": "https://m.nhaccuatui.com/bai-hat/dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html",
-                    "title": r"Đại lộ tan vỡ"
-                },
+                    'localtion': r'/tmp/ytcreator/test/sample_data/test_data/Ngày Chưa Giông Bão (Người Bất Tử '
+                                 r'OST)_Bùi Lan Hương.mp3',
+                    'lyric': '/tmp/ytcreator/test/sample_data/test_data/Ngày Chưa Giông Bão (Người Bất Tử OST).lrc',
+                    'singerTitle': 'Bùi Lan Hương',
+                    'songurl': r'https://m.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong'
+                               r'.EoqsR1AFD4SG.html',
+                    'title': 'Ngày Chưa Giông Bão (Người Bất Tử OST)'},
+            },
             "background_info": {
                 "bg_file": bg_img00,
                 "sub_info": {
                     'rectangle': [100, 100, 200, 300],
                     'fontname': 'UTM Centur',
                     'fontcolor': 0x018CA7,
-                    'fontsize': 20
+                    'fontsize': 20,
                 },
                 "title_info": {
                     'rectangle': [100, 100, 0, 0],  # must has
                     'fontname': 'UTM Centur',  # Can be None
                     'fontcolor': 0x018CA7,  # Can be None
-                    'fontsize': 20  # Can be None
+                    'fontsize': 20,  # Can be None
+
                 }
             },
             "affect_info": {
                 'affect_file': affect_file,
                 'opacity': 50
-            }
-            ,
+            },
+            'lyric_effect': {  # can be None
+                'effect_type': 1,  # animation effect_code
+                'keyword_info': {
+                    'keywords': ['hello'],  # Keyword for subtitle effect, can be None.
+                    # if keywork is none => effect bellow apply for whole lyric
+                    'keyword_fmt': {
+                        'fontname': 'UTMAmericanaItalic',
+                        'fontsize': 30,
+                        'fontcolor': 0x028CF7,
+                        'alignment': 3
+                    }
+                },
+                'effect_info': {
+                    # Zoom in and change keyword color format
+                    'effect_start': [{1,  # font size code
+                                      20},  # font size is 20
+                                     {2,  # font color code
+                                      0x345678  # font color hex code
+                                      }],
+                    'transform_effect': [{1, 50},
+                                         {2, 0xffeeff}],
+                    'timing': "",  # timing is None mean mean duration = duration sub line
+                    'accel': 0.8
+                }
+
+            },
             'output': os.path.join(test_data_dir, 'preview_nhammatthaymuahe.mp4')
         }
         response = requests.post('http://localhost:8000/build_mv',

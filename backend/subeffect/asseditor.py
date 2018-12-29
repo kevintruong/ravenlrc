@@ -280,3 +280,14 @@ class LyricProfile:
         super().__init__()
 
     # TODO add some profile configure for lyric
+
+
+class AssGenerator:
+    def __init__(self, lyric_file: str,
+                 sub_info: dict,
+                 lyric_effect: dict
+                 ):
+        self.lrcfile = lyric_file
+        self.lrc_bgconf = SubtitleInfo(subinfo=sub_info)
+
+        pass

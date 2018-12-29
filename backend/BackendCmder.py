@@ -87,13 +87,22 @@ class BuildCmder(Cmder):
 
     def __init__(self, cmd: dict):
         super().__init__()
-        self.build_type = BuildType(cmd['type'])
-        self.songinfo = SongInfo(cmd['song_info'])
-        self.bginfo = BackgroundInfo(cmd['background_info'])
-        self.affinfo = AffectInfo(cmd['affect_info'])
-        self.output = cmd['output']
-        self.ffmpegcli = FfmpegCli()
-        self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file)
+        for field in cmd.keys():
+            if 'type' in field:
+                self.build_type = BuildType(cmd['type'])
+            if 'song_info' in field:
+                self.songinfo = SongInfo(cmd['song_info'])
+            if 'background_info' in field:
+                self.bginfo = BackgroundInfo(cmd['background_info'])
+            if 'affect_info' in field:
+                self.affinfo = AffectInfo(cmd['affect_info'])
+            if 'lyric_effect' in field:
+                self.sub_effect = SubEffect(cmd['lyric_effect'])
+            if 'output' in field:
+                self.output = cmd['output']
+
+            self.ffmpegcli = FfmpegCli()
+            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file)
 
     def build_mv(self, profile):
         preview_profile = profile
