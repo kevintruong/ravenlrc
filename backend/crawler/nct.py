@@ -1,13 +1,19 @@
+import codecs
+import os
+
 import requests
 
 import abc
 import json
 
+from backend.crawler.rc4_py3 import decrypt
+from backend.utility.TempFileMnger import *
+
 
 class crawler(abc.ABC):
 
     @abc.abstractmethod
-    def getdownload(self):
+    def getdownload(self, outputdir: str):
         pass
 
 
@@ -24,18 +30,11 @@ class SongInfo:
         self.localtion = nctsonginfo['location']
 
 
-def create_songinfo_obj(d):
-    return SongInfo(d)
-
-
 class nctcrawler(crawler):
-
-    def getdownload(self):
-        pass
-
     nctWmUrl = "https://m.nhaccuatui.com/bai-hat/"
     nctLinkInfo = "https://m.nhaccuatui.com/ajax/get-media-info?key1={}&key2=&key3="
     songkey = r'songencryptkey=\"([a-zA-Z0-9]*)\"'
+    key = "Lyr1cjust4nct"
 
     def __init__(self, ncturl: str):
         songinfos = ncturl.split("/")
@@ -59,8 +58,25 @@ class nctcrawler(crawler):
         print(downloadlink)
         body = requests.get(downloadlink)
         songinfodata = json.loads(body._content)
-        songinf = create_songinfo_obj(songinfodata['data'])
-        return songinf.toJSON()
+        songinf = SongInfo(songinfodata['data'])
+        return songinf
+
+    def getdownload(self, outputdir: str):
+        songinfo: SongInfo = self.parser()
+        mp3file = requests.get(songinfo.localtion, allow_redirects=True)
+        localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singerTitle))
+        locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title))
+        with open(localmp3file, 'wb') as mp3filefd:
+            mp3filefd.write(mp3file.content)
+            mp3filefd.close()
+        lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
+        returndata = decrypt(nctcrawler.key, lyricfile.content)
+        with codecs.open(locallyricfile, 'w', "utf-8") as f:
+            f.write(returndata)
+        # open(locallyricfile, 'w').write(returndata)
+        songinfo.localtion = localmp3file
+        songinfo.lyric = locallyricfile
+        return songinfo.toJSON()
 
 
 import unittest
@@ -69,15 +85,17 @@ import unittest
 class testnctcrawler(unittest.TestCase):
     def setUp(self):
         self.url = r'https://www.nhaccuatui.com/bai-hat/dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html'
+        self.nct = nctcrawler(self.url)
 
     def test_init(self):
-        nct = nctcrawler(self.url)
-        self.assertEqual(nct.mobileNctWmUrl, nctcrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
+        self.assertEqual(self.nct.mobileNctWmUrl, nctcrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
 
     def test_parse(self):
-        nct = nctcrawler(self.url)
-        self.assertEqual(nct.mobileNctWmUrl, nctcrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
-        nctinfo = nct.parser()
-        print(nctinfo.encode('utf-8'))
+        self.assertEqual(self.nct.mobileNctWmUrl, nctcrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
+        nctinfo = self.nct.parser()
+        print(nctinfo)
         jsondat = json.loads(nctinfo)
         print('end')
+
+    def test_download_file(self):
+        self.nct.getdownload('./test/')
