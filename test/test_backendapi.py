@@ -37,9 +37,8 @@ class MyTestCase(unittest.TestCase):
     def test_crawl_lyric(self):
         lyric = LrcTempFile().getfullpath()
         crawl_cmd = {
-            'crawl_type': 0,
             'crawl_url': nct_url,
-            'output': lyric  # crawl_tool will store lyric file to output
+            'outdir': test_data_dir
         }
         response = requests.post('http://localhost:8000/crawl',
                                  json=crawl_cmd)
@@ -47,40 +46,17 @@ class MyTestCase(unittest.TestCase):
         print(response.content)
         self.assertTrue(os.path.isfile(lyric))
 
-    def test_crawl_song(self):
-        crawl_cmd = {
-            'crawl_type': 1,
-            'crawl_url': "nhaccuatuiurl",
-            'audio_quality': 1,
-            'output': audio00  # crawl_tool will store lyric file to output
-        }
-        response = requests.post('http://localhost:8000/build_mv',
-                                 json=crawl_cmd)
-        print(response.headers)
-        print(response.content)
-
-    def test_crawl_song_lyric(self):
-        crawl_cmd = {
-            'crawl_type': 2,
-            'crawl_url': "nhaccuatuiurl",
-            'audio_quality': 1,
-            'output_lrc': audio00,  # crawl_tool will store lyric file to output
-            'output_audio': lyric_file
-        }
-        response = requests.post('http://localhost:8000/build_mv',
-                                 json=crawl_cmd)
-        print(response.headers)
-        print(response.content)
-
     def test_build_mv_preview(self):
         build_template = {
             "type": 0,
-            "song_info": {
-                "song_file": ngaychuagiongbao_audiofile,
-                "lyric_file": lyric_file,
-                "song_name": "Ngày chưa giông bão",
-                "title_file": titlefile
-            },
+            "song_info":
+                {
+                    "mp3_file": "https://aredir.nixcdn.com/NhacCuaTui953/DaiLoTanVo-UyenLinh-5277096.mp3?st=Ojo3_8n4AoKDpqZdBuGwUw&e=1546047613",
+                    "lyric": "https://lrc-nct.nixcdn.com/2017/11/17/7/b/0/d/1510867528432.lrc",
+                    "singerTitle": r"Uyên Linh",
+                    "songurl": "https://m.nhaccuatui.com/bai-hat/dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html",
+                    "title": r"Đại lộ tan vỡ"
+                },
             "background_info": {
                 "bg_file": bg_img00,
                 "sub_info": {
@@ -117,8 +93,10 @@ class MyTestCase(unittest.TestCase):
             "song_info": {
                 "song_file": ngaychuagiongbao_audiofile,
                 "lyric_file": lyric_file,
-                "song_name": "Ngày chưa giông bão",
-                "title_file": titlefile
+                "title": "Ngày chưa giông bão",
+                "title_file": titlefile,
+                "Singer": "Bùi Lan Hương",
+                "Author": "Phan Mạnh Quỳnh"
             },
             "background_info": {
                 "bg_file": bg_img00,

@@ -4,6 +4,7 @@ from backend.render.ffmpegcli import FfmpegCli
 from backend.crawler.subcrawler import *
 from backend.subeffect.asseditor import *
 from backend.utility.Utility import *
+from backend.crawler.nct import *
 
 
 class Cmder:
@@ -15,69 +16,21 @@ class Cmder:
         pass
 
 
-class CrawlType(IntEnum):
-    CRAWL_LYRIC = 0
-    CRAWL_SONG = 1
-    CRAWL_LYRIC_SONG = 2
-
-
-class CrawlLyricCmder(Cmder):
+class CrawlCmder(Cmder):
 
     def __init__(self, crawlcmd: dict):
         super().__init__()
         self.crawl_url = crawlcmd['crawl_url']
         self.output = crawlcmd['output']
 
-    def run(self):
-        crawl_lyric(self.crawl_url, self.output)
-        return {'output': self.output}
-        pass
-
-
-class CrawlSongCmder(Cmder):
-
-    def __init__(self, crawlcmd: dict):
-        super().__init__()
-        self.crawl_url = crawlcmd['crawl_url']
-        self.quality = crawlcmd['audio_quality']
-        self.output = crawlcmd['output']
+    def crawl_parser(self):
+        if 'nhaccuatui' in self.crawl_url:
+            return NctCrawler(self.crawl_url)
 
     def run(self):
-        return "Not support yet"
-        download_mp3_file(self.crawl_url, self.quality, self.output)
-        return {'output': self.output}
+        crawler: Crawler = self.crawl_parser()
+        return crawler.getdownload(self.output)
         pass
-
-
-class CrawlSongLyricCmder(Cmder):
-
-    def __init__(self, crawlcmd: dict):
-        super().__init__()
-        self.crawl_url = crawlcmd['crawl_url']
-        self.quality = crawlcmd['audio_quality']
-        self.output_lrc = crawlcmd['output_lrc']
-        self.output_audio = crawlcmd['output_audio']
-
-    def run(self):
-        return "Not support yet"
-        download_mp3_file(self.crawl_url, self.quality, self.output_audio)
-        crawl_lyric(self.crawl_url, self.output_lrc)
-        return {'output_lrc': self.output_lrc, 'output_audio': self.output_audio}
-        pass
-
-
-class CrawlCmder:
-    CRAWL_TYPE = 'crawl_type'
-
-    @classmethod
-    def get_crawlcmder(cls, crawlcmd: dict):
-        crawler_type = CrawlType(crawlcmd[cls.CRAWL_TYPE])
-        if crawler_type == CrawlType.CRAWL_LYRIC:
-            return CrawlLyricCmder(crawlcmd)
-        if crawler_type == CrawlType.CRAWL_SONG:
-            return CrawlSongCmder(crawlcmd)
-        if crawler_type == CrawlType.CRAWL_LYRIC_SONG:
-            return CrawlSongLyricCmder(crawlcmd)
 
 
 class BuildType(IntEnum):

@@ -1,3 +1,5 @@
+structlog
+python-json-logger
 requests
 google
 flashtext

@@ -10,7 +10,7 @@ from backend.crawler.rc4_py3 import decrypt
 from backend.utility.TempFileMnger import *
 
 
-class crawler(abc.ABC):
+class Crawler(abc.ABC):
 
     @abc.abstractmethod
     def getdownload(self, outputdir: str):
@@ -30,7 +30,7 @@ class SongInfo:
         self.localtion = nctsonginfo['location']
 
 
-class nctcrawler(crawler):
+class NctCrawler(Crawler):
     nctWmUrl = "https://m.nhaccuatui.com/bai-hat/"
     nctLinkInfo = "https://m.nhaccuatui.com/ajax/get-media-info?key1={}&key2=&key3="
     songkey = r'songencryptkey=\"([a-zA-Z0-9]*)\"'
@@ -39,12 +39,12 @@ class nctcrawler(crawler):
     def __init__(self, ncturl: str):
         songinfos = ncturl.split("/")
         songid = songinfos[4]
-        self.mobileNctWmUrl = nctcrawler.nctWmUrl + '{}'.format(songid)
+        self.mobileNctWmUrl = NctCrawler.nctWmUrl + '{}'.format(songid)
         pass
 
     def get_songkey(self, htmlbody):
         import re
-        express = re.compile(nctcrawler.songkey)
+        express = re.compile(NctCrawler.songkey)
         matchlist = express.findall(htmlbody)
         if len(matchlist):
             return matchlist[0]
@@ -54,7 +54,7 @@ class nctcrawler(crawler):
         body = requests.get(self.mobileNctWmUrl)
         html = body._content.decode('utf-8')
         songkey = self.get_songkey(html)
-        downloadlink = nctcrawler.nctLinkInfo.format(songkey)
+        downloadlink = NctCrawler.nctLinkInfo.format(songkey)
         print(downloadlink)
         body = requests.get(downloadlink)
         songinfodata = json.loads(body._content)
@@ -70,7 +70,7 @@ class nctcrawler(crawler):
             mp3filefd.write(mp3file.content)
             mp3filefd.close()
         lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
-        returndata = decrypt(nctcrawler.key, lyricfile.content)
+        returndata = decrypt(NctCrawler.key, lyricfile.content)
         with codecs.open(locallyricfile, 'w', "utf-8") as f:
             f.write(returndata)
         # open(locallyricfile, 'w').write(returndata)
@@ -85,13 +85,13 @@ import unittest
 class testnctcrawler(unittest.TestCase):
     def setUp(self):
         self.url = r'https://www.nhaccuatui.com/bai-hat/dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html'
-        self.nct = nctcrawler(self.url)
+        self.nct = NctCrawler(self.url)
 
     def test_init(self):
-        self.assertEqual(self.nct.mobileNctWmUrl, nctcrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
+        self.assertEqual(self.nct.mobileNctWmUrl, NctCrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
 
     def test_parse(self):
-        self.assertEqual(self.nct.mobileNctWmUrl, nctcrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
+        self.assertEqual(self.nct.mobileNctWmUrl, NctCrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
         nctinfo = self.nct.parser()
         print(nctinfo)
         jsondat = json.loads(nctinfo)
