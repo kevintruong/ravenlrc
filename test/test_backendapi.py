@@ -1,4 +1,6 @@
+import json
 import shutil
+import sys
 import unittest
 import requests
 from backend.utility.TempFileMnger import *
@@ -38,12 +40,12 @@ class MyTestCase(unittest.TestCase):
         lyric = LrcTempFile().getfullpath()
         crawl_cmd = {
             'crawl_url': nct_url,
-            'outdir': test_data_dir
+            'output': test_data_dir
         }
         response = requests.post('http://localhost:8000/crawl',
-                                 json=crawl_cmd)
-        print(response.headers)
-        print(response.content)
+                                 json=crawl_cmd).json()
+        jsondata = json.loads(response)
+        print(jsondata)
         self.assertTrue(os.path.isfile(lyric))
 
     def test_build_mv_preview(self):

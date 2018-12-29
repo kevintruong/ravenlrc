@@ -14,6 +14,7 @@ import pydevd
 @hug.post('/crawl')
 def crawl(body):
     # body is dictbuild_mv
+    print(body)
     cmder: Cmder = CrawlCmder(body)
     return cmder.run()
 
