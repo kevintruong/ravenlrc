@@ -82,24 +82,35 @@ class AssDialueTextAnimatedTransform:
         for each_key in conf.keys():
             if 'effect_start' in each_key:
                 self.effect_start = conf['effect_start']
-            elif 'effect_transform' in each_key:
-                self.effect_transform = conf['effect_transform']
+            elif 'transform_effect' in each_key:
+                self.effect_transform = conf[each_key]
             elif 'timing' in each_key:
-                self.timing = conf['timing']
+                if len(conf['timing']):
+                    self.timing = conf['timing']
             elif 'accel' in each_key:
                 self.accel = conf['accel']
             pass
 
-    def create_full_transform(self):
+    def create_full_transform(self, timing_duration=None):
+        if timing_duration is not None:
+            timing = [0, timing_duration]
+        else:
+            timing = self.timing
         return self.animatedtransform.transform_from_effect_to_effect(orgeffect=self.effect_start,
                                                                       nexteffect=self.effect_transform,
-                                                                      timing=Timing(self.timing[0], self.timing[1]),
+                                                                      timing=timing,
                                                                       accel=self.accel)
         pass
 
     @classmethod
     def get_effect(cls, value: set):
+        effect_value = value.pop()
         effect_id = value.pop()
+        if effect_id == 1:
+            return AnimatedEffect.FontSize(effect_value)
+        if effect_id == 2:
+            return AnimatedEffect.PrimaryFillColor(effect_value)
+        # TODO need to fill missing effect id
 
     @classmethod
     def json2dict(cls, effectinfo: dict):
@@ -109,15 +120,15 @@ class AssDialueTextAnimatedTransform:
         accel = None
         for key in effectinfo.keys():
             if 'effect_start' in key:
-                effect_start: list = effectinfo[key]
-                if len(effect_start):
-                    for value in effect_start:
+                effect_start_info: list = effectinfo[key]
+                if len(effect_start_info):
+                    for value in effect_start_info:
                         effect_start.append(cls.get_effect(value))
             if 'transform_effect' in key:
                 trans_effect: list = effectinfo[key]
                 if len(trans_effect):
                     for effect in trans_effect:
-                        transform_effect.append(cls.get_effect())
+                        transform_effect.append(cls.get_effect(effect))
             if 'timing' in key:
                 timing = effectinfo[key]
             if 'accel' in key:

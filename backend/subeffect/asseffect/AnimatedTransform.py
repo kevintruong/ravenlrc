@@ -74,7 +74,7 @@ class AnimatedTransform:
 
     def transform_from_effect_to_effect(self, orgeffect: [AnimatedEffect.Effect],
                                         nexteffect: [AnimatedEffect.Effect],
-                                        timing: Timing,
+                                        timing: list,
                                         accel=1):
         """
             {\<original effect[list]>\t(new effect[list])}<text>
@@ -85,6 +85,12 @@ class AnimatedTransform:
         """
         org_type_code = ""
         nex_type_code = ""
+        if timing is not None:
+            timing = Timing(timing[0], timing[1])
+        else:
+            timing = None
+        if accel is None:
+            accel = 1
         # if len(orgeffect) == 0:
         #     raise Exception("no item in orgeffect")
         if orgeffect is not None:
@@ -97,13 +103,19 @@ class AnimatedTransform:
             for each_effect in nexteffect:
                 typecode = each_effect.get_effect_type_code()
                 nex_type_code += typecode
+        if timing is not None:
+            timing = '{},{}'.format(timing.t0, timing.t1)
         if timing is None:
-            raise Exception("timing is none")
-        timing = '{},{}'.format(timing.t0, timing.t1)
-        full_animate_transformation = '{{{}\\t({},{},{})}}'. \
-            format(org_type_code,
-                   timing,
-                   accel,
-                   nex_type_code)
+            full_animate_transformation = '{{{}\\t({},{})}}'. \
+                format(org_type_code,
+                       accel,
+                       nex_type_code)
+        else:
+            full_animate_transformation = '{{{}\\t({},{},{})}}'. \
+                format(org_type_code,
+                       timing,
+                       accel,
+                       nex_type_code)
+
         return full_animate_transformation
         pass

@@ -95,13 +95,13 @@ class MyTestCase(unittest.TestCase):
                 },
                 'effect_info': {
                     # Zoom in and change keyword color format
-                    'effect_start': [{1,  # font size code
-                                      20},  # font size is 20
-                                     {2,  # font color code
+                    'effect_start': [[1,  # font size code
+                                      20],  # font size is 20
+                                     [2,  # font color code
                                       0x345678  # font color hex code
-                                      }],
-                    'transform_effect': [{1, 50},
-                                         {2, 0xffeeff}],
+                                      ]],
+                    'transform_effect': [[1, 50],
+                                         [2, 0xffeeff]],
                     'timing': "",  # timing is None mean mean duration = duration sub line
                     'accel': 0.8
                 }

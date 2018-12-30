@@ -210,3 +210,26 @@ class testAssDialueTextAnimatedTransform(unittest.TestCase):
         self.assertEqual(fulltransfer, r'{\fs10\c&H0000ff&\t(0,5000,0.3,\fs50\c&Hffeeff&)}')
         if __name__ == '__main__':
             unittest.main()
+
+
+import unittest
+
+
+class test_effectinfo(unittest.TestCase):
+    def test_init(self):
+        effect_info = {
+            # Zoom in and change keyword color format
+            'effect_start': [[1,  # font size code
+                              20],  # font size is 20
+                             [2,  # font color code
+                              0x345678  # font color hex code
+                              ]],
+            'transform_effect': [[1, 50],
+                                 [2, 0xffeeff]],
+            'timing': "",  # timing is None mean mean duration = duration sub line
+            'accel': 0.8
+        }
+        effect_info_dict = AssDialueTextAnimatedTransform.json2dict(effect_info)
+        effctinfo = AssDialueTextAnimatedTransform(effect_info_dict)
+        effect = effctinfo.create_full_transform()
+        print("hello {}", format(effect))
