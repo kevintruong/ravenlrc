@@ -1,0 +1,65 @@
+{
+  "song_url": "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html",
+  "background_info": {
+    "bg_file": "test_bg.png",
+    "lyric_info": {
+      "rectangle": [
+        100,
+        100,
+        200,
+        300
+      ],
+      "fontname": "UTM Centur",
+      "fontcolor": 0x018CA7,
+      "fontsize": 20
+    }
+  },
+  "affect_info": {
+    "affect_file": 'bg_effect.mov',
+    "opacity": 50
+  },
+  "lyric_effect": {
+    "effect_type": 1,
+    "keyword_info": {
+      "keywords": [
+        "hello"
+      ],
+      "keyword_fmt": {
+        "fontname": 'UTMAmericanaItalic',
+        "fontsize": 30,
+        "fontcolor": 0x028CF7,
+        "alignment": 3
+      }
+    },
+    "effect_info": {
+      "effect_start": // Initial effect
+      [
+        [
+          1,
+          // font size code
+          20
+          // font size value
+        ],
+        [
+          2,
+          // font color
+          0x345678
+          // font color code (hex)
+        ]
+      ],
+      "transform_effect": // effect transformm
+      [
+        [
+          1,
+          50
+        ],
+        [
+          2,
+          0xffeeff
+        ]
+      ],
+      "timing": "",
+      "accel": 0.8
+    }
+  }
+}

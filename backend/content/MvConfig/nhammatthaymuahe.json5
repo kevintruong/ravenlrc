@@ -1,0 +1,23 @@
+{
+  "song_url": "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html",
+  "background_info": {
+    "bg_file": "Nhammatthaymuahe.png",
+    "lyric_info": {
+      "rectangle": [
+        100,
+        100,
+        200,
+        300
+      ],
+      "fontname": "UTM Centur",
+      "fontcolor": 0x018CA7,
+      "fontsize": 20
+    }
+  },
+  "affect_info": {
+    "affect_file": 'bg_effect.mov',
+    "opacity": 50
+  },
+  "build_status": 0
+  // status :0 -> build, status 1: release (dont need to build)
+}
