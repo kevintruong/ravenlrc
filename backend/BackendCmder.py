@@ -98,10 +98,9 @@ class BuildCmder(Cmder):
             if 'affect_info' in field:
                 self.affinfo = AffectInfo(cmd['affect_info'])
             if 'lyric_effect' in field:
-                self.sub_effect = LyricEffect(cmd['lyric_effect'])
+                self.lyric_effect = LyricEffect(cmd['lyric_effect'])
             if 'output' in field:
                 self.output = cmd['output']
-
             self.ffmpegcli = FfmpegCli()
             self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file)
 
@@ -115,7 +114,10 @@ class BuildCmder(Cmder):
         create_ass_from_lrc(self.songinfo.lyric_file,
                             preview_asstempfile,
                             self.bginfo.subinfo,
-                            FFmpegProfile.PROFILE_LOW.value)
+                            preview_profile)
+        if self.lyric_effect is not None:
+            # TODO add process lyric effect
+            pass
 
         time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file) / 2
 

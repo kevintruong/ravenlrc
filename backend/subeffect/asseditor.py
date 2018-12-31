@@ -245,8 +245,8 @@ def get_url(url: str):
     return lyricfile + ".ass"
 
 
-def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
-                   resolution=[1920, 1080]):
+def create_ass_from_url(url: str, output: str, subinfo: SubtitleInfo,
+                        resolution=[1920, 1080]):
     """
     create ass subtitle for
     :param subinfo:
@@ -255,10 +255,10 @@ def create_ass_sub(url: str, output: str, subinfo: SubtitleInfo,
     :param output:
     :return:
     """
-    from backend.crawler.subcrawler import get_sub_from_url
-    lrc_content: str = get_sub_from_url(url)
-    create_ass_subtitle(lrc_content, output, subinfo, resolution)
-    return output
+    from backend.crawler.nct import NctCrawler
+    tmpdir = YtTempDir().get_fullpath()
+    lyricfile = NctCrawler(url).get_lyric(tmpdir)
+    return create_ass_from_lrc(lyricfile, output, subinfo, resolution)
 
 
 class KeyWord:

@@ -1,12 +1,13 @@
 import unittest
 
-from backend.subeffect.asseditor import SubtitleInfo, create_ass_from_lrc
+from backend.subeffect.asseditor import SubtitleInfo, create_ass_from_lrc, create_ass_from_url
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
 from backend.subeffect.asseffect.LyricEffect import KeyWordInfo
 from backend.subeffect.keyword.keyword import *
 from backend.render.ffmpegcli import FfmpegCli, FFmpegProfile
 
 from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
+from backend.utility.TempFileMnger import *
 
 
 class TestKeyword(unittest.TestCase):
@@ -287,20 +288,25 @@ class test_LyricEffect(unittest.TestCase):
         self.lyriceffect = LyricEffect(lyric_effect)
 
     def test_apply_lyric_effect(self):
+        assfile = AssTempFile().getfullpath()
         subinfo = {
             'rectangle': [100, 100, 200, 300],
             'fontname': 'UTM Centur',
             'fontcolor': 0x018CA7,
             'fontsize': 20,
         }
-        subcustomizer = create_ass_from_lrc(
-            r'D:\Project\ytcreatorservice\backend\crawler\test\Nhắm Mắt Thấy Mùa Hè (Nhắm Mắt Thấy Mùa Hè OST).lrc',
-            'test.ass', subinfo=SubtitleInfo(subinfo),
-            resolution=FFmpegProfile.PROFILE_FULLHD.value)
+        ncturl = r'https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html'
+        subcustomizer = create_ass_from_url(ncturl,
+                                            assfile,
+                                            subinfo=SubtitleInfo(subinfo),
+                                            resolution=FFmpegProfile.PROFILE_FULLHD.value)
         for line in subcustomizer.subs:
             print(line.text)
-            line.text = self.lyriceffect.apply_lyric_effect(line.text, line.duration)
+            line.text = self.lyriceffect.apply_lyric_effect_by_line(line.text, line.duration)
             print(line.text)
-        subcustomizer.subs.save("lyric_effect_test.ass")
-
+        subcustomizer.subs.save(assfile)
+        fileass = AssTempFile().getfullpath()
+        self.lyriceffect.apply_lyric_effect_to_file(assfile, fileass)
+        fileass = AssTempFile().getfullpath()
+        self.lyriceffect.apply_lyric_effect_to_asscontent(subcustomizer.subs, fileass)
         pass

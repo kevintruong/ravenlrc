@@ -82,7 +82,7 @@ class TestFFmpegCli(unittest.TestCase):
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 20})
-        create_ass_sub(full_test, ass_out, subinfo)
+        create_ass_from_url(full_test, ass_out, subinfo)
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
         length_in = self.ffmpeg.get_media_time_length(media_output)
         length_out = self.ffmpeg.get_media_time_length(output)

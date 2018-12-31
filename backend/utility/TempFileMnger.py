@@ -7,6 +7,17 @@ if not os.path.isdir(temp_dir):
     os.mkdir(temp_dir)
 
 
+class YtTempDir:
+    tempdirlst = []
+
+    def __init__(self, path='./'):
+        self.temdir = mkdtemp(prefix='yt', suffix='tmp', dir=path)
+        YtTempDir.tempdirlst.append(self)
+
+    def get_fullpath(self):
+        return self.temdir
+
+
 class YtTempFile:
     tempfilelst = []
 

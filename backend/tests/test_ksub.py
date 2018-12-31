@@ -54,7 +54,7 @@ class ksub(unittest.TestCase):
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 20})
-        newass = create_ass_sub(full_test, ass_out, subinfo=subinfo)
+        newass = create_ass_from_url(full_test, ass_out, subinfo=subinfo)
         self.assertTrue(os.path.isfile(newass))
         pass
 

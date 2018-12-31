@@ -78,6 +78,17 @@ class NctCrawler(Crawler):
         songinfo.lyric = locallyricfile.decode('utf-8')
         return songinfo.toJSON()
 
+    def get_lyric(self, outputdir: str):
+        songinfo: SongInfo = self.parser()
+        locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title)).encode('utf-8')
+        lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
+        returndata = decrypt(NctCrawler.key, lyricfile.content)
+        with codecs.open(locallyricfile, 'w', "utf-8") as f:
+            f.write(returndata)
+        return locallyricfile
+
+        pass
+
 
 import unittest
 
@@ -88,10 +99,12 @@ class testnctcrawler(unittest.TestCase):
         self.nct = NctCrawler(self.url)
 
     def test_init(self):
-        self.assertEqual(self.nct.mobileNctWmUrl, NctCrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
+        self.assertEqual(self.nct.mobileNctWmUrl,
+                         NctCrawler.nctWmUrl + "nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
 
     def test_parse(self):
-        self.assertEqual(self.nct.mobileNctWmUrl, NctCrawler.nctWmUrl + "dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html")
+        self.assertEqual(self.nct.mobileNctWmUrl,
+                         NctCrawler.nctWmUrl + "nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
         nctinfo = self.nct.parser()
         print(nctinfo.toJSON())
         jsondat = json.loads(nctinfo)
