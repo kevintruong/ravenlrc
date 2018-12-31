@@ -67,3 +67,21 @@ class TestFFmpegCli(unittest.TestCase):
         length_out = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(length_out, length_in)
         pass
+
+    def test_add_sub_to_video_lyric_effect(self):
+        media_output = os.path.join(sample_data_dir, "audio_output.mp4")
+        ass_out = AssTempFile().getfullpath()
+        output = os.path.join(sample_data_dir, "sub_output.mp4")
+
+        subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],
+                                'fontname': 'UTM Centur',
+                                'fontcolor': 0x018CA7,
+                                'fontsize': 40})
+        create_ass_sub(full_test, ass_out, subinfo)
+
+        self.ffmpeg.adding_sub_to_video(r'D:\Project\ytcreatorservice\backend\subeffect\test\lyric_effect_test.ass',
+                                        media_output,
+                                        output)
+        length_in = self.ffmpeg.get_media_time_length(media_output)
+        length_out = self.ffmpeg.get_media_time_length(output)
+        self.assertEqual(length_out, length_in)

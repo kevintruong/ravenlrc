@@ -55,7 +55,7 @@ class MyTestCase(unittest.TestCase):
                 {
                     'localtion': r'/tmp/ytcreator/test/sample_data/test_data/Ngày Chưa Giông Bão (Người Bất Tử '
                                  r'OST)_Bùi Lan Hương.mp3',
-                    'lyric': '/tmp/ytcreator/test/sample_data/test_data/Ngày Chưa Giông Bão (Người Bất Tử OST).lrc',
+                    'lyric': r'/tmp/ytcreator/test/sample_data/test_data/Ngày Chưa Giông Bão (Người Bất Tử OST).lrc',
                     'singerTitle': 'Bùi Lan Hương',
                     'songurl': r'https://m.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong'
                                r'.EoqsR1AFD4SG.html',

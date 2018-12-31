@@ -1,3 +1,4 @@
+from backend.crawler.nct import NctCrawler
 from backend.render.ffmpegcli import *
 import unittest
 import shutil
@@ -14,8 +15,9 @@ if not os.path.isdir(sample_data_dir):
 test_data_dir = os.path.join(sample_data_dir, "test_data")
 
 if os.path.isdir(test_data_dir):
-    shutil.rmtree(test_data_dir)
-    os.mkdir(test_data_dir)
+    pass
+    # shutil.rmtree(test_data_dir)
+    # os.mkdir(test_data_dir)
 else:
     os.mkdir(test_data_dir)
 
@@ -24,6 +26,8 @@ bg_img00 = os.path.join(sample_data_dir, "bg_img00.png")
 bg_img01 = os.path.join(sample_data_dir, "bg_img01.png")
 logo00 = os.path.join(sample_data_dir, "logo00.png")
 audio00 = os.path.join(sample_data_dir, "audio01.mp3")
+background_effect_dir = os.path.join(sample_data_dir, "sample_data/Star/Comp1")
+bg_effect = os.path.join(sample_data_dir, "bgeffect.mov")
 
 full_test = "https://www.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong.EoqsR1AFD4SG.html"
 test_url00 = "https://www.nhaccuatui.com/bai-hat/xin-loi-anh-qua-phien-dong-nhi.WX2iJD8VU9ve.html"
@@ -96,27 +100,41 @@ class TestFFmpegCli(unittest.TestCase):
     def create_mv_from_url(self, url: str):
         bg_mv = os.path.join(test_data_dir, "bg_mv.mp4")
         bg_img = os.path.join(test_data_dir, "bg_img_abc.png")
+        bg_effect_extend = os.path.join(test_data_dir, "bgeffect.mov")
         ass_out = os.path.join(test_data_dir, "test.ass")
-        output = os.path.join(test_data_dir, "sub_output.mp4")
-        final_mv = os.path.join(test_data_dir, "final_mv.mp4")
+        output = os.path.join(test_data_dir, "sub_output1.mov")
+        final_mv = os.path.join(test_data_dir, "final_mv.mov")
 
         # download mp3 file
-        self.ffmpeg.set_resolution(FFmpegProfile.PROFILE_LOW)
-        audiofile = download_mp3_file(url, AudioQuanlity.AUDIO_QUANLITY_320, test_data_dir)
+        self.ffmpeg.set_resolution(FFmpegProfile.PROFILE_FULLHD)
+        audiofile = NctCrawler(url).getdownload(test_data_dir)
+        audiofile = json.loads(audiofile)
+        audiofile = audiofile['localtion']
+        lyricfile = audiofile['lyric']
         audio_length = self.ffmpeg.get_media_time_length(audiofile)
         self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_img)
         self.ffmpeg.create_media_file_from_img(bg_img, audio_length, bg_mv)
+        self.ffmpeg.create_background_affect_with_length(bg_effect, audio_length, bg_effect_extend)
         # add sub to MV
-        create_ass_sub(url, ass_out, resolution=[640, 480])  # get sub
+        subinfo = SubtitleInfo({'rectangle': [100, 100, 200, 300],
+                                'fontname': 'UTM Centur',
+                                'fontcolor': 0x018CA7,
+                                'fontsize': 40})
+        create_ass_from_lrc(lyricfile, ass_out, subinfo=subinfo, resolution=[1920, 1080])  # get sub
         self.ffmpeg.adding_sub_to_video(ass_out, bg_mv, output)
         # add audio to MV
         self.ffmpeg.mux_audio_to_video(output, audiofile, final_mv)
-        final_length = self.ffmpeg.get_media_time_length(final_mv)
+        self.ffmpeg.add_affect_to_video(final_mv, bg_effect, 'test.mov', affectconf=70)
+        final_length = self.ffmpeg.get_media_time_length('test.mp4')
         self.assertEqual(final_length, audio_length)
 
     def test_full_create_mv(self):
-        # self.create_mv_from_url(full_test)
-        self.create_mv_from_url(test_url00)
+        self.create_mv_from_url(full_test)
+        # self.create_mv_from_url(test_url00)
+
+    def test_create_rgba_effect_from_list_png(self):
+        self.ffmpeg.create_rgba_background_effect_from_list_png(background_effect_dir, 'test_data/test.mov')
+        pass
 
 
 if __name__ == '__main__':

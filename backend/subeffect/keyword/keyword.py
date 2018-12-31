@@ -82,7 +82,7 @@ class AssDialueTextAnimatedTransform:
         for each_key in conf.keys():
             if 'effect_start' in each_key:
                 self.effect_start = conf['effect_start']
-            elif 'transform_effect' in each_key:
+            elif 'effect_transform' in each_key:
                 self.effect_transform = conf[each_key]
             elif 'timing' in each_key:
                 if len(conf['timing']):
@@ -124,7 +124,7 @@ class AssDialueTextAnimatedTransform:
                 if len(effect_start_info):
                     for value in effect_start_info:
                         effect_start.append(cls.get_effect(value))
-            if 'transform_effect' in key:
+            if 'effect_transform' in key:
                 trans_effect: list = effectinfo[key]
                 if len(trans_effect):
                     for effect in trans_effect:
@@ -135,7 +135,7 @@ class AssDialueTextAnimatedTransform:
                 accel = effectinfo[key]
         return {
             'effect_start': effect_start,
-            'transform_effect': transform_effect,
+            'effect_transform': transform_effect,
             'timming': timing,
             'accel': accel
         }
@@ -170,20 +170,21 @@ class AssDialogueTextProcessor:
     def __init__(self, keyword: list,
                  formatter: dict,
                  animatedconf: dict) -> None:
-        self.kwprocessor = KeywordProcessor()
         self.keyword = keyword
         self.keywordformatter = AssDialogueTextKeyWordFormatter(formatter)
         self.keywordanimatedtransform = AssDialueTextAnimatedTransform(animatedconf)
-        self.__config_keywords()
         super().__init__()
 
-    def __config_keywords(self):
+    def reconfig_keywords(self, duration=None):
+        kwprocessor = KeywordProcessor()
         keyword_formatter = self.keywordformatter.font_formatter()
-        animated_formatter = self.keywordanimatedtransform.create_full_transform()
+        animated_formatter = self.keywordanimatedtransform.create_full_transform(duration)
         reset = DialogueTextStyleCode.create_reset_style_code()
         for each_keyword in self.keyword:
             replace_keyword = keyword_formatter + animated_formatter + each_keyword + reset
-            self.kwprocessor.add_keyword(each_keyword, replace_keyword)
+            kwprocessor.add_keyword(each_keyword, replace_keyword)
+        return kwprocessor
 
-    def keyword_process(self, content):
-        return self.kwprocessor.replace_keywords(content)
+    def keyword_process(self, content, duration=None):
+        kwprocessor = self.reconfig_keywords(duration)
+        return kwprocessor.replace_keywords(content)

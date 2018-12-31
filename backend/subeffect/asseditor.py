@@ -191,12 +191,12 @@ class SubtitleInfo:
             pass
 
 
-def create_ass(lrcfile: str, output: str,
-               subinfo: SubtitleInfo,
-               resolution=None):
+def create_ass_from_lrc(lrcfile: str, output: str,
+                        subinfo: SubtitleInfo,
+                        resolution=None):
     with open(lrcfile, 'r', encoding='utf-8') as lrcfd:
         lrccontent = lrcfd.read()
-        create_ass_subtitle(lrccontent, output, subinfo, resolution)
+        return create_ass_subtitle(lrccontent, output, subinfo, resolution)
 
 
 def create_ass_subtitle(lrccontent: str,
@@ -234,6 +234,7 @@ def create_ass_subtitle(lrccontent: str,
     sub_customizer.add_fad_affect_to_sub()
 
     sub_customizer.subs.save(output)
+    return sub_customizer
     pass
 
 

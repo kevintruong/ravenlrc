@@ -1,8 +1,10 @@
 import unittest
 
-from backend.subeffect.asseditor import SubtitleInfo
+from backend.subeffect.asseditor import SubtitleInfo, create_ass_from_lrc
+from backend.subeffect.asseffect.LyricEffect import LyricEffect
+from backend.subeffect.asseffect.LyricEffect import KeyWordInfo
 from backend.subeffect.keyword.keyword import *
-from backend.render.ffmpegcli import FfmpegCli
+from backend.render.ffmpegcli import FfmpegCli, FFmpegProfile
 
 from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
 
@@ -233,3 +235,72 @@ class test_effectinfo(unittest.TestCase):
         effctinfo = AssDialueTextAnimatedTransform(effect_info_dict)
         effect = effctinfo.create_full_transform()
         print("hello {}", format(effect))
+
+
+class test_LyricEffect(unittest.TestCase):
+    def setUp(self):
+        self.keywork = ['khung hình',
+                        'một ngày',
+                        'gặp lại',
+                        'nỗi đau',
+                        'thương',
+                        'an yên',
+                        'mây ngàn',
+                        'thương anh',
+                        'Nơi xa',
+                        'Ngày mai', 'gió', 'thấy', 'gặp nhau', 'sống',
+                        'nắng', 'biến mất', 'hoa tàn',
+                        'Dòng thư',
+                        'giấc mơ',
+                        'Bên nhau',
+                        'xa nhau',
+                        'ký ức',
+                        'những nhiệm màu',
+                        'quên',
+                        'nhớ',
+                        ]
+        lyric_effect = {  # can be None
+            'effect_type': 1,  # animation effect_code
+            'keyword_info': {
+                'keywords': self.keywork,  # Keyword for subtitle effect, can be None.
+                # if keywork is none => effect bellow apply for whole lyric
+                'keyword_fmt': {
+                    'fontname': 'UTMAmericanaItalic',
+                    'fontsize': 30,
+                    'fontcolor': 0x028CF7,
+                    'alignment': 3
+                }
+            },
+            'effect_info': {
+                # Zoom in and change keyword color format
+                'effect_start': [[1,  # font size code
+                                  20],  # font size is 20
+                                 [2,  # font color code
+                                  0x345678  # font color hex code
+                                  ]],
+                'effect_transform': [[1, 50],
+                                     [2, 0xffeeff]],
+                'timing': "",  # timing is None mean mean duration = duration sub line
+                'accel': 0.8
+            }
+        }
+        self.lyriceffect = LyricEffect(lyric_effect)
+
+    def test_apply_lyric_effect(self):
+        subinfo = {
+            'rectangle': [100, 100, 200, 300],
+            'fontname': 'UTM Centur',
+            'fontcolor': 0x018CA7,
+            'fontsize': 20,
+        }
+        subcustomizer = create_ass_from_lrc(
+            r'D:\Project\ytcreatorservice\backend\crawler\test\Nhắm Mắt Thấy Mùa Hè (Nhắm Mắt Thấy Mùa Hè OST).lrc',
+            'test.ass', subinfo=SubtitleInfo(subinfo),
+            resolution=FFmpegProfile.PROFILE_FULLHD.value)
+        for line in subcustomizer.subs:
+            print(line.text)
+            line.text = self.lyriceffect.apply_lyric_effect(line.text, line.duration)
+            print(line.text)
+        subcustomizer.subs.save("lyric_effect_test.ass")
+
+        pass

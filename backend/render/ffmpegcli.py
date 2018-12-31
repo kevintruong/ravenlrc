@@ -50,8 +50,9 @@ class FfmpegCli(object):
             self.ffmpeg_cli.append('-hwaccel')
             self.ffmpeg_cli.append('d3d11va')
         elif curPlatform == "Linux":
-            self.ffmpeg_cli.append('-hwaccel')
-            self.ffmpeg_cli.append('vdpau')
+            pass
+            # self.ffmpeg_cli.append('-hwaccel')
+            # self.ffmpeg_cli.append('vdpau')
         else:
             logger.debug('not support yet')
 
@@ -130,7 +131,7 @@ class FfmpegCli(object):
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
-            raise Exception('render', out, err)
+            raise Exception('ffmpeg', out, err)
         return out, err
 
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
@@ -198,15 +199,17 @@ class FfmpegCli(object):
         :param output_bg:
         :return:
         '''
+        bg_timeleng = self.get_media_time_length(input_bg)
+        loopcount = int(time_length / bg_timeleng) + 1
         FfmpegCli.check_file_exist(input_bg)
-        self._ffmpeg_input_fill_cmd('-re')
+        # self._ffmpeg_input_fill_cmd('-re')
         self._ffmpeg_input_fill_cmd('-stream_loop')
-        self._ffmpeg_input_fill_cmd('-1')
+        self._ffmpeg_input_fill_cmd('{}'.format(loopcount))
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input_fill_cmd('-t')
         self._ffmpeg_input_fill_cmd('{}'.format(time_length))
-        # self._ffmpeg_input_fill_cmd('-c')
-        # self._ffmpeg_input_fill_cmd('copy')
+        self._ffmpeg_input_fill_cmd('-c')
+        self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
         # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
@@ -236,7 +239,7 @@ class FfmpegCli(object):
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)
 
     def adding_sub_to_video(self, input_sub: str, input_video: str, output_vid: str):
-        '''
+        """
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
         ffmpeg_cmd=$(echo render -y -i ${input_vid} -vf subtitles='"'${ffmpeg_sub_cmd}"'"${ffmpeg_font_att}"'"'"':original_size=${FULLHD} ${output_mp4})
@@ -248,7 +251,7 @@ class FfmpegCli(object):
         :param input_video:
         :param output_vid:
         :return:
-        '''
+        """
 
         FfmpegCli.check_file_exist(input_sub)
         FfmpegCli.check_file_exist(input_video)
@@ -303,10 +306,10 @@ class FfmpegCli(object):
         '''
         FfmpegCli.check_file_exist(input_vid)
         FfmpegCli.check_file_exist(input_audio)
-        ffmpeg_cmd = ["render", "-y",
+        ffmpeg_cmd = ["ffmpeg", "-y",
                       "-i", "{}".format(input_vid),
                       "-i", "{}".format(input_audio),
-                      "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest"]
+                      "-map", "0:v", "-map", "1:a", "-map", "0:v", "-shortest"]
         self._ffmpeg_input_fill_cmd('-c')
         self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
@@ -371,17 +374,37 @@ class FfmpegCli(object):
         self.run(self.ffmpeg_cli, outdir)
         pass
 
-    # parser = argparse.ArgumentParser(description='Get video information')
-    # parser.add_argument('in_filename', help='Input filename')
-    #
-    # if __name__ == '__main__':
-    #     args = parser.parse_args()
-    # ffmpeg_cli = FffmpegCli()
-    #     time_length = ffmpeg_cli.get_media_time_length(args.in_filename)
-    #     logger.debug("time length " + str(time_length))
-    # ffmpeg_cli.add_logo_to_bg_img(
-    #     '/mnt/775AD44933621551/Project/MMO/youtube/Content/CoverImage/NhamMatThayMuaHe_Background.png',
-    #     '/mnt/775AD44933621551/Project/MMO/youtube/Content/Titile/Xinloi.png', Coordinate(100, 100))
+    def create_rgba_background_effect_from_list_png(self, inputdir: str, output: str):
+        """
+        ffmpeg -pattern_type glob -i 'angle/*.png' -r 30 -pix_fmt rgba -vcodec png z.mov
+
+        :param inputdir:
+        :param output:
+        :return:
+        """
+        self._ffmpeg_input_fill_cmd('-pattern_type')
+        self._ffmpeg_input_fill_cmd('glob')
+        self._ffmpeg_input_fill_cmd('-i')
+        self._ffmpeg_input_fill_cmd('{}/*.png'.format(inputdir))
+        self._ffmpeg_input_fill_cmd('-r')
+        self._ffmpeg_input_fill_cmd('30')
+        self._ffmpeg_input_fill_cmd('-pix_fmt')
+        self._ffmpeg_input_fill_cmd('rgba')
+        self._ffmpeg_input_fill_cmd('-vcodec')
+        self._ffmpeg_input_fill_cmd('png')
+        self.run(self.ffmpeg_cli, output)
+
+# parser = argparse.ArgumentParser(description='Get video information')
+# parser.add_argument('in_filename', help='Input filename')
+#
+# if __name__ == '__main__':
+#     args = parser.parse_args()
+# ffmpeg_cli = FffmpegCli()
+#     time_length = ffmpeg_cli.get_media_time_length(args.in_filename)
+#     logger.debug("time length " + str(time_length))
+# ffmpeg_cli.add_logo_to_bg_img(
+#     '/mnt/775AD44933621551/Project/MMO/youtube/Content/CoverImage/NhamMatThayMuaHe_Background.png',
+#     '/mnt/775AD44933621551/Project/MMO/youtube/Content/Titile/Xinloi.png', Coordinate(100, 100))
 # ffmpeg_cli.add_affect_overlay_in_sub("/tmp/xin_loi_img.mp4",
 #                                      "/mnt/775AD44933621551/Project/MMO/youtube/Content/bg_affect/test.gif",
 #                                      subframe=Coordinate(000, 000, 1920, 1080))

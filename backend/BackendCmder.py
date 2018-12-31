@@ -3,6 +3,7 @@ import abc
 from backend.render.ffmpegcli import FfmpegCli
 from backend.crawler.subcrawler import *
 from backend.subeffect.asseditor import *
+from backend.subeffect.asseffect.LyricEffect import LyricEffect
 from backend.utility.Utility import *
 from backend.crawler.nct import *
 
@@ -97,7 +98,7 @@ class BuildCmder(Cmder):
             if 'affect_info' in field:
                 self.affinfo = AffectInfo(cmd['affect_info'])
             if 'lyric_effect' in field:
-                self.sub_effect = SubEffect(cmd['lyric_effect'])
+                self.sub_effect = LyricEffect(cmd['lyric_effect'])
             if 'output' in field:
                 self.output = cmd['output']
 
@@ -111,10 +112,10 @@ class BuildCmder(Cmder):
         preview_asstempfile = AssTempFile().getfullpath()
         preview_bgtempfile = PngTempFile().getfullpath()
 
-        create_ass(self.songinfo.lyric_file,
-                   preview_asstempfile,
-                   self.bginfo.subinfo,
-                   FFmpegProfile.PROFILE_LOW.value)
+        create_ass_from_lrc(self.songinfo.lyric_file,
+                            preview_asstempfile,
+                            self.bginfo.subinfo,
+                            FFmpegProfile.PROFILE_LOW.value)
 
         time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file) / 2
 

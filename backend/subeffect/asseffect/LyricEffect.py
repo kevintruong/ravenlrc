@@ -1,4 +1,4 @@
-from backend.subeffect.keyword.keyword import AssDialogueTextKeyWordFormatter
+from backend.subeffect.keyword.keyword import *
 
 
 class KeyWordInfo:
@@ -7,20 +7,35 @@ class KeyWordInfo:
             if 'keywords' in key:
                 self.keywords = keywordinfo['keywords']
             if 'keyword_fmt' in key:
-                self.keyword_fmt = AssDialogueTextKeyWordFormatter(keywordinfo['keyword_fmt'])
+                self.keyword_fmt = keywordinfo['keyword_fmt']
+
+    def get_keyword(self):
+        return self.keywords
+
+    def get_keyword_formatter(self):
+        return self.keyword_fmt
 
 
 class EffectInfo:
-    def __init__(self, effectinfo: dict):
-
+    def __init__(self, type_effect: int, effectinfo: dict):
+        if type_effect == 1:
+            self.effect_info = AssDialueTextAnimatedTransform.json2dict(effectinfo)
         pass
 
 
 class LyricEffect:
     def __init__(self, lrc_effect: dict):
+        self.keywordinfo = None
+        self.effect_info = None
         for key in lrc_effect.keys():
             if 'keyword_info' in key:
                 self.keywordinfo = KeyWordInfo(lrc_effect['keyword_info'])
             if 'effect_info' in key:
-                self.effect_info = None
-        pass
+                effect_type = lrc_effect['effect_type']
+                self.effect_info = EffectInfo(effect_type, lrc_effect['effect_info']).effect_info
+        self.lyriceffect_processor = AssDialogueTextProcessor(keyword=self.keywordinfo.keywords,
+                                                              formatter=self.keywordinfo.keyword_fmt,
+                                                              animatedconf=self.effect_info)
+
+    def apply_lyric_effect(self, line, duration):
+        return self.lyriceffect_processor.keyword_process(line, duration)

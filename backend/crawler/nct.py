@@ -84,7 +84,7 @@ import unittest
 
 class testnctcrawler(unittest.TestCase):
     def setUp(self):
-        self.url = r'https://www.nhaccuatui.com/bai-hat/dai-lo-tan-vo-uyen-linh.QDJIU9iDNHfI.html'
+        self.url = r'https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html'
         self.nct = NctCrawler(self.url)
 
     def test_init(self):
