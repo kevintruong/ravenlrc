@@ -39,17 +39,6 @@ class BuildType(IntEnum):
     BUILD_RELEASE = 1
 
 
-class SongInfo:
-    def __init__(self, songinfo: dict):
-        self.song_file = songinfo['song_file']
-        check_file_existed(self.song_file)
-        self.lyric_file = songinfo['lyric_file']
-        check_file_existed(self.lyric_file)
-        self.song_name = songinfo['song_name']
-        self.title_file = songinfo['title_file']
-        check_file_existed(self.title_file)
-
-
 class Rectangle:
     def __init__(self, coordinate: list):
         self.x = coordinate[0]
@@ -66,15 +55,19 @@ class TitleInfo(SubtitleInfo):
 
 class BackgroundInfo:
     def __init__(self, bginfo: dict):
-        self.bg_file = bginfo['bg_file']
-        self.subinfo: SubtitleInfo = SubtitleInfo(bginfo['sub_info'])
-        self.titleinfo = TitleInfo(bginfo['title_info'])
+        for keyfield in bginfo.keys():
+            if 'bg_file' in keyfield:
+                self.bg_file = bginfo[keyfield]
+            if 'lyric_info' in keyfield:
+                self.subinfo: SubtitleInfo = SubtitleInfo(bginfo[keyfield])
+            if 'title_info' in keyfield:
+                self.titleinfo = TitleInfo(bginfo[keyfield])
 
 
-class AffectInfo:
-    def __init__(self, affinfo: dict):
-        self.affect_file = affinfo['affect_file']
-        self.opacity = affinfo['opacity']
+class EffectInfo:
+    def __init__(self, effinfo: dict):
+        self.affect_file = effinfo['affect_file']
+        self.opacity = effinfo['opacity']
 
 
 class BuildCmder(Cmder):
@@ -90,19 +83,19 @@ class BuildCmder(Cmder):
         super().__init__()
         for field in cmd.keys():
             if 'type' in field:
-                self.build_type = BuildType(cmd['type'])
+                self.build_type = BuildType(cmd[field])
             if 'song_info' in field:
-                self.songinfo = SongInfo(cmd['song_info'])
+                self.songinfo = SongInfo(cmd[field])
             if 'background_info' in field:
-                self.bginfo = BackgroundInfo(cmd['background_info'])
-            if 'affect_info' in field:
-                self.affinfo = AffectInfo(cmd['affect_info'])
+                self.bginfo = BackgroundInfo(cmd[field])
+            if 'effect_info' in field:
+                self.effectinfo = EffectInfo(cmd[field])
             if 'lyric_effect' in field:
-                self.lyric_effect = LyricEffect(cmd['lyric_effect'])
+                self.lyric_effect = LyricEffect(cmd[field])
             if 'output' in field:
-                self.output = cmd['output']
+                self.output = cmd[field]
             self.ffmpegcli = FfmpegCli()
-            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file)
+            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
 
     def build_mv(self, profile):
         preview_profile = profile
@@ -111,7 +104,7 @@ class BuildCmder(Cmder):
         preview_asstempfile = AssTempFile().getfullpath()
         preview_bgtempfile = PngTempFile().getfullpath()
 
-        create_ass_from_lrc(self.songinfo.lyric_file,
+        create_ass_from_lrc(self.songinfo.lyric,
                             preview_asstempfile,
                             self.bginfo.subinfo,
                             preview_profile)
@@ -119,7 +112,7 @@ class BuildCmder(Cmder):
             # TODO add process lyric effect
             pass
 
-        time_length = self.ffmpegcli.get_media_time_length(self.songinfo.song_file) / 2
+        time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location) / 2
 
         preview_affect = AffMvTemplateFile().getfullpath()
         logger.debug(preview_profile)
@@ -127,12 +120,12 @@ class BuildCmder(Cmder):
             self.ffmpegcli.scale_input(self.bginfo.bg_file,
                                        preview_profile,
                                        preview_bgtempfile)
-            self.ffmpegcli.scale_input(self.affinfo.affect_file,
+            self.ffmpegcli.scale_input(self.effectinfo.affect_file,
                                        preview_profile,
                                        preview_affect)
 
         else:
-            preview_affect = self.affinfo.affect_file
+            preview_affect = self.effectinfo.affect_file
             preview_bgtempfile = self.bginfo.bg_file
 
         preview_bgmv = BgMvTemplateFile().getfullpath()
@@ -146,13 +139,13 @@ class BuildCmder(Cmder):
         self.ffmpegcli.add_affect_to_video(preview_bgmv,
                                            preview_affectmv,
                                            preview_bg_affect_mv,
-                                           self.affinfo.opacity)
+                                           self.effectinfo.opacity)
         preview_bg_aff_sub_mv = MvTempFile().getfullpath()
         self.ffmpegcli.adding_sub_to_video(preview_asstempfile,
                                            preview_bg_affect_mv,
                                            preview_bg_aff_sub_mv)
         self.ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
-                                          self.songinfo.song_file,
+                                          self.songinfo.location,
                                           self.output
                                           )
 

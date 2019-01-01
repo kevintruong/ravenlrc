@@ -27,7 +27,7 @@ class SongInfo:
         self.songurl = nctsonginfo['info']
         self.title = nctsonginfo['title']
         self.lyric = nctsonginfo['lyric']
-        self.localtion = nctsonginfo['location']
+        self.location = nctsonginfo['location']
 
 
 class NctCrawler(Crawler):
@@ -73,7 +73,6 @@ class NctCrawler(Crawler):
         returndata = decrypt(NctCrawler.key, lyricfile.content)
         with codecs.open(locallyricfile, 'w', "utf-8") as f:
             f.write(returndata)
-        # open(locallyricfile, 'w').write(returndata)
         songinfo.localtion = localmp3file.decode('utf-8')
         songinfo.lyric = locallyricfile.decode('utf-8')
         return songinfo.toJSON()
@@ -113,3 +112,7 @@ class testnctcrawler(unittest.TestCase):
     def test_download_file(self):
         jsondat = self.nct.getdownload('./test/')
         print(jsondat)
+
+    def test_get_lyric(self):
+        jsonfile = self.nct.get_lyric('./test/')
+        print(jsonfile.decode('utf-8'))

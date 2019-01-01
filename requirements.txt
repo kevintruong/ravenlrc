@@ -1,3 +1,4 @@
+json5
 pydevd
 structlog
 python-json-logger

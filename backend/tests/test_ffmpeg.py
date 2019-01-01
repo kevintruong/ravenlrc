@@ -28,6 +28,7 @@ logo00 = os.path.join(sample_data_dir, "logo00.png")
 audio00 = os.path.join(sample_data_dir, "audio01.mp3")
 background_effect_dir = os.path.join(sample_data_dir, "sample_data/Star/Comp1")
 bg_effect = os.path.join(sample_data_dir, "bgeffect.mov")
+sub_media = os.path.join(sample_data_dir, "sub_output.mp4")
 
 full_test = "https://www.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong.EoqsR1AFD4SG.html"
 test_url00 = "https://www.nhaccuatui.com/bai-hat/xin-loi-anh-qua-phien-dong-nhi.WX2iJD8VU9ve.html"
@@ -91,7 +92,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_add_affect_to_video(self):
         output = os.path.join(test_data_dir, "affect_bg.mp4")
-        self.ffmpeg.add_affect_to_video(input_mp4_file, input_mp4_file, output, )
+        self.ffmpeg.add_affect_to_video(sub_media, bg_effect, output, affectconf=30)
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(outputLeng, inputLeng)

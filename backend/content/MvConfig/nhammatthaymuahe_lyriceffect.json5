@@ -14,7 +14,7 @@
       "fontsize": 20
     }
   },
-  "affect_info": {
+  "effect_info": {
     "affect_file": 'bg_effect.mov',
     "opacity": 50
   },
@@ -61,5 +61,7 @@
       "timing": "",
       "accel": 0.8
     }
-  }
+  },
+  "build_status": 0
+  // status :0 -> build, status 1: release (dont need to build)}
 }

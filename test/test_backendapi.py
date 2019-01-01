@@ -77,7 +77,7 @@ class MyTestCase(unittest.TestCase):
 
                 }
             },
-            "affect_info": {
+            "effect_info": {
                 'affect_file': affect_file,
                 'opacity': 50
             },
@@ -143,7 +143,7 @@ class MyTestCase(unittest.TestCase):
                     'fontsize': 40  # Can be None
                 }
             },
-            "affect_info": {
+            "effect_info": {
                 'affect_file': affect_file,
                 'opacity': 25
             }
