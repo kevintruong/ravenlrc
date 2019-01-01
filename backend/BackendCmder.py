@@ -1,4 +1,5 @@
 import abc
+from enum import Enum
 
 from backend.render.ffmpegcli import FfmpegCli
 from backend.crawler.subcrawler import *
@@ -6,6 +7,16 @@ from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
 from backend.utility.Utility import *
 from backend.crawler.nct import *
+
+CurDir = os.path.dirname(os.path.realpath(__file__))
+contentDir = os.path.join(CurDir, 'content')
+
+
+class ContentDir(Enum):
+    SONG_DIR = os.path.join(contentDir, 'Song')
+    EFFECT_DIR = os.path.join(contentDir, 'BgEffect')
+    TITLE_DIR = os.path.join(contentDir, 'Title')
+    MVCONF_DIR = os.path.join(contentDir, 'MvConfig')
 
 
 class Cmder:
@@ -79,11 +90,24 @@ class BuildCmder(Cmder):
             return self.build_release()
         pass
 
+    def auto_reconfig_build_cmd(self):
+        if self.build_type is None:
+            self.build_type = BuildType.BUILD_RELEASE
+        pass
+
     def __init__(self, cmd: dict):
         super().__init__()
+        self.songinfo = None
+        self.song_url = None
+        self.build_type = None
+        self.bginfo = None
+        self.effectinfo = None
+        self.lyric_effect = None
         for field in cmd.keys():
             if 'type' in field:
                 self.build_type = BuildType(cmd[field])
+            if 'song_url' in field:
+                self.song_url = cmd[field]
             if 'song_info' in field:
                 self.songinfo = SongInfo(cmd[field])
             if 'background_info' in field:
@@ -94,8 +118,19 @@ class BuildCmder(Cmder):
                 self.lyric_effect = LyricEffect(cmd[field])
             if 'output' in field:
                 self.output = cmd[field]
-            self.ffmpegcli = FfmpegCli()
-            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
+        self.ffmpegcli = FfmpegCli()
+        self.get_song_info_from_url()
+        self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
+
+    def get_song_info_from_url(self):
+        if self.songinfo is None and self.song_url:
+            crawlerdict = {
+                'crawl_url': self.song_url,
+                'output': ContentDir.SONG_DIR.value
+            }
+            crawler = CrawlCmder(crawlerdict)
+            self.songinfo = SongInfo(json.loads(crawler.run()))
+            pass
 
     def build_mv(self, profile):
         preview_profile = profile
@@ -155,4 +190,4 @@ class BuildCmder(Cmder):
         return self.build_mv(FFmpegProfile.PROFILE_LOW.value)
 
     def build_release(self):
-        return self.build_mv(FFmpegProfile.PROFILE_2K.value)
+        return self.build_mv(FFmpegProfile.PROFILE_FULLHD.value)
