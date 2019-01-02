@@ -40,6 +40,7 @@ class NctCrawler(Crawler):
         songinfos = ncturl.split("/")
         songid = songinfos[4]
         self.mobileNctWmUrl = NctCrawler.nctWmUrl + '{}'.format(songid)
+        self.songinfo = self.parser()
         pass
 
     def get_songkey(self, htmlbody):
@@ -61,32 +62,34 @@ class NctCrawler(Crawler):
         songinf = SongInfo(songinfodata['data'])
         return songinf
 
+    def get_songinfo(self):
+        return self.songinfo.toJSON()
+
     def getdownload(self, outputdir: str):
-        songinfo: SongInfo = self.parser()
+        songinfo: SongInfo = self.songinfo
+        localmp3file = self.get_mp3file(outputdir)
+        locallyricfile = self.get_lyric(outputdir)
+        songinfo.location = localmp3file
+        songinfo.lyric = locallyricfile
+        return songinfo.toJSON()
+
+    def get_mp3file(self, outputdir: str):
+        songinfo: SongInfo = self.songinfo
         mp3file = requests.get(songinfo.location, allow_redirects=True)
         localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singerTitle)).encode('utf-8')
-        locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title)).encode('utf-8')
         with open(localmp3file, 'wb') as mp3filefd:
             mp3filefd.write(mp3file.content)
             mp3filefd.close()
-        lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
-        returndata = decrypt(NctCrawler.key, lyricfile.content)
-        with codecs.open(locallyricfile, 'w', "utf-8") as f:
-            f.write(returndata)
-        songinfo.location = localmp3file.decode('utf-8')
-        songinfo.lyric = locallyricfile.decode('utf-8')
-        return songinfo.toJSON()
+        return localmp3file.decode('utf8')
 
     def get_lyric(self, outputdir: str):
-        songinfo: SongInfo = self.parser()
+        songinfo: SongInfo = self.songinfo
         locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title)).encode('utf-8')
         lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
         returndata = decrypt(NctCrawler.key, lyricfile.content)
         with codecs.open(locallyricfile, 'w', "utf-8") as f:
             f.write(returndata)
-        return locallyricfile
-
-        pass
+        return locallyricfile.decode('utf-8')
 
 
 import unittest
@@ -104,9 +107,7 @@ class testnctcrawler(unittest.TestCase):
     def test_parse(self):
         self.assertEqual(self.nct.mobileNctWmUrl,
                          NctCrawler.nctWmUrl + "nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
-        nctinfo = self.nct.parser()
-        print(nctinfo.toJSON())
-        jsondat = json.loads(nctinfo)
+        print(self.nct.get_songinfo())
         print('end')
 
     def test_download_file(self):
@@ -115,4 +116,8 @@ class testnctcrawler(unittest.TestCase):
 
     def test_get_lyric(self):
         jsonfile = self.nct.get_lyric('./test/')
-        print(jsonfile.decode('utf-8'))
+        print(jsonfile)
+
+    def test_get_mp3file(self):
+        jsonfile = self.nct.get_mp3file()
+        print(jsonfile)

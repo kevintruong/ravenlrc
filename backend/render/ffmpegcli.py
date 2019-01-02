@@ -137,7 +137,7 @@ class FfmpegCli(object):
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
         cmd += self.ffmpeg_options
         if superfast == 1:
-            # cmd += self.supperfast_profile
+            cmd += self.supperfast_profile
             pass
         if youtube == 1:
             cmd += self.youtube_codec
@@ -284,17 +284,40 @@ class FfmpegCli(object):
         """
         FfmpegCli.check_file_exist(affect_vid)
         FfmpegCli.check_file_exist(video)
-        self._ffmpeg_input(affect_vid)
         self._ffmpeg_input(video)
+        self._ffmpeg_input(affect_vid)
         self._ffmpeg_input_filter_complex_prefix()
-        opacity = float(affectconf / 100)
-        filter_args = "[1:0]setdar=dar=0,format=rgba[a]; \
-                       [0:0]setdar=dar=0,format=rgba[b]; \
-                       [b][a]blend=all_mode='overlay':all_opacity={}".format(opacity)
-        self._ffmpeg_input_fill_cmd(filter_args)
+        self._ffmpeg_input_fill_cmd('overlay ')
+        # opacity = float(affectconf / 100)
+        # filter_args = "[1:0]setdar=dar=0,format=rgba[a]; \
+        #                [0:0]setdar=dar=0,format=rgba[b]; \
+        #                [a][b]blend=all_mode='overlay':all_opacity={}".format(opacity)
+        # self._ffmpeg_input_fill_cmd(filter_args)
+        self._ffmpeg_input_fill_cmd('-r')
+        self._ffmpeg_input_fill_cmd('25')
         # ffmpeg_cmd = ["render", "-y", "-i", "{}".format(video), "-i", "{}".format(bg_video), "-filter_complex",
         #               "{}".format(filter_args)]
         self.ffmpeg_cli_run(self.ffmpeg_cli, output)
+
+    def clean_up_mp3_meta_data(self, mp3file, mp3out):
+        """
+       ffmpeg -i tagged.mp3 -map 0:a -codec:a copy -map_metadata -1 out.mp3
+        :param mp3file:
+        :return:
+        """
+        FfmpegCli.check_file_exist(mp3file)
+        self._ffmpeg_input(mp3file)
+        self._ffmpeg_input_fill_cmd('-map')
+        self._ffmpeg_input_fill_cmd('0:a')
+        self._ffmpeg_input_fill_cmd('-codec:a')
+        self._ffmpeg_input_fill_cmd('copy')
+        self._ffmpeg_input_fill_cmd('-map_metadata')
+        self._ffmpeg_input_fill_cmd('-1')
+        self.ffmpeg_cli_run(self.ffmpeg_cli, mp3out)
+
+        #
+
+        pass
 
     def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str):
         '''
@@ -306,12 +329,15 @@ class FfmpegCli(object):
         '''
         FfmpegCli.check_file_exist(input_vid)
         FfmpegCli.check_file_exist(input_audio)
+        from backend.utility.TempFileMnger import Mp3TempFile
+        tempaudiofile = Mp3TempFile().getfullpath()
+        self.clean_up_mp3_meta_data(input_audio, tempaudiofile)
         ffmpeg_cmd = ["ffmpeg", "-y",
                       "-i", "{}".format(input_vid),
-                      "-i", "{}".format(input_audio),
+                      "-i", "{}".format(tempaudiofile),
                       "-map", "0:v", "-map", "1:a", "-map", "0:v", "-shortest"]
-        self._ffmpeg_input_fill_cmd('-c')
-        self._ffmpeg_input_fill_cmd('copy')
+        # self._ffmpeg_input_fill_cmd('-c')
+        # self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
 
     def add_logo_to_bg_img(self, input_bg: str, input_logo: str, output: str,

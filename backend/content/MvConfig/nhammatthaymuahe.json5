@@ -15,8 +15,8 @@
     }
   },
   "effect_info": {
-    "affect_file": 'bg_effect.mov',
-    "opacity": 50
+    "affect_file": 'starfalling.mov',
+    "opacity": 30
   },
   "status": 0
   // status :0 -> build, status 1: release (dont need to build)
