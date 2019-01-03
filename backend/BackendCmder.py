@@ -1,5 +1,4 @@
 from enum import Enum
-
 from backend.crawler.nct import *
 from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
@@ -7,7 +6,8 @@ from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
-contentDir = os.path.join(CurDir, 'GdriveContent\content')
+contentDir = os.path.join(CurDir, 'content')
+
 
 class ContentDir(Enum):
     SONG_DIR = os.path.join(contentDir, 'Song')
