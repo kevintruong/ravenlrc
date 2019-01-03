@@ -4,6 +4,7 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
+from backend.utility.Utility import check_file_existed
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
@@ -17,6 +18,7 @@ class ContentDir(Enum):
     BGIMG_DIR = os.path.join(contentDir, 'BgImage')
     MVRELEASE_DIR = os.path.join(contentDir, 'Mv/Release')
     MVPREV_DIR = os.path.join(contentDir, 'Mv/Preview')
+    BUILDCMD_DIR = os.path.join(contentDir, 'BuildCmd')
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):
@@ -51,6 +53,24 @@ class EffectCachedFile(CachedFile):
     @classmethod
     def create_cachedfile(cls, filename):
         return os.path.join(cls.CachedEffectDir, filename)
+
+
+class BgImgCachedFile(CachedFile):
+    CachedDir = os.path.join(ContentDir.BGIMG_DIR.value, '.cache')
+
+    @classmethod
+    def get_cachedfile(cls, filename):
+        listfiles = os.listdir(cls.CachedDir)
+        for file in listfiles:
+            if filename in file:
+                return os.path.join(cls.CachedDir, file)
+        return None
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.CachedDir, filename)
+
+    pass
 
 
 class BgVidCachedFile(CachedFile):
@@ -121,6 +141,7 @@ class BackgroundInfo:
         for keyfield in bginfo.keys():
             if 'bg_file' in keyfield:
                 self.bg_file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, bginfo[keyfield])
+                check_file_existed(self.bg_file)
             if 'lyric_info' in keyfield:
                 self.subinfo: SubtitleInfo = SubtitleInfo(bginfo[keyfield])
             if 'title_info' in keyfield:
@@ -130,51 +151,67 @@ class BackgroundInfo:
 class EffectInfo:
     def __init__(self, effinfo: dict):
         self.effect_file = ContentDir.get_file_path(ContentDir.EFFECT_DIR.value, effinfo['affect_file'])
+        check_file_existed(self.effect_file)
         self.opacity = effinfo['opacity']
 
 
 class BuildCmder(Cmder):
 
     def run(self):
-        if self.build_type == BuildType.BUILD_PREVIEW:
-            return self.build_preview()
-        elif self.build_type == BuildType.BUILD_RELEASE:
-            return self.build_release()
-        pass
+        try:
+            if self.build_type == BuildType.BUILD_PREVIEW:
+                self.build_preview()
+            elif self.build_type == BuildType.BUILD_RELEASE:
+                self.build_release()
+            return self.toJSON()
+        except Exception as e:
+            print("Exception as {}".format(e))
+            raise e
 
     def auto_reconfig_build_cmd(self):
         if self.build_type is None:
             self.build_type = BuildType.BUILD_RELEASE
         pass
 
+    def toJSON(self):
+        buildfilename = "buildcmd_" + self.songinfo.title + ".json5"
+        buildfilepath = os.path.join(ContentDir.BUILDCMD_DIR.value, buildfilename)
+        with open(buildfilepath, 'w') as file:
+            json.dump(self, file, default=lambda o: o.__dict__,
+                      sort_keys=True, indent=4)
+
     def __init__(self, cmd: dict):
         super().__init__()
-        self.songinfo = None
-        self.song_url = None
-        self.build_type = None
-        self.bginfo = None
-        self.effectinfo = None
-        self.lyric_effect = None
-        for field in cmd.keys():
-            if 'type' in field:
-                self.build_type = BuildType(cmd[field])
-            if 'song_url' in field:
-                self.song_url = cmd[field]
-            if 'song_info' in field:
-                self.songinfo = SongInfo(cmd[field])
-            if 'background_info' in field:
-                self.bginfo = BackgroundInfo(cmd[field])
-            if 'effect_info' in field:
-                self.effectinfo = EffectInfo(cmd[field])
-            if 'lyric_effect' in field:
-                self.lyric_effect = LyricEffect(cmd[field])
-            if 'output' in field:
-                self.output = cmd[field]
-        self.ffmpegcli = FfmpegCli()
-        self.get_song_info_from_url()
-        self.output = os.path.join(ContentDir.MVRELEASE_DIR.value, self.songinfo.title + ".mp4")
-        self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
-        self.auto_reconfig_build_cmd()
+        try:
+            self.songinfo = None
+            self.song_url = None
+            self.build_type = None
+            self.bginfo = None
+            self.effectinfo = None
+            self.lyric_effect = None
+            for field in cmd.keys():
+                if 'type' in field:
+                    self.build_type = BuildType(cmd[field])
+                if 'song_url' in field:
+                    self.song_url = cmd[field]
+                if 'song_info' in field:
+                    self.songinfo = SongInfo(cmd[field])
+                if 'background_info' in field:
+                    self.bginfo = BackgroundInfo(cmd[field])
+                if 'effect_info' in field:
+                    self.effectinfo = EffectInfo(cmd[field])
+                if 'lyric_effect' in field:
+                    self.lyric_effect = LyricEffect(cmd[field])
+                if 'output' in field:
+                    self.output = cmd[field]
+            self.ffmpegcli = FfmpegCli()
+            self.get_song_info_from_url()
+            self.output = os.path.join(ContentDir.MVRELEASE_DIR.value, self.songinfo.title + ".mp4")
+            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
+            self.auto_reconfig_build_cmd()
+        except Exception as e:
+            print("error {}".format(e))
+            raise e
 
     def get_song_info_from_url(self):
         if self.songinfo is None and self.song_url:
@@ -191,11 +228,11 @@ class BuildCmder(Cmder):
 
         self.ffmpegcli.set_resolution(preview_profile)
         preview_asstempfile = AssTempFile().getfullpath()
-
         create_ass_from_lrc(self.songinfo.lyric,
                             preview_asstempfile,
                             self.bginfo.subinfo,
                             preview_profile)
+
         if self.lyric_effect is not None:
             # TODO add process lyric effect
             pass
@@ -203,40 +240,56 @@ class BuildCmder(Cmder):
         time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
 
         logger.debug(preview_profile)
+
         if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
-            cached_filename = BgVidCachedFile.get_cached_profile_filename(self.bginfo.bg_file, preview_profile)
-            bg_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
-            if bg_cachedfile is None:
-                bg_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-                self.ffmpegcli.scale_input(self.bginfo.bg_file,
-                                           preview_profile,
-                                           bg_cachedfile)
-
-            cached_filename = EffectCachedFile.get_cached_profile_filename(self.effectinfo.effect_file,
-                                                                           preview_profile)
-            effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
-            if effect_cachedfile is None:
-                effect_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-                self.ffmpegcli.scale_input(self.effectinfo.effect_file,
-                                           preview_profile,
-                                           effect_cachedfile)
-
-            preview_affect = effect_cachedfile
-            preview_bgtempfile = bg_cachedfile
+            preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
+            preview_affect = self.get_cached_effect_file(preview_profile)
         else:
             preview_affect = self.effectinfo.effect_file
             preview_bgtempfile = self.bginfo.bg_file
 
-        cached_filename = BgVidCachedFile.get_cached_profile_filename(preview_bgtempfile, preview_profile,
-                                                                      extension='.mp4')
-        bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
-        if bgvid_cachedfile is None:
-            bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-            preview_bgmv = bgvid_cachedfile
-            self.ffmpegcli.create_media_file_from_img(preview_bgtempfile, time_length, preview_bgmv)
-        else:
-            preview_bgmv = bgvid_cachedfile
+        preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
+        preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
 
+        preview_bg_affect_mv = MvTempFile().getfullpath()
+        self.ffmpegcli.add_affect_to_video(preview_affectmv,
+                                           preview_bgmv,
+                                           preview_bg_affect_mv,
+                                           self.effectinfo.opacity)
+
+        preview_bg_aff_sub_mv = MvTempFile().getfullpath()
+        self.ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                           preview_bg_affect_mv,
+                                           preview_bg_aff_sub_mv)
+        self.ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
+                                          self.songinfo.location,
+                                          self.output
+                                          )
+        YtTempFile.delete_all()
+        pass
+
+    def get_cached_effect_file(self, preview_profile):
+        cached_filename = EffectCachedFile.get_cached_profile_filename(self.effectinfo.effect_file,
+                                                                       preview_profile)
+        effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
+        if effect_cachedfile is None:
+            effect_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
+            self.ffmpegcli.scale_input(self.effectinfo.effect_file,
+                                       preview_profile,
+                                       effect_cachedfile)
+        return effect_cachedfile
+
+    def get_cached_backgroundimg(self, preview_profile):
+        cached_filename = BgImgCachedFile.get_cached_profile_filename(self.bginfo.bg_file, preview_profile)
+        bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        if bg_cachedfile is None:
+            bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
+            self.ffmpegcli.scale_input(self.bginfo.bg_file,
+                                       preview_profile,
+                                       bg_cachedfile)
+        return bg_cachedfile
+
+    def get_cached_effectvid(self, preview_affect, preview_profile, time_length):
         cached_filename = EffectCachedFile.get_cached_profile_filename(preview_affect, preview_profile,
                                                                        extension='.mp4')
         effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
@@ -248,21 +301,19 @@ class BuildCmder(Cmder):
                                                                 preview_affectmv)
         else:
             preview_affectmv = effectmv_cachedfile
-        preview_bg_affect_mv = MvTempFile().getfullpath()
-        self.ffmpegcli.add_affect_to_video(preview_affectmv,
-                                           preview_bgmv,
-                                           preview_bg_affect_mv,
-                                           self.effectinfo.opacity)
-        preview_bg_aff_sub_mv = MvTempFile().getfullpath()
-        self.ffmpegcli.adding_sub_to_video(preview_asstempfile,
-                                           preview_bg_affect_mv,
-                                           preview_bg_aff_sub_mv)
-        self.ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
-                                          self.songinfo.location,
-                                          self.output
-                                          )
-        YtTempFile.delete_all()
-        pass
+        return preview_affectmv
+
+    def get_cached_bgvid(self, preview_bgtempfile, preview_profile, time_length):
+        cached_filename = BgVidCachedFile.get_cached_profile_filename(preview_bgtempfile, preview_profile,
+                                                                      extension='.mp4')
+        bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        if bgvid_cachedfile is None:
+            bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
+            preview_bgmv = bgvid_cachedfile
+            self.ffmpegcli.create_media_file_from_img(preview_bgtempfile, time_length, preview_bgmv)
+        else:
+            preview_bgmv = bgvid_cachedfile
+        return preview_bgmv
 
     def build_preview(self):
         return self.build_mv(FFmpegProfile.PROFILE_LOW.value)

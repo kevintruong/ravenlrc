@@ -135,6 +135,7 @@ class FfmpegCli(object):
         return out, err
 
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
+        global out, err
         cmd += self.ffmpeg_options
         if superfast == 1:
             cmd += self.supperfast_profile
@@ -145,16 +146,20 @@ class FfmpegCli(object):
             cmd += self.bitrate_configure
 
         cmd.append(output)
-        logger.debug(' '.join(map(str, cmd)))
-
-        p = subprocess.Popen(cmd)
-        out, err = p.communicate(input)
-        retcode = p.poll()
-        self.reset_ffmpeg_cmd()
-        if retcode:
+        # logger.debug(' '.join(map(str, cmd)))
+        try:
+            p = subprocess.Popen(cmd)
+            out, err = p.communicate(input)
+            retcode = p.poll()
             self.reset_ffmpeg_cmd()
-            raise Exception('render', out, err)
-        return out, err
+            print("ffmpeg return code {}".format(retcode))
+            if retcode:
+                self.reset_ffmpeg_cmd()
+                raise Exception('ffmpeg', out, err)
+            return out, err
+        except Exception as e:
+            os.remove(output)
+            raise Exception('ffmpeg', out, err)
 
     @classmethod
     def check_file_exist(cls, inputfile: str):

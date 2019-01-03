@@ -12,6 +12,8 @@ Basic Echobot example, repeats messages.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
+import json
+
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
@@ -25,13 +27,31 @@ logger = logging.getLogger(__name__)
 registerid = []
 
 eLinkGateBot = None
+YtCreator_BotToken = "698566319:AAHnZBx4LK4um0jHhxMINTWrUuwvb_wLFbk"
+YtCreatorBuildChannelId =-1001124531239
 
 
 class TeleNotifyStream(logging.Handler):
+
+    def __init__(self, level=logging.NOTSET):
+        global elinkTeleUserDb
+        global eLinkGateBot
+        super().__init__(level=logging.NOTSET)
+        self.ytcreatorbot = Bot(token=YtCreator_BotToken)
+
     def emit(self, record):
-        json = self.format(record)
-        for each in registerid:
-            eLinkGateBot.sendMessage(chat_id=each, text=json)
+        data = self.ytcreatorbot.getUpdates()
+        print("{}".format(data))
+        self.ytcreatorbot.send_message(YtCreatorBuildChannelId, "hello world")
+
+
+import unittest
+
+
+class Test_Telegramnotify(unittest.TestCase):
+    def test_telegramnotify(self):
+        notifier = TeleNotifyStream()
+        notifier.emit("hello")
 
 
 # Define a few command handlers. These usually take the two arguments bot and
@@ -68,7 +88,7 @@ def status(bot, update):
 def TeleNotifier_Runner():
     """Start the bot."""
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater("482729823:AAHdGNjzuX8IlU6rxzxEvi8wHHtxd3PlSV0")
+    updater = Updater(YtCreator_BotToken)
 
     global eLinkGateBot
     eLinkGateBot = updater.bot
