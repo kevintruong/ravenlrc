@@ -9,6 +9,10 @@ from backend.utility.Utility import check_file_existed
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
 
+import backend.yclogger
+
+telelog = logging.getLogger('telebot')
+
 
 class ContentDir(Enum):
     SONG_DIR = os.path.join(contentDir, 'Song')
@@ -163,6 +167,7 @@ class BuildCmder(Cmder):
                 self.build_preview()
             elif self.build_type == BuildType.BUILD_RELEASE:
                 self.build_release()
+            telelog.debug('Build complete')
             return self.toJSON()
         except Exception as e:
             print("Exception as {}".format(e))

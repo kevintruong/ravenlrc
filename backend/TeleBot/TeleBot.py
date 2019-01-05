@@ -19,6 +19,7 @@ from telegram import Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 import backend.yclogger
+from backend.TeleBot.TeleCmder import TeleBuildCmder
 
 telelog = logging.getLogger('telebot')
 
@@ -175,12 +176,16 @@ class YtCreatorTeleBotManager:
     def help(cls, bot, update):
         """Send a message when the command /help is issued."""
         update.message.reply_text('Help!')
+        update.message.reply_text('/build <configure_file> build type \n '
+                                  'example: /build TocGioThoiBay release')
 
     @classmethod
     def build(cls, bot: bot, update):
         print(update.message.text)
         buildcmd = update.message.text
-        update.message.reply_text('this is build command')
+        buildcmder = TeleBuildCmder(buildcmd)
+        buildcmder.run_build_cmd()
+        update.message.reply_text('Build Complete')
 
     @classmethod
     def echo(cls, bot: Bot, update):
