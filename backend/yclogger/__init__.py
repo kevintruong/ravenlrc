@@ -42,6 +42,12 @@ DEFAULT_CONFIGURE = {
             'class': 'logging.FileHandler',
             'filename': debugfile
         },
+        'tele': {
+            'level': 'DEBUG',
+            'formatter': 'standard',
+            'class': 'backend.TeleBot.TeleBot.TeleNotifyStream',
+        },
+
     },
     'loggers': {
         'backend': {
@@ -49,10 +55,9 @@ DEFAULT_CONFIGURE = {
             'level': logging.DEBUG,
             'propagate': True
         },
-        'django.request': {
-            'handlers': ['default'],
-            'level': 'WARN',
-            'propagate': False
+        'telebot': {
+            'handlers': ['tele'],
+            'level': logging.DEBUG
         },
     }
 }

@@ -1,3 +1,4 @@
+telegram
 json5
 pydevd
 structlog
@@ -7,3 +8,4 @@ google
 flashtext
 hug
 selenium
+urllib3
