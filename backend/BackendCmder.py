@@ -167,8 +167,9 @@ class BuildCmder(Cmder):
                 self.build_preview()
             elif self.build_type == BuildType.BUILD_RELEASE:
                 self.build_release()
-            telelog.debug('Build complete')
-            return self.toJSON()
+            self.toJSON()
+            return self.output
+
         except Exception as e:
             print("Exception as {}".format(e))
             raise e
@@ -179,7 +180,7 @@ class BuildCmder(Cmder):
         pass
 
     def toJSON(self):
-        buildfilename = "buildcmd_" + self.songinfo.title + ".json5"
+        buildfilename = "buildcmd_" + self.songinfo.title + self.build_type.name + ".json5"
         buildfilepath = os.path.join(ContentDir.BUILDCMD_DIR.value, buildfilename)
         with open(buildfilepath, 'w') as file:
             json.dump(self, file, default=lambda o: o.__dict__,
@@ -211,12 +212,20 @@ class BuildCmder(Cmder):
                     self.output = cmd[field]
             self.ffmpegcli = FfmpegCli()
             self.get_song_info_from_url()
-            self.output = os.path.join(ContentDir.MVRELEASE_DIR.value, self.songinfo.title + ".mp4")
             self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
             self.auto_reconfig_build_cmd()
+            self.configure_output()
         except Exception as e:
             print("error {}".format(e))
             raise e
+
+    def configure_output(self):
+        if self.build_type == BuildType.BUILD_PREVIEW:
+            self.output = os.path.join(ContentDir.MVPREV_DIR.value,
+                                       self.build_type.name.lower() + '_' + self.songinfo.title + ".mp4")
+        elif self.build_type == BuildType.BUILD_RELEASE:
+            self.output = os.path.join(ContentDir.MVRELEASE_DIR.value,
+                                       self.build_type.name.lower() + '_' + self.songinfo.title + ".mp4")
 
     def get_song_info_from_url(self):
         if self.songinfo is None and self.song_url:
@@ -279,9 +288,9 @@ class BuildCmder(Cmder):
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
             effect_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-            self.ffmpegcli.scale_input(self.effectinfo.effect_file,
-                                       preview_profile,
-                                       effect_cachedfile)
+            self.ffmpegcli.scale_effect_vid(self.effectinfo.effect_file,
+                                            preview_profile,
+                                            effect_cachedfile)
         return effect_cachedfile
 
     def get_cached_backgroundimg(self, preview_profile):
@@ -289,9 +298,9 @@ class BuildCmder(Cmder):
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
-            self.ffmpegcli.scale_input(self.bginfo.bg_file,
-                                       preview_profile,
-                                       bg_cachedfile)
+            self.ffmpegcli.scale_background_img(self.bginfo.bg_file,
+                                                preview_profile,
+                                                bg_cachedfile)
         return bg_cachedfile
 
     def get_cached_effectvid(self, preview_affect, preview_profile, time_length):

@@ -184,8 +184,8 @@ class YtCreatorTeleBotManager:
         print(update.message.text)
         buildcmd = update.message.text
         buildcmder = TeleBuildCmder(buildcmd)
-        buildcmder.run_build_cmd()
-        update.message.reply_text('Build Complete')
+        output = buildcmder.run_build_cmd()
+        update.message.reply_text('Build Complete {}'.format(output))
 
     @classmethod
     def echo(cls, bot: Bot, update):

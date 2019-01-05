@@ -7,7 +7,6 @@ from enum import Enum
 from pathlib import Path
 import platform
 import logging
-import backend.yclogger
 
 logger = logging.getLogger('backend')
 
@@ -33,6 +32,7 @@ class Coordinate(object):
 
 class FFmpegProfile(Enum):
     PROFILE_LOW = '640x480'
+    PROFILE_MEDIUM = '1024x768'
     PROFILE_FULLHD = '1920x1080'
     PROFILE_2K = '2048x1080'
     PROFILE_4K = '4096x2160'
@@ -222,9 +222,27 @@ class FfmpegCli(object):
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)l l l l
 
-    def scale_input(self, input_bg, resolution: str, output_bg):
+    def scale_effect_vid(self, input_effect, resolution: str, output_effect):
+        """
+        ffmpeg -i <INPUT_FILE> -vf scale=720:540 -c:v <Video_Codec> <OUTPUT_FILE>
+        :param input_effect:
+        :param resolution:
+        :param output_effect:
+        :return:
+        """
+        FfmpegCli.check_file_exist(input_effect)
+        self._ffmpeg_input(input_effect)
+        self._ffmpeg_input_filter_complex_prefix()
+        cmd = 'scale={}'.format(resolution)
+        self._ffmpeg_input_fill_cmd(cmd)
+        self._ffmpeg_input_fill_cmd('-c:v')
+        self._ffmpeg_input_fill_cmd('png')
+        self.ffmpeg_cli_run(self.ffmpeg_cli, output_effect)
+        pass
+
+    def scale_background_img(self, input_bg, resolution: str, output_bg):
         '''
-        the function will create an output backgound effect from input backround image
+        the function will create an output backgound vid from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
         :param time_length:
         :param input_bg:

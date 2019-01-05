@@ -1,8 +1,8 @@
 import json
 
-from backend.BackendCmderGdrive import *
-
-mvconfigdir = ContentDir.MVCONF_DIR.value
+# from backend.BackendCmderGdrive import *
+#
+import os
 
 
 class TeleBuildCmder:
@@ -21,7 +21,9 @@ class TeleBuildCmder:
         self.is_configfile_exist()
 
     def is_configfile_exist(self):
-        for file in os.listdir(ContentDir.MVCONF_DIR.value):
+        from backend.BackendCmder import ContentDir
+        mvconfigdir = ContentDir.MVCONF_DIR.value
+        for file in os.listdir(mvconfigdir):
             if self.mvconfig in file:
                 self.mvconfig = os.path.join(ContentDir.MVCONF_DIR.value, file)
                 return True
@@ -29,15 +31,19 @@ class TeleBuildCmder:
 
     def is_buildtype_valid(self):
         if self.buildtype in 'preview':
+            self.buildtype = 0
             return True
         elif self.buildtype in 'release':
+            self.buildtype = 1
             return True
         else:
             raise Exception('Build type {} not support yet'.format(self.buildtype))
 
     def run_build_cmd(self):
-        cmder = GDriveBuildCmder(self.mvconfig)
-        cmder.run()
+        from backend.BackendCmderGdrive import GDriveBuildCmder
+        cmder = GDriveBuildCmder(self.mvconfig, self.buildtype)
+        output = cmder.run()
+        return output
 
 
 import unittest
