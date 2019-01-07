@@ -17,8 +17,6 @@ import os
 import sqlite3
 from telegram import Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-
-import backend.yclogger
 from backend.TeleBot.TeleCmder import TeleBuildCmder
 
 telelog = logging.getLogger('telebot')
@@ -243,7 +241,6 @@ class YtCreatorTeleBotManager:
 
 
 if __name__ == '__main__':
-    telelog.info("hello ")
     YtCreatorTeleBotManager.TeleNotifier_Runner()
 #
 #
