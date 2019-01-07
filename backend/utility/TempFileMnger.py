@@ -41,6 +41,7 @@ class YtTempFile:
     def delete_all(cls):
         for file in cls.tempfilelst:
             os.remove(file.getfullpath())
+        cls.tempfilelst.clear()
 
 
 class MvTempFile(YtTempFile):
@@ -90,4 +91,3 @@ class SrtTempfile(YtTempFile):
 class Mp3TempFile(YtTempFile):
     def __init__(self, pre='audio', sub='.mp3', autodel=False) -> None:
         super().__init__(pre, sub, autodel)
-

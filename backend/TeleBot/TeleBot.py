@@ -183,9 +183,12 @@ class YtCreatorTeleBotManager:
     def build(cls, bot: bot, update):
         print(update.message.text)
         buildcmd = update.message.text
-        buildcmder = TeleBuildCmder(buildcmd)
-        output = buildcmder.run_build_cmd()
-        update.message.reply_text('Build Complete {}'.format(output))
+        try:
+            buildcmder = TeleBuildCmder(buildcmd)
+            output = buildcmder.run_build_cmd()
+            update.message.reply_text('Build Complete {}'.format(output))
+        except Exception as exp:
+            update.message.reply_text('Build error {}'.format(exp))
 
     @classmethod
     def echo(cls, bot: Bot, update):
