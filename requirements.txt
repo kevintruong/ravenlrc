@@ -1,4 +1,4 @@
-telegram
+python-telegram-bot
 json5
 pydevd
 structlog
