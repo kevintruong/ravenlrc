@@ -164,6 +164,7 @@ class BuildCmder(Cmder):
     def run(self):
         try:
             if self.build_type == BuildType.BUILD_PREVIEW:
+                self.time_length = int(self.time_length / 2)
                 self.build_preview()
             elif self.build_type == BuildType.BUILD_RELEASE:
                 self.build_release()
@@ -212,8 +213,8 @@ class BuildCmder(Cmder):
                     self.output = cmd[field]
             self.ffmpegcli = FfmpegCli()
             self.get_song_info_from_url()
-            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
             self.auto_reconfig_build_cmd()
+            self.time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
             self.configure_output()
         except Exception as e:
             print("error {}".format(e))
@@ -251,7 +252,7 @@ class BuildCmder(Cmder):
             # TODO add process lyric effect
             pass
 
-        time_length = self.ffmpegcli.get_media_time_length(self.songinfo.location)
+        time_length = self.time_length
 
         logger.debug(preview_profile)
 
@@ -269,7 +270,8 @@ class BuildCmder(Cmder):
         self.ffmpegcli.add_affect_to_video(preview_affectmv,
                                            preview_bgmv,
                                            preview_bg_affect_mv,
-                                           self.effectinfo.opacity)
+                                           self.effectinfo.opacity,
+                                           time_length)
 
         preview_bg_aff_sub_mv = MvTempFile().getfullpath()
         self.ffmpegcli.adding_sub_to_video(preview_asstempfile,
@@ -287,7 +289,7 @@ class BuildCmder(Cmder):
                                                                        preview_profile)
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
-            effect_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
+            effect_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
             self.ffmpegcli.scale_effect_vid(self.effectinfo.effect_file,
                                             preview_profile,
                                             effect_cachedfile)
@@ -330,7 +332,7 @@ class BuildCmder(Cmder):
         return preview_bgmv
 
     def build_preview(self):
-        return self.build_mv(FFmpegProfile.PROFILE_LOW.value)
+        return self.build_mv(FFmpegProfile.PROFILE_MEDIUM.value)
 
     def build_release(self):
         return self.build_mv(FFmpegProfile.PROFILE_FULLHD.value)

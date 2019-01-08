@@ -183,6 +183,7 @@ class YtCreatorTeleBotManager:
         buildcmd = update.message.text
         try:
             buildcmder = TeleBuildCmder(buildcmd)
+            update.message.reply_text('Build {} start'.format(buildcmder.mvconfig))
             output = buildcmder.run_build_cmd()
             update.message.reply_text('Build Complete {}'.format(output))
         except Exception as exp:

@@ -114,6 +114,9 @@ class AssCustomizor(object):
         color = ssa_rgb_to_color(colorcode)
         default_style = self.subs.styles["Default"]
         default_style.primarycolor = color_to_ass_rgba(color)
+        default_style.outline = 0
+        default_style.shadow = 0
+
 
     def add_fad_affect_to_sub(self):
         """

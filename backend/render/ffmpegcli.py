@@ -48,7 +48,7 @@ class FfmpegCli(object):
         curPlatform = platform.system()
         if curPlatform == "Windows":
             self.ffmpeg_cli.append('-hwaccel')
-            self.ffmpeg_cli.append('d3d11va')
+            self.ffmpeg_cli.append('dxva2')
         elif curPlatform == "Linux":
             pass
             # self.ffmpeg_cli.append('-hwaccel')
@@ -289,7 +289,7 @@ class FfmpegCli(object):
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
         pass
 
-    def add_affect_to_video(self, affect_vid: str, video: str, output: str, affectconf=50):
+    def add_affect_to_video(self, affect_vid: str, video: str, output: str, affectconf=50, timeleng=10):
         """
         input_bgvid=$1
         input_blendvid=$2
@@ -318,6 +318,8 @@ class FfmpegCli(object):
         # self._ffmpeg_input_fill_cmd(filter_args)
         self._ffmpeg_input_fill_cmd('-r')
         self._ffmpeg_input_fill_cmd('25')
+        self._ffmpeg_input_fill_cmd('-t')
+        self._ffmpeg_input_fill_cmd("{}".format(timeleng))
         # ffmpeg_cmd = ["render", "-y", "-i", "{}".format(video), "-i", "{}".format(bg_video), "-filter_complex",
         #               "{}".format(filter_args)]
         self.ffmpeg_cli_run(self.ffmpeg_cli, output)
@@ -342,7 +344,7 @@ class FfmpegCli(object):
 
         pass
 
-    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str):
+    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str, timeleng=10):
         '''
         render -i ${input_vid} -i $input_aud -map 0:v -map 1:a -c copy -shortest ${output_mv}
         :param input_vid:
@@ -359,6 +361,9 @@ class FfmpegCli(object):
                       "-i", "{}".format(input_vid),
                       "-i", "{}".format(tempaudiofile),
                       "-map", "0:v", "-map", "1:a", "-map", "0:v", "-shortest"]
+        self._ffmpeg_input_fill_cmd('-t')
+        self._ffmpeg_input_fill_cmd("{}".format(timeleng))
+
         # self._ffmpeg_input_fill_cmd('-c')
         # self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
