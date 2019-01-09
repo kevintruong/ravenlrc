@@ -4,9 +4,6 @@ from enum import IntEnum
 from time import sleep
 
 import requests
-from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.firefox.options import Options
 
 from backend.subeffect.asseditor import *
 from backend.crawler.rc4_py3 import decrypt
@@ -131,88 +128,3 @@ def wait_for_download(directory, timeout, nfiles=None):
     logger.debug("Download complete after {}".format(seconds))
     return os.path.join(directory, os.path.splitext(download_file)[0])
     # return download_file
-
-
-class AudioQuanlity(IntEnum):
-    AUDIO_UNKNOW = 0
-    AUDIO_QUANLITY_128 = 1
-    AUDIO_QUANLITY_192 = 0x02
-    AUDIO_QUANLITY_320 = 0x04
-    AUDIO_QUANLITY_LOSSLESS = 0x08
-
-
-def download_mp3_file(url: str, quanlity: AudioQuanlity, outputdir=ChromeDownloadDir):
-    """
-    download an mp3 file using selenium
-    :param quanlity:
-    :param outputdir:
-    :param url:
-    :return:
-    """
-    global losslessdownload, mediumdownload, lowdownload
-    audioQuan = AudioQuanlity.AUDIO_UNKNOW
-    logger.debug("start")
-    options = Options()
-    # options.add_argument("--headless")
-    options.add_argument('user-data-dir={}'.format(ChromeDataDir))
-    logger.debug("Chrome data dir {}".format(ChromeDataDir))
-    prefs = {'download.default_directory': '{}'.format(outputdir)}
-    # options.add_experimental_option('prefs', prefs)
-    # options.set_headless(True)
-    fp = webdriver.FirefoxProfile(r'C:\Users\84935\AppData\Local\Temp\rust_mozprofile.rHEUxruhVTGb')
-    browser = webdriver.Firefox(fp, options=options, executable_path=r'D:\chromedriver\geckodriver.exe')
-    logger.debug("Open url ")
-    browser.get(url)
-    browser.find_element_by_css_selector("#btnDownloadBox").click()
-    import time
-    time.sleep(2)
-    try:
-        downloadbuttons = browser.find_elements_by_css_selector("#divDownloadBox > ul > li")
-        # element = browser.find_element_by_css_selector("#divDownloadBox > ul > li:nth-child(3) > a")
-    except NoSuchElementException:
-        logger.debug("not found loss less")
-        return None
-    for each in downloadbuttons:
-        logger.debug("check {}".format(each.text))
-        if each.text == 'Tải Nhạc 128 Kbps':
-            logger.debug("found 'Tải Nhạc 128 Kbps'")
-            audioQuan |= AudioQuanlity.AUDIO_QUANLITY_128
-            lowdownload = each
-        elif each.text == 'Tải Nhạc 320 Kbps':
-            logger.debug("Found 'Tải Nhạc 320 Kbps''")
-            audioQuan |= AudioQuanlity.AUDIO_QUANLITY_320
-            mediumdownload = each
-        elif each.text == 'Tải Nhạc Lossless':
-            logger.debug("Found 'Tải Nhạc Lossless'")
-            losslessdownload = each
-            audioQuan |= AudioQuanlity.AUDIO_QUANLITY_LOSSLESS
-            break
-        else:
-            logger.debug("not support yet: {}".format(each.text))
-    if audioQuan & AudioQuanlity.AUDIO_QUANLITY_LOSSLESS == quanlity:
-        logger.debug("AudioQuanlity.AUDIO_QUANLITY_LOSSLESS")
-        losslessdownload.click()
-    elif audioQuan & AudioQuanlity.AUDIO_QUANLITY_320 == quanlity:
-        logger.debug("AudioQuanlity.AUDIO_QUANLITY_320")
-        mediumdownload.click()
-    elif audioQuan & AudioQuanlity.AUDIO_QUANLITY_128 == quanlity:
-        logger.debug("AudioQuanlity.AUDIO_QUANLITY_128")
-        lowdownload.click()
-    else:
-        logger.debug("not support yest ")
-        return None
-    fileDonwload = wait_for_download(outputdir, 120)
-    try:
-        if browser.get_window_position():
-            logger.debug("check to close browser")
-            browser.close()
-        return fileDonwload
-    except Exception as e:
-        logger.debug("Web browser is closed")
-        return fileDonwload
-
-# if __name__ == '__main__':
-# download_mp3_file(
-#     "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html");
-# get_sub_from_url(
-#     "https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
