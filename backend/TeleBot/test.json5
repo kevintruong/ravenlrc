@@ -5,25 +5,57 @@
       "type": "background",
       'config': {
         "bg_file": "Nhammatthaymuahe.png",
-        "lyric_info": {
-          "rectangle": [
-            100,
-            100,
-            200,
-            300
-          ],
-          "fontname": "UTM Centur",
-          "fontcolor": 0x018CA7,
-          "fontsize": 20
-        }
+        "lyric_info": [
+          {
+            "rectangle": [
+              100,
+              100,
+              200,
+              300
+            ],
+            "fontname": "UTM Centur",
+            "fontcolor": 0x018CA7,
+            "fontsize": 20
+          }
+        ],
+        "title_info": [
+          {
+            "rectangle": [
+              100,
+              100,
+              200,
+              300
+            ],
+            "fontname": "UTM Centur",
+            "fontcolor": 0x018CA7,
+            "fontsize": 20
+          },
+          {
+            "rectangle": [
+              100,
+              100,
+              200,
+              300
+            ],
+            "fontname": "UTM Centur",
+            "fontcolor": 0x018CA7,
+            "fontsize": 20
+          }
+        ]
       }
     },
     {
       "type": "affect",
-      'config': {
-        "affect_file": 'Start_Falling.mov',
-        "opacity": 30
-      }
+      'config': [
+        {
+          "affect_file": 'Start_Falling.mov',
+          "opacity": 30
+        },
+        {
+          "affect_file": 'Start_Falling.mov',
+          "opacity": 30
+        },
+      ]
     }
   ],
   "status": 0
