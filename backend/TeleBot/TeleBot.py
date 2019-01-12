@@ -217,7 +217,7 @@ class YtCreatorTeleBotManager:
             ytBot = Bot(YtCreator_BotToken)
             YtCreatorBot = ytBot
 
-        updater = Updater(bot=ytBot)
+        updater = Updater(bot=ytBot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
 
         # Get the dispatcher to register handlers
         dp = updater.dispatcher
