@@ -117,7 +117,6 @@ class AssCustomizor(object):
         default_style.outline = 0
         default_style.shadow = 0
 
-
     def add_fad_affect_to_sub(self):
         """
         add fad affect to subtitle. For example:
@@ -178,12 +177,29 @@ class SubRectangle:
         self.h = subrect[3]
 
 
-class SubtitleInfo:
+class LyricConfigInfo:
+    @classmethod
+    def get_font_file(cls, fontname):
+        from backend.BackendCmder import ContentDir
+        fontdir = ContentDir.FONTFILES_DIR.value
+        fontfile = ContentDir.get_file_path(fontdir, fontname)
+        if fontfile is None:
+            print('Not found font {} in {}'.format(fontname, fontdir))
+            return fontname
+        else:
+            pass
+            return fontname
+            # from fontTools.ttLib import TTFont
+            # if
+
+        return fontfile
+
     def __init__(self, subinfo: dict):
         self.rectangle: SubRectangle = SubRectangle(subinfo['rectangle'])
         self.fontname = subinfo['fontname']
         self.fontcolor = subinfo['fontcolor']
         self.fontsize = subinfo['fontsize']
+        self.fontname = LyricConfigInfo.get_font_file(subinfo['fontname'])
 
     def scale(self, resolution: FFmpegProfile):
         if resolution == FFmpegProfile.PROFILE_LOW:
@@ -195,7 +211,7 @@ class SubtitleInfo:
 
 
 def create_ass_from_lrc(lrcfile: str, output: str,
-                        subinfo: SubtitleInfo,
+                        subinfo: LyricConfigInfo,
                         resolution=None):
     with open(lrcfile, 'r', encoding='utf-8') as lrcfd:
         lrccontent = lrcfd.read()
@@ -204,7 +220,7 @@ def create_ass_from_lrc(lrcfile: str, output: str,
 
 def create_ass_subtitle(lrccontent: str,
                         output: str,
-                        subinfo: SubtitleInfo,
+                        subinfo: LyricConfigInfo,
                         resolution=None):
     if resolution is None:
         res = [1920, 1080]
@@ -248,7 +264,7 @@ def get_url(url: str):
     return lyricfile + ".ass"
 
 
-def create_ass_from_url(url: str, output: str, subinfo: SubtitleInfo,
+def create_ass_from_url(url: str, output: str, subinfo: LyricConfigInfo,
                         resolution=[1920, 1080]):
     """
     create ass subtitle for
@@ -262,36 +278,3 @@ def create_ass_from_url(url: str, output: str, subinfo: SubtitleInfo,
     tmpdir = YtTempDir().get_fullpath()
     lyricfile = NctCrawler(url).get_lyric(tmpdir)
     return create_ass_from_lrc(lyricfile, output, subinfo, resolution)
-
-
-class KeyWord:
-    pass
-
-
-class KeyWordFormatter:
-    pass
-
-
-class LyricProfile:
-    def __init__(self,
-                 subinfo: SubtitleInfo,
-                 resolution: list,
-                 keywork: KeyWord,
-                 keyworkformat: KeyWordFormatter,
-                 ) -> None:
-        self.subinfo = subinfo
-        self.resolution = resolution
-        super().__init__()
-
-    # TODO add some profile configure for lyric
-
-
-class AssGenerator:
-    def __init__(self, lyric_file: str,
-                 sub_info: dict,
-                 lyric_effect: dict
-                 ):
-        self.lrcfile = lyric_file
-        self.lrc_bgconf = SubtitleInfo(subinfo=sub_info)
-
-        pass

@@ -50,7 +50,7 @@ class ksub(unittest.TestCase):
 
     def test_create_ass_sub(self):
         ass_out = os.path.join(curDir, "test.ass")
-        subinfo = SubtitleInfo({'rectangle': [100, 100, 200, 300],
+        subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 20})

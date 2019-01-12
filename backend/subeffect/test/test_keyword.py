@@ -1,6 +1,6 @@
 import unittest
 
-from backend.subeffect.asseditor import SubtitleInfo, create_ass_from_lrc, create_ass_from_url
+from backend.subeffect.asseditor import LyricConfigInfo, create_ass_from_lrc, create_ass_from_url
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
 from backend.subeffect.asseffect.LyricEffect import KeyWordInfo
 from backend.subeffect.keyword.keyword import *
@@ -104,7 +104,7 @@ class testAssDialogueTextProcessor(unittest.TestCase):
         ass_out = 'newtest.ass'
         output = "sub_output.mp4"
 
-        subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],
+        subinfo = LyricConfigInfo({'rectangle': [100, 100, 600, 400],
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 40})
@@ -298,7 +298,7 @@ class test_LyricEffect(unittest.TestCase):
         ncturl = r'https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html'
         subcustomizer = create_ass_from_url(ncturl,
                                             assfile,
-                                            subinfo=SubtitleInfo(subinfo),
+                                            subinfo=LyricConfigInfo(subinfo),
                                             resolution=FFmpegProfile.PROFILE_FULLHD.value)
         for line in subcustomizer.subs:
             print(line.text)

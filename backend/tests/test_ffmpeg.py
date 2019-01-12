@@ -79,7 +79,7 @@ class TestFFmpegCli(unittest.TestCase):
         media_output = os.path.join(sample_data_dir, "media_out.mp4")
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
-        subinfo = SubtitleInfo({'rectangle': [100, 100, 200, 300],
+        subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 20})
@@ -117,7 +117,7 @@ class TestFFmpegCli(unittest.TestCase):
         self.ffmpeg.create_media_file_from_img(bg_img, audio_length, bg_mv)
         self.ffmpeg.create_background_affect_with_length(bg_effect, audio_length, bg_effect_extend)
         # add sub to MV
-        subinfo = SubtitleInfo({'rectangle': [100, 100, 200, 300],
+        subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 40})

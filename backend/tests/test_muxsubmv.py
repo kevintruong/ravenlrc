@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from backend.subeffect.asseditor import SubtitleInfo, create_ass_from_url
+from backend.subeffect.asseditor import LyricConfigInfo, create_ass_from_url
 from backend.render.ffmpegcli import FfmpegCli
 from backend.utility.TempFileMnger import *
 
@@ -56,7 +56,7 @@ class TestFFmpegCli(unittest.TestCase):
         ass_out = AssTempFile().getfullpath()
         output = os.path.join(sample_data_dir, "sub_output.mp4")
 
-        subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],
+        subinfo = LyricConfigInfo({'rectangle': [100, 100, 600, 400],
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 40})
@@ -73,7 +73,7 @@ class TestFFmpegCli(unittest.TestCase):
         ass_out = AssTempFile().getfullpath()
         output = os.path.join(sample_data_dir, "sub_output.mp4")
 
-        subinfo = SubtitleInfo({'rectangle': [100, 100, 600, 400],
+        subinfo = LyricConfigInfo({'rectangle': [100, 100, 600, 400],
                                 'fontname': 'UTM Centur',
                                 'fontcolor': 0x018CA7,
                                 'fontsize': 40})

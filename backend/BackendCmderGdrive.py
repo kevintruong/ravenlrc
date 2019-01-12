@@ -25,3 +25,6 @@ class test_load_mv_config(unittest.TestCase):
     def test_build_release(self):
         self.buildCmder.run()
         pass
+
+    def test_reload(self):
+        pass

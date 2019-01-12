@@ -176,6 +176,8 @@ class YtCreatorTeleBotManager:
         update.message.reply_text('Help!')
         update.message.reply_text('/build <configure_file> build type \n '
                                   'example: /build TocGioThoiBay release')
+        update.message.reply_text('/build <configure_file> build type \n '
+                                  'example: /build TocGioThoiBay release')
 
     @classmethod
     def build(cls, bot: bot, update):
@@ -193,7 +195,6 @@ class YtCreatorTeleBotManager:
     def echo(cls, bot: Bot, update):
         """Echo the user message."""
         update.message.reply_text(update.message.text)
-        bot.sendMessage(chat_id=update.message.chat.id, text='hello')
 
     @classmethod
     def error(cls, bot, update, error):

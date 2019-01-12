@@ -22,6 +22,7 @@ class ContentDir(Enum):
     BGIMG_DIR = os.path.join(contentDir, 'BgImage')
     MVRELEASE_DIR = os.path.join(contentDir, 'Mv/Release')
     MVPREV_DIR = os.path.join(contentDir, 'Mv/Preview')
+    FONTFILES_DIR = os.path.join(contentDir, 'Font')
     BUILDCMD_DIR = os.path.join(contentDir, 'BuildCmd')
 
     @classmethod
@@ -29,7 +30,8 @@ class ContentDir(Enum):
         listfiles = os.listdir(dir)
         for file in listfiles:
             if filename in file:
-                return os.path.join(dir, filename)
+                return os.path.join(dir, file)
+        return None
 
 
 class CachedFile:
@@ -134,7 +136,7 @@ class Rectangle:
         self.h = coordinate[3]
 
 
-class TitleInfo(SubtitleInfo):
+class TitleInfo(LyricConfigInfo):
 
     def __init__(self, titleinfo: dict):
         super().__init__(titleinfo)
@@ -147,7 +149,7 @@ class BackgroundInfo:
                 self.bg_file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, bginfo[keyfield])
                 check_file_existed(self.bg_file)
             if 'lyric_info' in keyfield:
-                self.subinfo: SubtitleInfo = SubtitleInfo(bginfo[keyfield])
+                self.subinfo: LyricConfigInfo = LyricConfigInfo(bginfo[keyfield])
             if 'title_info' in keyfield:
                 self.titleinfo = TitleInfo(bginfo[keyfield])
 
