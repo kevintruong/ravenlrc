@@ -26,9 +26,9 @@ class textrefactor(object):
         self.df_alpha_2 = 0x00
         self.df_plpha_3 = 0xff
         self.df_t1 = 0
-        self.df_t2 = 0.40
-        self.df_t3 = 0.80
-        self.df_t4 = 1.1
+        self.df_t2 = 0.30
+        self.df_t3 = 0.70
+        self.df_t4 = 1.2
         self.newtext = None
 
     def add_fade_effect(self):
@@ -125,8 +125,8 @@ class AssCustomizor(object):
         """
 
         for line in self.subs:
-            newtext = textrefactor(line.plaintext, line.duration)
             line.end = line.end + 1000
+            newtext = textrefactor(line.plaintext, line.duration)
             newtext.add_fade_effect()
             line.text = newtext.get_newtext()
         pass
@@ -163,9 +163,8 @@ def lrf_to_ass(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.ass"
 
 def lrf_to_srt(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.srt")):
     subs = pylrc.parse(lrccontent)
-    srt = subs.toSRT()  # convert lrc to srt string
-    srtfile = subs.save_to_file(output)
-    # outputfile = AssCustomizor.convert_to_ass(srtfile, output)
+    subs.toSRT()  # convert lrc to srt string
+    subs.save_to_file(output)
     return output
 
 
