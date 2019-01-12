@@ -24,7 +24,7 @@ class TeleBuildCmder:
         from backend.BackendCmder import ContentDir
         mvconfigdir = ContentDir.MVCONF_DIR.value
         for file in os.listdir(mvconfigdir):
-            if self.mvconfig in file:
+            if self.mvconfig.lower() in file.lower():
                 self.mvconfig = os.path.join(ContentDir.MVCONF_DIR.value, file)
                 return True
         raise Exception("not found Mvconfigure {} on ContentDir".format(self.mvconfig))
