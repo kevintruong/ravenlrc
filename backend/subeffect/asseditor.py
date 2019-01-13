@@ -127,7 +127,7 @@ class AssCustomizor(object):
         for line in self.subs:
             newtext = textrefactor(line.plaintext, line.duration)
             newtext.add_fade_effect()
-            line.end = line.end + 800
+            line.end = line.end + 1400
             line.text = newtext.get_newtext()
         pass
 

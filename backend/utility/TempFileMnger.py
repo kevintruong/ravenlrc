@@ -91,3 +91,8 @@ class SrtTempfile(YtTempFile):
 class Mp3TempFile(YtTempFile):
     def __init__(self, pre='audio', sub='.mp3', autodel=False) -> None:
         super().__init__(pre, sub, autodel)
+
+
+class HtmlTempFile(YtTempFile):
+    def __init__(self, pre='preview', sub='.html', autodel=False) -> None:
+        super().__init__(pre, sub, autodel)

@@ -17,6 +17,8 @@ import os
 import sqlite3
 from telegram import Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+from backend.TeleBot.GDriveFileManager import YtCreatorGDrive
 from backend.TeleBot.TeleCmder import TeleBuildCmder
 
 telelog = logging.getLogger('telebot')
@@ -29,6 +31,7 @@ elinkTeleUserDb = None
 
 DEFAULT_DB = os.path.join(os.path.dirname(__file__), 'ytcreator.sqlite3')
 YtCreator_BotToken = "698566319:AAHnZBx4LK4um0jHhxMINTWrUuwvb_wLFbk"
+YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"
 YtCreatorBuildChannel = -1384364301
 
 YtCreatorBuildChannelId = -379811995  # test
@@ -143,6 +146,7 @@ class TeleNotifyStream(logging.Handler):
 class YtCreatorTeleBotManager:
     bot = None
     elinkbot = None
+    ytcreatorDriver = None
 
     def __init__(self):
         self.testcases = []
@@ -180,7 +184,7 @@ class YtCreatorTeleBotManager:
                                   'example: /build TocGioThoiBay release')
 
     @classmethod
-    def build(cls, bot: bot, update):
+    def build(cls, bot: Bot, update):
         print(update.message.text)
         buildcmd = update.message.text
         try:
@@ -188,6 +192,8 @@ class YtCreatorTeleBotManager:
             update.message.reply_text('Build {} start'.format(buildcmder.mvconfig))
             output = buildcmder.run_build_cmd()
             update.message.reply_text('Build Complete {}'.format(output))
+            previewfile = YtCreatorTeleBotManager.ytcreatorDriver.generate_html_preview_file(output)
+            bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
 
@@ -216,7 +222,7 @@ class YtCreatorTeleBotManager:
         if ytBot is None:
             ytBot = Bot(YtCreator_BotToken)
             YtCreatorBot = ytBot
-
+        YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
         updater = Updater(bot=ytBot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
 
         # Get the dispatcher to register handlers
@@ -241,13 +247,12 @@ class YtCreatorTeleBotManager:
         # start_polling() is non-blocking and will stop the bot gracefully.
         updater.idle()
 
-
-if __name__ == '__main__':
-    YtCreatorTeleBotManager.TeleNotifier_Runner()
-#
-#
-# if eLinkGateBot is None:
-#     executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
-#     loop = asyncio.get_event_loop()
-#     entry = loop.run_in_executor(executor, TeleNotifier_Runner)
-#     # TeleNotifier_Runner()
+        if __name__ == '__main__':
+            YtCreatorTeleBotManager.TeleNotifier_Runner()
+            #
+            #
+            # if eLinkGateBot is None:
+            #     executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            #     loop = asyncio.get_event_loop()
+            #     entry = loop.run_in_executor(executor, TeleNotifier_Runner)
+            #     # TeleNotifier_Runner()

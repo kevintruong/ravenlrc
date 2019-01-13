@@ -50,9 +50,8 @@ class FfmpegCli(object):
             self.ffmpeg_cli.append('-hwaccel')
             self.ffmpeg_cli.append('dxva2')
         elif curPlatform == "Linux":
-            pass
-            # self.ffmpeg_cli.append('-hwaccel')
-            # self.ffmpeg_cli.append('vdpau')
+            self.ffmpeg_cli.append('-hwaccel')
+            self.ffmpeg_cli.append('vdpau')
         else:
             logger.debug('not support yet')
 
