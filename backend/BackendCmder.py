@@ -4,7 +4,7 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.utility.Utility import check_file_existed
+from backend.utility.Utility import check_file_existed, FileInfo
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
@@ -59,6 +59,30 @@ class EffectCachedFile(CachedFile):
     @classmethod
     def create_cachedfile(cls, filename):
         return os.path.join(cls.CachedEffectDir, filename)
+
+
+class Bg_Effect_CachedFile(CachedFile):
+    CachedEffectDir = os.path.join(ContentDir.EFFECT_DIR.value, '.cache')
+    BgEffectCachedDir = os.path.join(CachedEffectDir, 'BgEffect')
+
+    @classmethod
+    def get_cachedfile(cls, filename):
+        listfiles = os.listdir(cls.BgEffectCachedDir)
+        for file in listfiles:
+            if filename in file:
+                return os.path.join(cls.BgEffectCachedDir, file)
+        return None
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.BgEffectCachedDir, filename)
+
+    @classmethod
+    def get_cached_file_name(cls, previewbgmv, previeweffectmv):
+        bgmv_fileinfo = FileInfo(previewbgmv)
+        effmv_fileinfo = FileInfo(previeweffectmv)
+        bgeff_cachedfilename = bgmv_fileinfo.name + '_' + effmv_fileinfo.name + '.mp4'
+        return bgeff_cachedfilename
 
 
 class BgImgCachedFile(CachedFile):
@@ -267,24 +291,27 @@ class BuildCmder(Cmder):
 
         preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
         preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
-
-        preview_bg_affect_mv = MvTempFile().getfullpath()
-        self.ffmpegcli.add_affect_to_video(preview_affectmv,
-                                           preview_bgmv,
-                                           preview_bg_affect_mv,
-                                           self.effectinfo.opacity,
-                                           time_length)
+        preview_bg_affect_mv = self.get_cached_bg_effect_file(preview_bgmv, preview_affectmv)
 
         preview_bg_aff_sub_mv = MvTempFile().getfullpath()
         self.ffmpegcli.adding_sub_to_video(preview_asstempfile,
                                            preview_bg_affect_mv,
                                            preview_bg_aff_sub_mv)
+
         self.ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
                                           self.songinfo.location,
                                           self.output
                                           )
         YtTempFile.delete_all()
         pass
+
+    def get_cached_bg_effect_file(self, previewbgmv, previeweffectmv):
+        cached_filename = Bg_Effect_CachedFile.get_cached_file_name(previewbgmv, previeweffectmv)
+        effect_cachedfile = Bg_Effect_CachedFile.get_cachedfile(cached_filename)
+        if effect_cachedfile is None:
+            effect_cachedfile = Bg_Effect_CachedFile.create_cachedfile(cached_filename)
+            self.ffmpegcli.add_affect_to_video(previeweffectmv, previewbgmv, effect_cachedfile)
+        return effect_cachedfile
 
     def get_cached_effect_file(self, preview_profile):
         cached_filename = EffectCachedFile.get_cached_profile_filename(self.effectinfo.effect_file,
