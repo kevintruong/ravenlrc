@@ -15,10 +15,12 @@ bot.
 import logging
 import os
 import sqlite3
+
 from telegram import Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
-from backend.TeleBot.GDriveFileManager import YtCreatorGDrive
+
+from backend.TeleBot.GDriveFileManager import generate_html_file
 from backend.TeleBot.TeleCmder import TeleBuildCmder
 
 telelog = logging.getLogger('telebot')
@@ -31,7 +33,7 @@ elinkTeleUserDb = None
 
 DEFAULT_DB = os.path.join(os.path.dirname(__file__), 'ytcreator.sqlite3')
 YtCreator_BotToken = "698566319:AAHnZBx4LK4um0jHhxMINTWrUuwvb_wLFbk"
-YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"
+# YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8" # DEBUG at local
 YtCreatorBuildChannel = -1384364301
 
 YtCreatorBuildChannelId = -379811995  # test
@@ -189,11 +191,12 @@ class YtCreatorTeleBotManager:
         print(update.message.text)
         buildcmd = update.message.text
         try:
+
             buildcmder = TeleBuildCmder(buildcmd)
             update.message.reply_text('Build {} start'.format(buildcmder.mvconfig))
             output = buildcmder.run_build_cmd()
             update.message.reply_text('Build Complete {}'.format(output))
-            previewfile = YtCreatorTeleBotManager.ytcreatorDriver.generate_html_preview_file(output)
+            previewfile = generate_html_file(output)
             bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
@@ -223,7 +226,7 @@ class YtCreatorTeleBotManager:
         if ytBot is None:
             ytBot = Bot(YtCreator_BotToken)
             YtCreatorBot = ytBot
-        YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
+        # YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
         updater = Updater(bot=ytBot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
 
         # Get the dispatcher to register handlers

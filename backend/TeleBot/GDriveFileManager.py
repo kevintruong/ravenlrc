@@ -64,11 +64,8 @@ class YtCreatorGDrive:
             previewfile.write(preview_html)
         return htmlfile
 
-# if __name__ == '__main__':
-#     gdriver = YtCreatorGDrive()
-# sharelink = gdriver.get_share_link(
-#     r"D:\Project\ytcreatorservice\backend\content\Mv\Preview\build_preview_Mong Manh.mp4")
-# print(sharelink)
-# previewfile = gdriver.generate_html_preview_file(
-#     r"D:\Project\ytcreatorservice\backend\content\Mv\Preview\build_preview_Mong Manh.mp4")
-# print(previewfile)
+
+def generate_html_file(output: str):
+    gdriver = YtCreatorGDrive()
+    previewfile = gdriver.generate_html_preview_file(output)
+    return previewfile
