@@ -8,6 +8,7 @@ from backend.utility.Utility import check_file_existed, FileInfo
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
+cachedcontentdir = os.path.join(CurDir, 'cachedcontent')
 
 import backend.yclogger
 
@@ -34,6 +35,26 @@ class ContentDir(Enum):
         return None
 
 
+class CachedContentDir(Enum):
+    SONG_DIR = os.path.join(cachedcontentdir, 'Song')
+    EFFECT_DIR = os.path.join(cachedcontentdir, 'Effect')
+    TITLE_DIR = os.path.join(cachedcontentdir, 'Title')
+    MVCONF_DIR = os.path.join(cachedcontentdir, 'MvConfig')
+    BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
+    MVRELEASE_DIR = os.path.join(cachedcontentdir, 'Mv/Release')
+    MVPREV_DIR = os.path.join(cachedcontentdir, 'Mv/Preview')
+    FONTFILES_DIR = os.path.join(cachedcontentdir, 'Font')
+    BUILDCMD_DIR = os.path.join(cachedcontentdir, 'BuildCmd')
+
+    @classmethod
+    def get_file_path(cls, dir: str, filename: str):
+        listfiles = os.listdir(dir)
+        for file in listfiles:
+            if filename in file:
+                return os.path.join(dir, file)
+        return None
+
+
 class CachedFile:
     @classmethod
     def get_cached_profile_filename(cls, filepath: str, profile, extension=None):
@@ -46,7 +67,7 @@ class CachedFile:
 
 
 class EffectCachedFile(CachedFile):
-    CachedEffectDir = os.path.join(ContentDir.EFFECT_DIR.value, '.cache')
+    CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR.value, '.cache')
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -62,7 +83,7 @@ class EffectCachedFile(CachedFile):
 
 
 class Bg_Effect_CachedFile(CachedFile):
-    CachedEffectDir = os.path.join(ContentDir.EFFECT_DIR.value, '.cache')
+    CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR.value, '.cache')
     BgEffectCachedDir = os.path.join(CachedEffectDir, 'BgEffect')
 
     @classmethod
@@ -86,7 +107,7 @@ class Bg_Effect_CachedFile(CachedFile):
 
 
 class BgImgCachedFile(CachedFile):
-    CachedDir = os.path.join(ContentDir.BGIMG_DIR.value, '.cache')
+    CachedDir = os.path.join(CachedContentDir.BGIMG_DIR.value, '.cache')
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -104,7 +125,7 @@ class BgImgCachedFile(CachedFile):
 
 
 class BgVidCachedFile(CachedFile):
-    CachedBgVidDir = os.path.join(ContentDir.BGIMG_DIR.value, '.cache')
+    CachedBgVidDir = os.path.join(CachedContentDir.BGIMG_DIR.value, '.cache')
 
     @classmethod
     def get_cachedfile(cls, filename):

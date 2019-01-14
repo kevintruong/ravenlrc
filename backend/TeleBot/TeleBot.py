@@ -17,7 +17,7 @@ import os
 import sqlite3
 from telegram import Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-
+from telegram.ext.dispatcher import run_async
 from backend.TeleBot.GDriveFileManager import YtCreatorGDrive
 from backend.TeleBot.TeleCmder import TeleBuildCmder
 
@@ -184,6 +184,7 @@ class YtCreatorTeleBotManager:
                                   'example: /build TocGioThoiBay release')
 
     @classmethod
+    @run_async
     def build(cls, bot: Bot, update):
         print(update.message.text)
         buildcmd = update.message.text
