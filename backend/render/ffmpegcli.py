@@ -205,11 +205,11 @@ class FfmpegCli(object):
         :return:
         '''
         bg_timeleng = self.get_media_time_length(input_bg)
-        loopcount = int(time_length / bg_timeleng) + 1
+        # loopcount = int(time_length / bg_timeleng) + 1
         FfmpegCli.check_file_exist(input_bg)
         # self._ffmpeg_input_fill_cmd('-re')
         self._ffmpeg_input_fill_cmd('-stream_loop')
-        self._ffmpeg_input_fill_cmd('{}'.format(loopcount))
+        self._ffmpeg_input_fill_cmd('{}'.format(-1))
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input_fill_cmd('-t')
         self._ffmpeg_input_fill_cmd('{}'.format(time_length))
@@ -310,16 +310,9 @@ class FfmpegCli(object):
         self._ffmpeg_input(affect_vid)
         self._ffmpeg_input_filter_complex_prefix()
         self._ffmpeg_input_fill_cmd('overlay ')
-        # opacity = float(affectconf / 100)
-        # filter_args = "[1:0]setdar=dar=0,format=rgba[a]; \
-        #                [0:0]setdar=dar=0,format=rgba[b]; \
-        #                [a][b]blend=all_mode='overlay':all_opacity={}".format(opacity)
-        # self._ffmpeg_input_fill_cmd(filter_args)
-        self._ffmpeg_input_fill_cmd('-r')
-        self._ffmpeg_input_fill_cmd('25')
+        # self._ffmpeg_input_fill_cmd('-r')
+        # self._ffmpeg_input_fill_cmd('25')
         self._ffmpeg_input_fill_cmd('-shortest')
-        # ffmpeg_cmd = ["render", "-y", "-i", "{}".format(video), "-i", "{}".format(bg_video), "-filter_complex",
-        #               "{}".format(filter_args)]
         self.ffmpeg_cli_run(self.ffmpeg_cli, output)
 
     def clean_up_mp3_meta_data(self, mp3file, mp3out):

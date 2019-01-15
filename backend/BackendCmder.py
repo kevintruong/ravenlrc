@@ -329,6 +329,7 @@ class BuildCmder(Cmder):
     def get_cached_bg_effect_file(self, previewbgmv, previeweffectmv):
         cached_filename = Bg_Effect_CachedFile.get_cached_file_name(previewbgmv, previeweffectmv)
         effect_cachedfile = Bg_Effect_CachedFile.get_cachedfile(cached_filename)
+        effect_cachedfile = None
         if effect_cachedfile is None:
             effect_cachedfile = Bg_Effect_CachedFile.create_cachedfile(cached_filename)
             self.ffmpegcli.add_affect_to_video(previeweffectmv, previewbgmv, effect_cachedfile)
