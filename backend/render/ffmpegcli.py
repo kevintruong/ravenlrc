@@ -30,9 +30,16 @@ class Coordinate(object):
         self.h = h
 
 
+class Resolution:
+    def __init__(self, res: str):
+        res_x, res_y = res.split('x')
+        self.res_x = int(res_x)
+        self.res_y = int(res_y)
+
+
 class FFmpegProfile(Enum):
-    PROFILE_LOW = '640x480'
-    PROFILE_MEDIUM = '1024x768'
+    PROFILE_LOW = '1024x576'
+    PROFILE_MEDIUM = '1280x720'
     PROFILE_FULLHD = '1920x1080'
     PROFILE_2K = '2048x1080'
     PROFILE_4K = '4096x2160'
@@ -249,10 +256,11 @@ class FfmpegCli(object):
         :param output_bg:
         :return:
         '''
+        res = Resolution(resolution)
         FfmpegCli.check_file_exist(input_bg)
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input_filter_complex_prefix()
-        cmd = 'scale={}'.format(resolution)
+        cmd = 'scale={}:{}'.format(res.res_x, res.res_y)
         self._ffmpeg_input_fill_cmd(cmd)
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
