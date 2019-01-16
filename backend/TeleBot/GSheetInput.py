@@ -55,12 +55,21 @@ class GoogleSheetStream:
             worksheet = wks.worksheet(channel_name)
         return worksheet
 
-    def emit(self, songinfo: SongInfo):
-        row = self.is_url_existed(songinfo.id)
-        if row is not True:
-            self.worksheet.append_row(self.format_songinfo(songinfo))
-            return True
-        return False
+    def emit(self, songinfo: SongInfo, worksheet='timshel'):
+        fail_count = 0
+        while True:
+            try:
+                self.worksheet = self.get_worksheet(worksheet)
+                row = self.is_url_existed(songinfo.id)
+                if row is not True:
+                    self.worksheet.append_row(self.format_songinfo(songinfo))
+                    return True
+                return False
+            except Exception as exp:
+                fail_count = fail_count + 1
+                self.reset_authenticate()
+                if fail_count > 3:
+                    raise exp
 
     def is_url_existed(self, url):
         devid_cells = self.worksheet.findall(url)

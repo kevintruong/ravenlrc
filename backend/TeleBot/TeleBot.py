@@ -210,13 +210,14 @@ class YtCreatorTeleBotManager:
     def echo(cls, bot: Bot, update):
         """Echo the user message."""
         try:
+            id_sheet = update.message.chat.id
             message = update.message.text
             isvalid = cls.url_validate(message)
             if isvalid:
                 print("url valid")
                 from backend.crawler.nct import SongInfoCrawler
                 songinfo = SongInfoCrawler.get_song_info(message)
-                if cls.gsheetsonginfodb.emit(songinfo):
+                if cls.gsheetsonginfodb.emit(songinfo, id_sheet):
                     update.message.reply_text(
                         'your song {} already updated to database(googlesheet)'.format(songinfo.title))
                 else:
