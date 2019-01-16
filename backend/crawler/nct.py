@@ -16,6 +16,19 @@ class Crawler(abc.ABC):
     def getdownload(self, outputdir: str):
         pass
 
+    @abc.abstractmethod
+    def get_songinfo(self):
+        pass
+
+
+class SongInfoCrawler:
+    @classmethod
+    def get_song_info(cls, url):
+        if 'nhaccuatui' in url:
+            return NctCrawler(url).songinfo
+        else:
+            raise Exception('not support crawl song info from {}'.format(url))
+
 
 class SongInfo:
     def toJSON(self):
@@ -28,6 +41,11 @@ class SongInfo:
         self.title = nctsonginfo['title']
         self.lyric = nctsonginfo['lyric']
         self.location = nctsonginfo['location']
+        self.id = self.get_nct_id(self.info)
+
+    def get_nct_id(self, ncturl: str):
+        nct_url = ncturl.split('.')
+        return nct_url[3]
 
 
 class NctCrawler(Crawler):
@@ -121,3 +139,8 @@ class testnctcrawler(unittest.TestCase):
     def test_get_mp3file(self):
         jsonfile = self.nct.get_mp3file()
         print(jsonfile)
+
+    def test_get_song_info(self):
+        songinfo = self.nct.songinfo
+        info = [songinfo.id, songinfo.title, songinfo.singerTitle, songinfo.info]
+        print(info)

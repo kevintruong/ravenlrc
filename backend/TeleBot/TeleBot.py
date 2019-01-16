@@ -14,13 +14,15 @@ bot.
 """
 import logging
 import os
+import re
 import sqlite3
 
 from telegram import Bot, Chat
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 
-from backend.TeleBot.GDriveFileManager import generate_html_file
+from backend.TeleBot.GDriveFileManager import generate_html_file, YtCreatorGDrive
+from backend.TeleBot.GSheetInput import GoogleSheetStream
 from backend.TeleBot.TeleCmder import TeleBuildCmder
 
 telelog = logging.getLogger('telebot')
@@ -33,7 +35,7 @@ elinkTeleUserDb = None
 
 DEFAULT_DB = os.path.join(os.path.dirname(__file__), 'ytcreator.sqlite3')
 YtCreator_BotToken = "698566319:AAHnZBx4LK4um0jHhxMINTWrUuwvb_wLFbk"
-# YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8" # DEBUG at local
+YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"  # DEBUG at local
 YtCreatorBuildChannel = -1384364301
 
 YtCreatorBuildChannelId = -379811995  # test
@@ -149,6 +151,7 @@ class YtCreatorTeleBotManager:
     bot = None
     elinkbot = None
     ytcreatorDriver = None
+    gsheetsonginfodb = None
 
     def __init__(self):
         self.testcases = []
@@ -196,15 +199,44 @@ class YtCreatorTeleBotManager:
             update.message.reply_text('Build {} start'.format(buildcmder.mvconfig))
             output = buildcmder.run_build_cmd()
             update.message.reply_text('Build Complete {}'.format(output))
-            previewfile = generate_html_file(output)
+            previewfile = YtCreatorTeleBotManager.ytcreatorDriver.generate_html_preview_file(output)
             bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
+            raise exp
 
     @classmethod
+    @run_async
     def echo(cls, bot: Bot, update):
         """Echo the user message."""
-        update.message.reply_text(update.message.text)
+        message = update.message.text
+        isvalid = cls.url_validate(message)
+        if isvalid:
+            print("url valid")
+            from backend.crawler.nct import SongInfoCrawler
+            songinfo = SongInfoCrawler.get_song_info(message)
+            # TODO validator this is NCT url, and push the url to song list
+            cls.gsheetsonginfodb.emit(songinfo)
+            update.message.reply_text('your song {} already updated to database(googlesheet)'.format(songinfo.title))
+            pass
+        else:
+            update.message.reply_text('Hello, this is your message')
+            update.message.reply_text(update.message.text)
+
+    @classmethod
+    def url_validate(cls, url: str):
+        regex = re.compile(
+            r'^(?:http|ftp)s?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        isvalid = re.match(regex, url)
+        if isvalid is not None:
+            return True
+        else:
+            return False
 
     @classmethod
     def error(cls, bot, update, error):
@@ -226,7 +258,8 @@ class YtCreatorTeleBotManager:
         if ytBot is None:
             ytBot = Bot(YtCreator_BotToken)
             YtCreatorBot = ytBot
-        # YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
+        YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
+        YtCreatorTeleBotManager.gsheetsonginfodb = GoogleSheetStream()
         updater = Updater(bot=ytBot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
 
         # Get the dispatcher to register handlers

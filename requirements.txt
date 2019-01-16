@@ -1,3 +1,4 @@
+gspread
 pydrive
 python-telegram-bot
 json5
