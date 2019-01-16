@@ -56,14 +56,11 @@ class GoogleSheetStream:
         return worksheet
 
     def emit(self, songinfo: SongInfo):
-        try:
-            row = self.is_url_existed(songinfo.id)
-            if row is not True:
-                self.worksheet.append_row(self.format_songinfo(songinfo))
-        except Exception as e:
-            self.reset_authenticate()
-            raise e
-            return
+        row = self.is_url_existed(songinfo.id)
+        if row is not True:
+            self.worksheet.append_row(self.format_songinfo(songinfo))
+            return True
+        return False
 
     def is_url_existed(self, url):
         devid_cells = self.worksheet.findall(url)

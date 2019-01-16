@@ -209,19 +209,26 @@ class YtCreatorTeleBotManager:
     @run_async
     def echo(cls, bot: Bot, update):
         """Echo the user message."""
-        message = update.message.text
-        isvalid = cls.url_validate(message)
-        if isvalid:
-            print("url valid")
-            from backend.crawler.nct import SongInfoCrawler
-            songinfo = SongInfoCrawler.get_song_info(message)
-            # TODO validator this is NCT url, and push the url to song list
-            cls.gsheetsonginfodb.emit(songinfo)
-            update.message.reply_text('your song {} already updated to database(googlesheet)'.format(songinfo.title))
-            pass
-        else:
-            update.message.reply_text('Hello, this is your message')
-            update.message.reply_text(update.message.text)
+        try:
+            message = update.message.text
+            isvalid = cls.url_validate(message)
+            if isvalid:
+                print("url valid")
+                from backend.crawler.nct import SongInfoCrawler
+                songinfo = SongInfoCrawler.get_song_info(message)
+                if cls.gsheetsonginfodb.emit(songinfo):
+                    update.message.reply_text(
+                        'your song {} already updated to database(googlesheet)'.format(songinfo.title))
+                else:
+                    update.message.reply_text(
+                        'your song {} is duplicated, already existed in database '.format(songinfo.title))
+
+            else:
+                update.message.reply_text('Hello, this is your message')
+                update.message.reply_text(update.message.text)
+        except Exception as exp:
+            update.message.reply_text('something wrong error {}'.format(exp))
+            raise exp
 
     @classmethod
     def url_validate(cls, url: str):
