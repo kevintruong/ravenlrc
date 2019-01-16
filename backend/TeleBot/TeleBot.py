@@ -35,7 +35,7 @@ elinkTeleUserDb = None
 
 DEFAULT_DB = os.path.join(os.path.dirname(__file__), 'ytcreator.sqlite3')
 YtCreator_BotToken = "698566319:AAHnZBx4LK4um0jHhxMINTWrUuwvb_wLFbk"
-YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"  # DEBUG at local
+# YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"  # DEBUG at local
 YtCreatorBuildChannel = -1384364301
 
 YtCreatorBuildChannelId = -379811995  # test
