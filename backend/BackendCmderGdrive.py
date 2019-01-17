@@ -11,7 +11,7 @@ class GDriveBuildCmder(BuildCmder):
         # todo
         try:
             from subprocess import call
-            call(["google-drive-ocamlfuse  -label me", "-cc", "-label", "me"])
+            call(["google-drive-ocamlfuse", "-cc", "-label", "me"])
         except Exception as e:
             print("{}".format(e))
 
