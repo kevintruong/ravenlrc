@@ -207,11 +207,12 @@ class EffectInfo:
 
 
 class BuildCmder(Cmder):
+    preview_build_time_length = 90
 
     def run(self):
         try:
             if self.build_type == BuildType.BUILD_PREVIEW:
-                self.time_length = int(self.time_length / 2)
+                self.time_length = BuildCmder.preview_build_time_length
                 self.build_preview()
             elif self.build_type == BuildType.BUILD_RELEASE:
                 self.build_release()
