@@ -17,7 +17,7 @@ import os
 import re
 import sqlite3
 
-from telegram import Bot, Chat
+from telegram import Bot, Chat, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 
@@ -207,17 +207,19 @@ class YtCreatorTeleBotManager:
 
     @classmethod
     @run_async
-    def echo(cls, bot: Bot, update):
+    def echo(cls, bot: Bot, update: Update):
         """Echo the user message."""
         try:
             id_sheet = update.message.chat.id
+            name = str(update.message.chat.first_name) + str(update.message.chat.last_name) + str(id_sheet)
             message = update.message.text
             isvalid = cls.url_validate(message)
+
             if isvalid:
                 print("url valid")
                 from backend.crawler.nct import SongInfoCrawler
                 songinfo = SongInfoCrawler.get_song_info(message)
-                if cls.gsheetsonginfodb.emit(songinfo, id_sheet):
+                if cls.gsheetsonginfodb.emit(songinfo):
                     update.message.reply_text(
                         'your song {} already updated to database(googlesheet)'.format(songinfo.title))
                 else:

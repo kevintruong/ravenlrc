@@ -56,10 +56,11 @@ class GoogleSheetStream:
         return worksheet
 
     def emit(self, songinfo: SongInfo, worksheet='timshel'):
+        worksheet_name = str(worksheet)
         fail_count = 0
         while True:
             try:
-                self.worksheet = self.get_worksheet(worksheet)
+                self.worksheet = self.get_worksheet(worksheet_name)
                 row = self.is_url_existed(songinfo.id)
                 if row is not True:
                     self.worksheet.append_row(self.format_songinfo(songinfo))
