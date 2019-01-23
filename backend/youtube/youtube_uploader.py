@@ -1,22 +1,17 @@
 import datetime
+import http.client
+import http.client as httplib
 import json
-import random
-import sys
 import os
+import random
 import time
 
 import httplib2
-import http.client
-import http.client as httplib
-
-from google.oauth2.credentials import Credentials
 # from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build, Resource
+from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
-from oauth2client.file import Storage
-from oauth2client import file as oauth_file, client, tools
-import backend.youtube.auth
+
 from backend.youtube import auth
 
 cur_dir = os.path.dirname(__file__)
@@ -34,7 +29,7 @@ RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnecte
                         http.client.IncompleteRead, http.client.ImproperConnectionState,
                         http.client.CannotSendRequest, httplib.CannotSendHeader,
                         httplib.ResponseNotReady, httplib.BadStatusLine)
-MAX_RETRIES = 10
+MAX_RETRIES = 1
 
 # TODO
 # feature need:
@@ -108,12 +103,12 @@ class YtMvConfigSnippet:
     def __init__(self,
                  title,
                  description,
-                 categoryId,
+                 categoryid,
                  tags: str):
         # self.channelId = channelid
         self.title = title
         self.description = description
-        self.categoryId = self.verify_categoryid(categoryId)
+        self.categoryId = self.verify_categoryid(categoryid)
         self.tags = self.tags_formatter(tags)
 
     def to_dict(self):
@@ -123,12 +118,15 @@ class YtMvConfigSnippet:
 
 
 class YtMvConfigStatus:
-    def __init__(self, privacyStatus=PrivacyStatus.PRIVACY_STATUS_PRIVATE.value, publishAt=None):
-        if publishAt:
-            self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
-            self.publishAt = publishAt
-        else:
-            self.privacyStatus = privacyStatus
+    def __init__(self, delaydays: int):
+        """
+        return Status metadata for setting the MV will publish in next publishtime from now
+        :param delaydays:  next x days from now
+        """
+        publishtime = datetime.datetime.now() + datetime.timedelta(days=delaydays)
+        publish_at = publishtime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+        self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
+        self.publishAt = publish_at
 
     def to_dict(self):
         return todict(self)
@@ -147,17 +145,8 @@ class YtMvConfigRecordingDetails:
 class YoutubeUploader:
 
     # Authorize the request and store authorization credentials
-    def __init__(self, title: str,
-                 description: str,
-                 tags: list,
-                 categoryId: str):
-        self.title = title
-        self.description = description
-        self.tags = tags
-        self.categoryID = categoryId
-        self.privacyStatus = 'unlisted'
-        self.store = Storage(CREDENTIAL_FILE)
-        self.youtube: Resource = self.get_youtube_handler('timeshel')
+    def __init__(self, channel: str):
+        self.youtube: Resource = self.get_youtube_handler(channel)
 
     @staticmethod
     def get_and_create_credential_file(channelname):
@@ -166,7 +155,8 @@ class YoutubeUploader:
         else:
             return None
 
-    def get_secret_file(self):
+    @staticmethod
+    def get_secret_file():
         return os.path.join(AuthenticateFileDir, 'client_secrets.json')
 
     def get_youtube_handler(self, channelname):
@@ -186,50 +176,46 @@ class YoutubeUploader:
             print(exp)
             raise exp
 
-    def set_title(self, title: str):
-        self.title = title
+    def upload_video(self, fileupload: os.path,
+                     snippet: YtMvConfigSnippet = None,
+                     status: YtMvConfigStatus = None):
+        def resumable_upload(request):
+            response = None
+            error = None
+            retry = 0
+            while response is None:
+                try:
+                    status, response = request.next_chunk()
+                    if response is not None:
+                        if 'id' in response:
+                            print('Video id "{}" was successfully uploaded.'.format(response['id']))
+                        else:
+                            exit('The upload failed with an unexpected response: %s' % response)
+                        return response['id']
+                except HttpError as e:
+                    if e.resp.status in RETRIABLE_STATUS_CODES:
+                        error = 'A retriable HTTP error {:d} occurred:\n{}'.format(e.resp.status,
+                                                                                   e.content)
+                    else:
+                        raise
+                except RETRIABLE_EXCEPTIONS as e:
+                    error = 'A retriable error occurred: %s' % e
+                if error is not None:
+                    print(error)
+                    retry += 1
+                    if retry > MAX_RETRIES:
+                        exit('No longer attempting to retry.')
+                    max_sleep = 2 ** retry
+                    sleep_seconds = random.random() * max_sleep
+                    print('Sleeping {:f} seconds and then retrying...'.format(sleep_seconds))
+                    time.sleep(sleep_seconds)
 
-    def get_title(self):
-        return self.title
-
-    def set_description(self, description: str):
-        self.description = description
-
-    def get_description(self):
-        return self.description
-
-    def set_tags(self, tags: str):
-        self.tags = tags
-
-    def get_tags(self):
-        return self.tags
-
-    def set_categoryid(self, categoryid: str):
-        self.categoryID = categoryid
-
-    def get_categoryid(self):
-        return self.categoryID
-
-    def upload_video(self, fileupload: os.path, snippet: YtMvConfigSnippet = None, status: YtMvConfigStatus = None):
         youtube = self.youtube
-        if snippet:
-            body = dict(
-                snippet=snippet.to_dict(),
-                status=status.to_dict(),
-            )
-            pass
-        else:
-            body = dict(
-                snippet=dict(
-                    title=self.title,
-                    description=self.description,
-                    tags=self.tags,
-                    categoryId=self.categoryID
-                ),
-                status=dict(
-                    privacyStatus=self.privacyStatus
-                ),
-            )
+        body = dict(
+            snippet=snippet.to_dict(),
+            status=status.to_dict(),
+        )
+
         print(json.dumps(body, indent=True))
 
         # Call the API's videos.insert method to create and upload the video.
@@ -238,7 +224,7 @@ class YoutubeUploader:
             body=body,
             media_body=MediaFileUpload(fileupload, chunksize=-1, resumable=True)
         )
-        videoId = self.resumable_upload(insert_request)
+        videoId = resumable_upload(insert_request)
         return videoId
 
     def get_video_info_by_id(self, id: str):
@@ -249,58 +235,24 @@ class YoutubeUploader:
         else:
             return None
 
-    def update_video_by_id(self, id, snippet: dict, status: dict):
+    def update_video_by_id(self, mvid, snippet: YtMvConfigSnippet, status: YtMvConfigStatus):
         youtube = self.youtube
         body = dict(
-            snippet=snippet,
-            status=status,
-            id=id
+            snippet=snippet.to_dict(),
+            status=status.to_dict(),
+            id=mvid
         )
         print(json.dumps(body, indent=True))
-
-        # Call the API's videos.insert method to create and upload the video.
         updatersp = youtube.videos().update(part=','.join(body.keys()), body=body).execute()
         return updatersp
 
     def remove_video_by_id(self, videoid: str):
         try:
-            self.youtube.videos().delete(id=videoid, onBehalfOfContentOwner=None).execute()
+            self.youtube.videos().delete(id=videoid,
+                                         onBehalfOfContentOwner=None).execute()
         except Exception as exp:
             print(exp)
             raise exp
-
-    # This method implements an exponential backoff strategy to resume a
-    # failed upload.
-    def resumable_upload(self, request):
-        response = None
-        error = None
-        retry = 0
-        while response is None:
-            try:
-                status, response = request.next_chunk()
-                if response is not None:
-                    if 'id' in response:
-                        print('Video id "{}" was successfully uploaded.'.format(response['id']))
-                    else:
-                        exit('The upload failed with an unexpected response: %s' % response)
-                    return response['id']
-            except HttpError as e:
-                if e.resp.status in RETRIABLE_STATUS_CODES:
-                    error = 'A retriable HTTP error {:d} occurred:\n{}'.format(e.resp.status,
-                                                                               e.content)
-                else:
-                    raise
-            except RETRIABLE_EXCEPTIONS as e:
-                error = 'A retriable error occurred: %s' % e
-            if error is not None:
-                print(error)
-                retry += 1
-                if retry > MAX_RETRIES:
-                    exit('No longer attempting to retry.')
-                max_sleep = 2 ** retry
-                sleep_seconds = random.random() * max_sleep
-                print('Sleeping {:f} seconds and then retrying...'.format(sleep_seconds))
-                time.sleep(sleep_seconds)
 
 
 import unittest
