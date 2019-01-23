@@ -26,8 +26,9 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         status = YtMvConfigStatus(5)
         snippet = YtMvConfigSnippet("[Phạm Hoài Nam][Lyric] Mong Manh",
                                     "this is the description",
-                                    10,
-                                    'phamhoainam,mongmanh')
+                                    'phamhoainam,mongmanh',
+                                    10
+                                    )
         id = self.uploader.upload_video(
             r'D:\Project\ytcreatorservice\backend\content\Mv\Release\build_release_Mong Manh.mp4',
             snippet, status)
@@ -54,8 +55,7 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         status = YtMvConfigStatus(5)
         snippet = YtMvConfigSnippet("[Hà Anh Tuấn][Lyric] Em à",
                                     "this is the description",
-                                    10,
-                                    'haanhtuan,ema')
+                                    'haanhtuan,ema', 10)
         print(json.dumps(status.to_dict(), indent=True))
         rsp = self.uploader.update_video_by_id(id, snippet, status)
         print(rsp)

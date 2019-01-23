@@ -12,16 +12,9 @@ from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 
+from backend.crawler.nct import SongInfo
 from backend.youtube import auth
-
-cur_dir = os.path.dirname(__file__)
-authenticatedir = os.path.join(cur_dir, '../Authenticate')
-
-CREDENTIAL_FILE = os.path.join(authenticatedir, "timshel_credentials.json")
-CLIENT_SECRETS_FILE = os.path.join(authenticatedir, 'client_secrets.json')
-SCOPES = ['https://www.googleapis.com/auth/youtube']
-API_SERVICE_NAME = 'youtube'
-API_VERSION = 'v3'
+from enum import Enum
 
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
@@ -31,13 +24,8 @@ RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnecte
                         httplib.ResponseNotReady, httplib.BadStatusLine)
 MAX_RETRIES = 1
 
-# TODO
-# feature need:
-#   - handle End User account (multiple account)
-#
-
 CurDir = os.path.dirname(os.path.realpath(__file__))
-AuthenticateFileDir = os.path.join(CurDir, '..\Authenticate')
+AuthenticateFileDir = os.path.join(CurDir, '../Authenticate')
 
 AuthenticateDictFile = {
     "Timshel": os.path.join(AuthenticateFileDir, 'Timshel_credential.json'),
@@ -64,9 +52,6 @@ def todict(obj, classkey=None):
         return data
     else:
         return obj
-
-
-from enum import Enum
 
 
 class PrivacyStatus(Enum):
@@ -103,13 +88,17 @@ class YtMvConfigSnippet:
     def __init__(self,
                  title,
                  description,
-                 categoryid,
-                 tags: str):
-        # self.channelId = channelid
+                 tags: str,
+                 categoryid=10
+                 ):
         self.title = title
         self.description = description
         self.categoryId = self.verify_categoryid(categoryid)
         self.tags = self.tags_formatter(tags)
+
+    def snippet_formatter(self, channel, songinfo: SongInfo):
+
+        pass
 
     def to_dict(self):
         return todict(self)
@@ -262,15 +251,11 @@ class TestMvconfig(unittest.TestCase):
     def setUp(self):
         self.snippet = YtMvConfigSnippet("hello, this is my test",
                                          "this is the description",
-                                         10,
-                                         'this,is,my,tags',
-                                         'vn', 'vn')
+                                         10, 'this,is,my,tags')
 
     def test_snippet_to_dict(self):
         print(self.snippet.to_dict())
 
     def test_status_to_dict(self):
-        publishtime = datetime.datetime.now() + datetime.timedelta(days=3)
-        publish_at = publishtime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-5] + 'Z'
-        status = YtMvConfigStatus(publishAt=publish_at)
+        status = YtMvConfigStatus(5)
         print(status.to_dict())

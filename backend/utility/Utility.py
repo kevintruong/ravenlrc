@@ -29,8 +29,12 @@ class FileInfo:
 
 
 def check_file_existed(filepath: str):
-    if not os.path.isfile(filepath):
-        raise Exception("{} not found ".format(filepath))
+    try:
+        if not os.path.isfile(filepath):
+            raise Exception("{} not found ".format(filepath))
+    except Exception as exp:
+        print("not found {} file".format(filepath))
+        raise exp
 
 
 import unittest
