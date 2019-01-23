@@ -27,8 +27,8 @@ class textrefactor(object):
         self.df_plpha_3 = 0xff
         self.df_t1 = 0
         self.df_t2 = 0.30
-        self.df_t3 = 0.70
-        self.df_t4 = 1.1
+        self.df_t3 = 0.80
+        self.df_t4 = 1.4
         self.newtext = None
 
     def add_fade_effect(self):
@@ -124,11 +124,16 @@ class AssCustomizor(object):
         :return:
         """
 
-        for line in self.subs:
-            newtext = textrefactor(line.plaintext, line.duration)
+        for index, line_evt in enumerate(self.subs):
+            newtext = textrefactor(line_evt.plaintext, line_evt.duration)
+            if index + 1 < len(self.subs.events):
+                next_line_evt = self.subs.events[index + 1]
+            else:
+                next_line_evt = None
+            if next_line_evt is not None:
+                line_evt.end = line_evt.end + int(0.5 * next_line_evt.duration)
             newtext.add_fade_effect()
-            line.end = line.end + 1400
-            line.text = newtext.get_newtext()
+            line_evt.text = newtext.get_newtext()
         pass
 
     @classmethod
