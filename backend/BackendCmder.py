@@ -7,7 +7,7 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.utility.Utility import check_file_existed, FileInfo
+from backend.utility.Utility import check_file_existed, FileInfo, non_accent_convert, create_mv_config_file
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
@@ -231,7 +231,7 @@ class BuildCmder(Cmder):
         pass
 
     def toJSON(self):
-        buildfilename = self.songinfo.title.replace(" ", "_") + ".json5"
+        buildfilename = create_mv_config_file(self.songinfo.title)
         buildfilepath = os.path.join(ContentDir.BUILDCMD_DIR.value, buildfilename)
         with open(buildfilepath, 'w') as file:
             json5.dump(self, file, default=lambda o: o.__dict__,

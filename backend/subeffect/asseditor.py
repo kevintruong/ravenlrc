@@ -222,6 +222,19 @@ def create_ass_from_lrc(lrcfile: str, output: str,
         return create_ass_subtitle(lrccontent, output, subinfo, resolution)
 
 
+def load_lrc_file(lrcfile: str) -> SSAFile:
+    """
+
+    :rtype: SSAFile
+    """
+    srttempfile = SrtTempfile().getfullpath()
+    with open(lrcfile, 'r', encoding='utf-8') as lrcfd:
+        lrccontent = lrcfd.read()
+        outputfile = lrf_to_srt(lrccontent, srttempfile)
+        subs: SSAFile = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
+        return subs
+
+
 def create_ass_subtitle(lrccontent: str,
                         output: str,
                         subinfo: LyricConfigInfo,

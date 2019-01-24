@@ -1,3 +1,4 @@
+unidecode
 gspread
 pydrive
 python-telegram-bot

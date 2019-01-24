@@ -1,5 +1,6 @@
 import json
 import os
+import unidecode
 
 
 def get_filepath_info(filepath: str):
@@ -37,7 +38,40 @@ def check_file_existed(filepath: str):
         raise exp
 
 
+def non_accent_convert(data: str):
+    return unidecode.unidecode(data)
+
+
+def create_hashtag(strtags: str):
+    remove_accent = non_accent_convert(strtags).replace(" ", "").lower()
+    hashtags = '#' + remove_accent
+    return hashtags
+
+
+def create_mv_config_file(title: str):
+    configure_file = non_accent_convert(title).replace(" ", "_").lower()
+    buildfilename = configure_file + ".json5"
+    return buildfilename
+
+
 import unittest
+
+
+class Test_no_accent_vietnames(unittest.TestCase):
+    def test_hello_vietnam(self):
+        test = "Em À"
+        print(non_accent_convert(test))
+        test = 'xin chào, đây là bài hát của tôi '
+        print(non_accent_convert(test))
+
+    def test_create_file_config(self):
+        print(create_mv_config_file('Tết đến xuân về'))
+
+    def test_crete_hashtag(self):
+        test = "Hà Anh Tuấn"
+        song = "Tuyết rơi mùa hè"
+        print(create_hashtag(test))
+        print(create_hashtag(song))
 
 
 class TestUnility(unittest.TestCase):
