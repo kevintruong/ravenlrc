@@ -19,8 +19,10 @@ class GDriveBuildCmder(BuildCmder):
         with open(configfile, 'r') as json5file:
             self.config = json5.load(json5file)
         self.config.update({'type': buildtype})
+        self.config.update({'configfile': configfile})
+
         super().__init__(self.config)
-        GDriveBuildCmder.force_clearn_cache()
+        # GDriveBuildCmder.force_clearn_cache()
 
 
 import unittest

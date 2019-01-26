@@ -186,17 +186,18 @@ class LyricConfigInfo:
     def get_font_file(cls, fontname):
         from backend.BackendCmder import ContentDir
         fontdir = ContentDir.FONTFILES_DIR.value
-        fontfile = ContentDir.get_file_path(fontdir, fontname)
-        if fontfile is None:
-            print('Not found font {} in {}'.format(fontname, fontdir))
-            return fontname
-        else:
-            pass
-            return fontname
+        try:
+            fontfile = ContentDir.get_file_path(fontdir, fontname)
+            if fontfile is None:
+                print('Not found font {} in {}'.format(fontname, fontdir))
+                return fontname
+            else:
+                pass
+                return fontname
             # from fontTools.ttLib import TTFont
             # if
-
-        return fontfile
+        except Exception as exp:
+            return fontname
 
     def __init__(self, subinfo: dict):
         self.rectangle: SubRectangle = SubRectangle(subinfo['rectangle'])

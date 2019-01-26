@@ -232,7 +232,7 @@ class BuildCmder(Cmder):
         pass
 
     def toJSON(self):
-        buildfilename = create_mv_config_file(self.songinfo.title)
+        buildfilename = os.path.basename(self.configfile)
         buildfilepath = os.path.join(ContentDir.BUILDCMD_DIR.value, buildfilename)
         with open(buildfilepath, 'w') as file:
             json5.dump(self, file, default=lambda o: o.__dict__,
@@ -262,6 +262,8 @@ class BuildCmder(Cmder):
                     self.lyric_effect = LyricEffect(cmd[field])
                 if 'output' in field:
                     self.output = cmd[field]
+                if 'configfile' in field:
+                    self.configfile = cmd[field]
             ffmpegcli = FfmpegCli()
             self.get_song_info_from_url()
             self.auto_reconfig_build_cmd()

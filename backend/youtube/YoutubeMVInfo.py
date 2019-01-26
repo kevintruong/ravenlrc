@@ -80,10 +80,10 @@ class YoutubeMVInfo:
     def get_mv_build_config(buildmv):
         buildmv = create_mv_config_file(buildmv)
         fileinfo = FileInfo(buildmv)
-        name = fileinfo.name
+        name = fileinfo.name.lower()
         listfiles = os.listdir(build_cmder_dir)
         for file in listfiles:
-            if name in file:
+            if name in file.lower():
                 return os.path.join(build_cmder_dir, file)
         raise FileNotFoundError('Not found {} in {}'.format(buildmv, build_cmder_dir))
 
@@ -124,11 +124,7 @@ class YoutubeMVInfo:
         """
         description = ""
         description = description + self.title
-        description = description + (
-            '-------------------------------------------------------------------------------------\n')
         description = description + ('{}\n'.format(self.channelinfo.header.channel_info))
-        description = description + (
-            '-------------------------------------------------------------------------------------\n')
         description = description + ('{}\n'.format(self.channelinfo.header.warning))
         description = description + (
             '-------------------------------------------------------------------------------------\n')
@@ -219,11 +215,31 @@ class TestMvDescription(unittest.TestCase):
         print(description)
 
     def test_create_ema(self):
-        self.nhammat = YoutubeMVInfo('timshel', 'Em à')
+        self.nhammat = YoutubeMVInfo('timshel', 'em_a')
         description = self.nhammat.description_formatter()
         print(description)
 
     def test_create_huyenthoai(self):
-        self.nhammat = YoutubeMVInfo('timshel', 'huyen thoai')
+        self.nhammat = YoutubeMVInfo('timshel', 'huyen_thoai')
+        description = self.nhammat.description_formatter()
+        print(description)
+
+    def test_create_mong_manh(self):
+        self.nhammat = YoutubeMVInfo('timshel', 'mong_manh')
+        description = self.nhammat.description_formatter()
+        print(description)
+
+    def test_create_ngaychuagiongbao(self):
+        self.nhammat = YoutubeMVInfo('timshel', 'ngay_chua_giong_bao')
+        description = self.nhammat.description_formatter()
+        print(description)
+
+    def test_create_nhe(self):
+        self.nhammat = YoutubeMVInfo('timshel', 'nhe')
+        description = self.nhammat.description_formatter()
+        print(description)
+
+    def test_create_nu_hon_danh_roi(self):
+        self.nhammat = YoutubeMVInfo('timshel', 'nu_hon_danh_roi')
         description = self.nhammat.description_formatter()
         print(description)
