@@ -1,10 +1,13 @@
 import codecs
 import os
 
+import lxml
 import requests
 
 import abc
 import json
+
+from bs4 import BeautifulSoup
 
 from backend.crawler.rc4_py3 import decrypt
 from backend.utility.TempFileMnger import *
@@ -42,6 +45,8 @@ class SongInfo:
         self.lyric = nctsonginfo['lyric']
         self.location = nctsonginfo['location']
         self.id = self.get_nct_id(self.info)
+        if 'lyric_text' in nctsonginfo:
+            self.lyric_text = nctsonginfo['lyric_text']
 
     def get_nct_id(self, ncturl: str):
         nct_url = ncturl.split('.')
@@ -69,14 +74,27 @@ class NctCrawler(Crawler):
             return matchlist[0]
         raise Exception("not found song key encrypt")
 
+    def reformat_lyric(self, lyric_text: str):
+        format_lyric = ""
+        for line in lyric_text.splitlines():
+            format_lyric = format_lyric + " ".join(line.split()) + '\n'
+        return format_lyric
+
+        pass
+
     def parser(self):
         body = requests.get(self.mobileNctWmUrl)
+        soup = BeautifulSoup(body.text, 'html.parser')
+        lyric_text = soup.find(attrs={'class': 'lyric'}).text
+        formatlyric = self.reformat_lyric(lyric_text)
+        # print(formatlyric)
         html = body._content.decode('utf-8')
         songkey = self.get_songkey(html)
         downloadlink = NctCrawler.nctLinkInfo.format(songkey)
         print(downloadlink)
         body = requests.get(downloadlink)
-        songinfodata = json.loads(body._content)
+        songinfodata: dict = json.loads(body._content)
+        songinfodata['data']['lyric_text'] = formatlyric
         songinf = SongInfo(songinfodata['data'])
         return songinf
 
@@ -108,6 +126,9 @@ class NctCrawler(Crawler):
         with codecs.open(locallyricfile, 'w', "utf-8") as f:
             f.write(returndata)
         return locallyricfile.decode('utf-8')
+
+    def get_lyric_text(self):
+        pass
 
 
 import unittest

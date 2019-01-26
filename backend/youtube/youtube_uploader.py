@@ -13,8 +13,11 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 
 from backend.crawler.nct import SongInfo
+from backend.utility.Utility import todict
 from backend.youtube import auth
 from enum import Enum
+
+from backend.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
 
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
@@ -33,27 +36,6 @@ AuthenticateDictFile = {
 }
 
 
-def todict(obj, classkey=None):
-    if isinstance(obj, dict):
-        data = {}
-        for (k, v) in obj.items():
-            data[k] = todict(v, classkey)
-        return data
-    elif hasattr(obj, "_ast"):
-        return todict(obj._ast())
-    elif hasattr(obj, "__iter__") and not isinstance(obj, str):
-        return [todict(v, classkey) for v in obj]
-    elif hasattr(obj, "__dict__"):
-        data = dict([(key, todict(value, classkey))
-                     for key, value in obj.__dict__.items()
-                     if not callable(value) and not key.startswith('_')])
-        if classkey is not None and hasattr(obj, "__class__"):
-            data[classkey] = obj.__class__.__name__
-        return data
-    else:
-        return obj
-
-
 class PrivacyStatus(Enum):
     PRIVACY_STATUS_PRIVATE = 'private'
     PRIVACY_STATUS_PUBLIC = 'public'
@@ -65,57 +47,19 @@ class StatusLicense(Enum):
     STATUS_LICCENSE_COMMON = 'creativeCommon'
 
 
-class YtMvConfigSnippet:
-    @classmethod
-    def tags_formatter(cls, tags: str):
-        tags_nospaces = "".join(tags.split())
-        tags_list = tags_nospaces.split(',')
-        return tags_list
-
-    @classmethod
-    def verify_categoryid(cls, id):
-        cats = ['', 'Film & Animation', 'Autos & Vehicles', '', '', '', '', '', '', '', 'Music', '', '', '', '',
-                'Pets & Animals', '', 'Sports', 'Short Movies', 'Travel & Events', 'Gaming', 'Videoblogging',
-                'People & Blogs', 'Comedy', 'Entertainment', 'News & Politics', 'Howto & Style', 'Education',
-                'Science & Technology', 'Nonprofits & Activism', 'Movies', 'Anime/Animation', 'Action/Adventure',
-                'Classics', 'Comedy', 'Documentary', 'Drama', 'Family', 'Foreign', 'Horror', 'Sci-Fi/Fantasy',
-                'Thriller', 'Shorts', 'Shows', 'Trailers']
-        this_categoryid = cats[id]
-        if len(this_categoryid) == 0:
-            return 10  # entertainment categoryId
-        return id
-
-    def __init__(self,
-                 title,
-                 description,
-                 tags: str,
-                 categoryid=10
-                 ):
-        self.title = title
-        self.description = description
-        self.categoryId = self.verify_categoryid(categoryid)
-        self.tags = self.tags_formatter(tags)
-
-    def snippet_formatter(self, channel, songinfo: SongInfo):
-
-        pass
-
-    def to_dict(self):
-        return todict(self)
-
-    pass
-
-
 class YtMvConfigStatus:
-    def __init__(self, delaydays: int):
+    def __init__(self, delaydays=None):
         """
         return Status metadata for setting the MV will publish in next publishtime from now
         :param delaydays:  next x days from now
         """
-        publishtime = datetime.datetime.now() + datetime.timedelta(days=delaydays)
-        publish_at = publishtime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-        self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
-        self.publishAt = publish_at
+        if delaydays is not None:
+            publishtime = datetime.datetime.now() + datetime.timedelta(days=delaydays)
+            publish_at = publishtime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+            self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
+            self.publishAt = publish_at
+        else:
+            self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
 
     def to_dict(self):
         return todict(self)
@@ -249,9 +193,9 @@ import unittest
 
 class TestMvconfig(unittest.TestCase):
     def setUp(self):
-        self.snippet = YtMvConfigSnippet("hello, this is my test",
-                                         "this is the description",
-                                         10, 'this,is,my,tags')
+        self.YtMvInfo = YoutubeMVInfo('timshel', 'em à')
+        tags = self.YtMvInfo.hashtags
+        self.snippet = YtMvConfigSnippet(self.YtMvInfo.title, self.YtMvInfo.description, tags)
 
     def test_snippet_to_dict(self):
         print(self.snippet.to_dict())

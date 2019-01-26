@@ -23,7 +23,7 @@ from telegram.ext.dispatcher import run_async
 
 from backend.TeleBot.GDriveFileManager import generate_html_file, YtCreatorGDrive
 from backend.TeleBot.GSheetInput import GoogleSheetStream
-from backend.TeleBot.TeleCmder import TeleBuildCmder
+from backend.TeleBot.TeleCmder import TeleBuildCmder, TelePublishCmder
 
 telelog = logging.getLogger('telebot')
 
@@ -207,6 +207,23 @@ class YtCreatorTeleBotManager:
 
     @classmethod
     @run_async
+    def publish(cls, bot: Bot, update):
+        print(update.message.text)
+        buildcmd = update.message.text
+        try:
+
+            buildcmder = TelePublishCmder(buildcmd)
+            update.message.reply_text('Build {} start'.format(buildcmder.mvconfig))
+            output = buildcmder.run_build_cmd()
+            update.message.reply_text('Build Complete {}'.format(output))
+            previewfile = YtCreatorTeleBotManager.ytcreatorDriver.generate_html_preview_file(output)
+            bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
+        except Exception as exp:
+            update.message.reply_text('Build error {}'.format(exp))
+            raise exp
+
+    @classmethod
+    @run_async
     def echo(cls, bot: Bot, update: Update):
         """Echo the user message."""
         try:
@@ -294,12 +311,12 @@ class YtCreatorTeleBotManager:
         # start_polling() is non-blocking and will stop the bot gracefully.
         updater.idle()
 
-        if __name__ == '__main__':
-            YtCreatorTeleBotManager.TeleNotifier_Runner()
-            #
-            #
-            # if eLinkGateBot is None:
-            #     executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
-            #     loop = asyncio.get_event_loop()
-            #     entry = loop.run_in_executor(executor, TeleNotifier_Runner)
-            #     # TeleNotifier_Runner()
+# if __name__ == '__main__':
+#     YtCreatorTeleBotManager.TeleNotifier_Runner()
+#
+#
+# if eLinkGateBot is None:
+#     executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+#     loop = asyncio.get_event_loop()
+#     entry = loop.run_in_executor(executor, TeleNotifier_Runner)
+#     # TeleNotifier_Runner()

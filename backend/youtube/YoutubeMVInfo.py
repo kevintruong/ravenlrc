@@ -2,7 +2,7 @@ import json5
 import os
 
 from backend.crawler.nct import SongInfo
-from backend.utility.Utility import create_mv_config_file, FileInfo
+from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 build_cmder_dir = os.path.join(cur_dir, '..\content\BuildCmd')
@@ -59,13 +59,18 @@ class ChannelInfoManger:
                            sort_keys=True, indent=4)
 
 
-class MvDescription:
+class YoutubeMVInfo:
     def __init__(self, channelname: str, mv_info: str):
         self.channel = channelname
         self.mv_info = mv_info
         self.songinfo = self.get_songinfo(mv_info)
         self.channelinfo = ChannelInfoManger(channelname)
-        pass
+        self.title = '{}\n'.format(self.channelinfo.header.channel + ' || '
+                                   + self.songinfo.singerTitle + ' || '
+                                   + self.songinfo.title)
+        self.hashtags = '{},{}\n'.format(','.join(self.create_hashtags()), ','.join(self.channelinfo.footer.hashtags))
+
+        self.description = self.description_formatter()
 
     def toJSON(self):
         return json5.dumps(self, default=lambda o: o.__dict__,
@@ -88,6 +93,11 @@ class MvDescription:
             mvconfig = json5.load(fileconfig)
             if 'songinfo' in mvconfig:
                 return SongInfo(mvconfig['songinfo'])
+
+    def create_hashtags(self):
+        singer = create_hashtag(self.songinfo.singerTitle)
+        song = create_hashtag(self.songinfo.title)
+        return [singer, song]
 
     def description_formatter(self):
         """
@@ -112,39 +122,80 @@ class MvDescription:
 
         :return:
         """
-        with open('description.txt', 'w', encoding='utf-8') as des_file:
-            des_file.writelines('{}\n'.format(self.channelinfo.header.channel + '||'
-                                              + self.songinfo.singerTitle + '||'
-                                              + self.songinfo.title))
-            des_file.writelines(
-                '-------------------------------------------------------------------------------------\n')
-            des_file.writelines('{}\n'.format(self.channelinfo.header.channel_info))
-            des_file.writelines(
-                '-------------------------------------------------------------------------------------\n')
-            des_file.writelines('{}\n'.format(self.channelinfo.header.warning))
-            des_file.writelines(
-                '-------------------------------------------------------------------------------------\n')
-
-            from backend.subeffect.asseditor import load_lrc_file
-            assfile = load_lrc_file(self.songinfo.lyric)
-            for line in assfile.events:
-                des_file.write(line.text + '\n')
-
-            des_file.writelines(
-                '-------------------------------------------------------------------------------------\n')
-            des_file.writelines('{}\n'.format(self.channelinfo.footer.copyright))
-            des_file.writelines('{}\n'.format(','.join(self.channelinfo.footer.hashtags)))
+        description = ""
+        description = description + self.title
+        description = description + (
+            '-------------------------------------------------------------------------------------\n')
+        description = description + ('{}\n'.format(self.channelinfo.header.channel_info))
+        description = description + (
+            '-------------------------------------------------------------------------------------\n')
+        description = description + ('{}\n'.format(self.channelinfo.header.warning))
+        description = description + (
+            '-------------------------------------------------------------------------------------\n')
+        if self.songinfo.lyric_text:
+            description = description + self.songinfo.lyric_text
+        description = description + (
+            '-------------------------------------------------------------------------------------\n')
+        description = description + ('{}\n'.format(self.channelinfo.footer.copyright))
+        description = description + self.hashtags
+        return description
         pass
 
-    def create_snippet_obj(self, songinfo: SongInfo):
-        title = r'[{}][Lyric][{}] {}'.format(self.channel, songinfo.singerTitle, songinfo.title)
-        self.description_formatter()
+    def create_snippet_obj(self):
         pass
 
-    def create_status_obj(self, delaydays):
-        from backend.youtube.youtube_uploader import YtMvConfigStatus
-        self.status = YtMvConfigStatus(delaydays)
+    pass
+
+
+class YtMvConfigSnippet:
+    @classmethod
+    def tags_formatter(cls, tags: str):
+        tags_nospaces = "".join(tags.split())
+        tags_list = tags_nospaces.split(',')
+        return tags_list
+
+    @classmethod
+    def verify_categoryid(cls, id):
+        cats = ['', 'Film & Animation', 'Autos & Vehicles', '', '', '', '', '', '', '', 'Music', '', '', '', '',
+                'Pets & Animals', '', 'Sports', 'Short Movies', 'Travel & Events', 'Gaming', 'Videoblogging',
+                'People & Blogs', 'Comedy', 'Entertainment', 'News & Politics', 'Howto & Style', 'Education',
+                'Science & Technology', 'Nonprofits & Activism', 'Movies', 'Anime/Animation', 'Action/Adventure',
+                'Classics', 'Comedy', 'Documentary', 'Drama', 'Family', 'Foreign', 'Horror', 'Sci-Fi/Fantasy',
+                'Thriller', 'Shorts', 'Shows', 'Trailers']
+        this_categoryid = cats[id]
+        if len(this_categoryid) == 0:
+            return 10  # entertainment categoryId
+        return id
+
+    @classmethod
+    def create_snippet_from_info(cls, info: YoutubeMVInfo):
+        return YtMvConfigSnippet(info.title, info.description, info.hashtags)
         pass
+
+    def __init__(self,
+                 title: str,
+                 description,
+                 tags: str,
+                 categoryid=10
+                 ):
+        self.title = title.replace('\n', '')
+        self.description = description
+        self.categoryId = self.verify_categoryid(categoryid)
+        self.tags = self.tags_formatter(tags)
+
+    def snippet_formatter(self, channel, songinfo: SongInfo):
+        pass
+
+    def to_dict(self):
+        return todict(self)
+
+    pass
+
+
+def create_status_obj(self, delaydays):
+    from backend.youtube.youtube_uploader import YtMvConfigStatus
+    self.status = YtMvConfigStatus(delaydays)
+    pass
 
 
 import unittest
@@ -152,7 +203,7 @@ import unittest
 
 class TestMvDescription(unittest.TestCase):
     def setUp(self):
-        self.mvDes = MvDescription('timshel', 'Em À')
+        self.mvDes = YoutubeMVInfo('timshel', 'Em À')
 
     def test_get_songinfo(self):
         songinfo = self.mvDes.get_songinfo('Em À')
@@ -163,5 +214,16 @@ class TestMvDescription(unittest.TestCase):
         self.mvDes.description_formatter()
 
     def test_create_nhammatthaymuahe(self):
-        self.nhammat = MvDescription('timshel', 'Nhắm mắt thấy mùa hè')
-        self.nhammat.description_formatter()
+        self.nhammat = YoutubeMVInfo('timshel', 'Nhắm mắt thấy mùa hè')
+        description = self.nhammat.description_formatter()
+        print(description)
+
+    def test_create_ema(self):
+        self.nhammat = YoutubeMVInfo('timshel', 'Em à')
+        description = self.nhammat.description_formatter()
+        print(description)
+
+    def test_create_huyenthoai(self):
+        self.nhammat = YoutubeMVInfo('timshel', 'huyen thoai')
+        description = self.nhammat.description_formatter()
+        print(description)

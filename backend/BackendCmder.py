@@ -7,7 +7,8 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.utility.Utility import check_file_existed, FileInfo, non_accent_convert, create_mv_config_file
+from backend.utility.Utility import check_file_existed, FileInfo, non_accent_convert, create_mv_config_file, \
+    generate_mv_filename
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
@@ -272,12 +273,11 @@ class BuildCmder(Cmder):
             raise e
 
     def configure_output(self):
+        filename = generate_mv_filename(self.songinfo.title)
         if self.build_type == BuildType.BUILD_PREVIEW:
-            self.output = os.path.join(ContentDir.MVPREV_DIR.value,
-                                       self.build_type.name.lower() + '_' + self.songinfo.title + ".mp4")
+            self.output = os.path.join(ContentDir.MVPREV_DIR.value, filename)
         elif self.build_type == BuildType.BUILD_RELEASE:
-            self.output = os.path.join(ContentDir.MVRELEASE_DIR.value,
-                                       self.build_type.name.lower() + '_' + self.songinfo.title + ".mp4")
+            self.output = os.path.join(ContentDir.MVRELEASE_DIR.value, filename)
 
     def get_song_info_from_url(self):
         if self.songinfo is None and self.song_url:
