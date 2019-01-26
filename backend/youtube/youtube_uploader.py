@@ -124,7 +124,7 @@ class YoutubeUploader:
                             print('Video id "{}" was successfully uploaded.'.format(response['id']))
                         else:
                             exit('The upload failed with an unexpected response: %s' % response)
-                        return response['id']
+                        return response
                 except HttpError as e:
                     if e.resp.status in RETRIABLE_STATUS_CODES:
                         error = 'A retriable HTTP error {:d} occurred:\n{}'.format(e.resp.status,
@@ -157,8 +157,8 @@ class YoutubeUploader:
             body=body,
             media_body=MediaFileUpload(fileupload, chunksize=-1, resumable=True)
         )
-        videoId = resumable_upload(insert_request)
-        return videoId
+        respond = resumable_upload(insert_request)
+        return respond
 
     def get_video_info_by_id(self, id: str):
         video_rsp = self.youtube.videos().list(part='snippet,status', id=id).execute()

@@ -35,7 +35,7 @@ elinkTeleUserDb = None
 
 DEFAULT_DB = os.path.join(os.path.dirname(__file__), 'ytcreator.sqlite3')
 YtCreator_BotToken = "698566319:AAHnZBx4LK4um0jHhxMINTWrUuwvb_wLFbk"
-# YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"  # DEBUG at local
+//YtCreator_BotToken = "714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8"  # DEBUG at local
 YtCreatorBuildChannel = -1384364301
 
 YtCreatorBuildChannelId = -379811995  # test
@@ -211,13 +211,10 @@ class YtCreatorTeleBotManager:
         print(update.message.text)
         buildcmd = update.message.text
         try:
-
             buildcmder = TelePublishCmder(buildcmd)
-            update.message.reply_text('Build {} start'.format(buildcmder.mvconfig))
-            output = buildcmder.run_build_cmd()
-            update.message.reply_text('Build Complete {}'.format(output))
-            previewfile = YtCreatorTeleBotManager.ytcreatorDriver.generate_html_preview_file(output)
-            bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
+            update.message.reply_text('publish {} start'.format(buildcmder.cmder.songinfo.title))
+            buildcmder.run_publish_cmd()
+            update.message.reply_text('publis {} Complete'.format(buildcmder.cmder.songinfo.title))
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
             raise exp
@@ -296,6 +293,7 @@ class YtCreatorTeleBotManager:
         dp.add_handler(CommandHandler("start", YtCreatorTeleBotManager.start))
         dp.add_handler(CommandHandler("help", YtCreatorTeleBotManager.help))
         dp.add_handler(CommandHandler("build", YtCreatorTeleBotManager.build))
+        dp.add_handler(CommandHandler("publish", YtCreatorTeleBotManager.publish))
 
         # on noncommand i.e message - echo the message on Telegram
         dp.add_handler(MessageHandler(Filters.text, YtCreatorTeleBotManager.echo))

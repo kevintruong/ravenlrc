@@ -43,7 +43,6 @@ class TelePublishCmder:
 
     def run_publish_cmd(self):
         from backend.utility.Utility import check_file_existed
-
         try:
             check_file_existed(self.cmder.output)
         except Exception as exp:
@@ -116,7 +115,12 @@ class TestTeleBuildCmder(unittest.TestCase):
 
 class TestTeleGramPublishCmder(unittest.TestCase):
     def setUp(self):
-        self.publishcmder = TelePublishCmder('r/publish huyen_thoai timshel')
+        pass
 
     def test_publish_run(self):
+        self.publishcmder = TelePublishCmder('r/publish huyen_thoai timshel')
+        self.publishcmder.run_publish_cmd()
+
+    def test_publish_nhe(self):
+        self.publishcmder = TelePublishCmder('r/publish nhe timshel')
         self.publishcmder.run_publish_cmd()
