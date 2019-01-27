@@ -1,12 +1,8 @@
-import codecs
-import os
-
-import lxml
-import requests
-
 import abc
+import codecs
 import json
 
+import requests
 from bs4 import BeautifulSoup
 
 from backend.crawler.rc4_py3 import decrypt
