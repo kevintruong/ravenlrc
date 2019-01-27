@@ -12,7 +12,10 @@ class GDriveBuildCmder(BuildCmder):
         if platform == "linux" or platform == "linux2":
             try:
                 from subprocess import call
-                call(["google-drive-ocamlfuse", "-cc", "-label", "me"])
+                # call(["google-drive-ocamlfuse", "-cc", "-label", "me"])
+                print('remount device')
+                call(["fusermount", "-u", "${HOME}/ytcreator/content"])
+                call(["google-drive-ocamlfuse", "-label", "me", "${HOME}/ytcreator/content"])
             except Exception as e:
                 print("{}".format(e))
 
