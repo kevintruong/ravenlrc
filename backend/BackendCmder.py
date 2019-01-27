@@ -29,6 +29,7 @@ class ContentDir(Enum):
     MVPREV_DIR = os.path.join(contentDir, 'Mv/Preview')
     FONTFILES_DIR = os.path.join(contentDir, 'Font')
     BUILDCMD_DIR = os.path.join(contentDir, 'BuildCmd')
+    CHANNELINFO_DIR = os.path.join(contentDir, 'ChannelInfo')
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):

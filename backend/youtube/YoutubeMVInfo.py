@@ -1,12 +1,14 @@
 import json5
 import os
 
+from backend.BackendCmder import ContentDir
 from backend.crawler.nct import SongInfo
 from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
-build_cmder_dir = os.path.join(cur_dir, '..\content\BuildCmd')
-channelinfodir = os.path.join(cur_dir, '..\content\ChannelInfo')
+
+build_cmder_dir = ContentDir.BUILDCMD_DIR.value
+channelinfodir = ContentDir.BUILDCMD_DIR.CHANNELINFO_DIR.value
 
 
 class DescriptionHeader:
