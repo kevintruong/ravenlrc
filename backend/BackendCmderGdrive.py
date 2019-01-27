@@ -8,21 +8,21 @@ from backend.BackendCmder import BuildCmder, ContentDir
 class GDriveBuildCmder(BuildCmder):
     @classmethod
     def force_clearn_cache(cls):
-        # todo
-        try:
-            from subprocess import call
-            call(["google-drive-ocamlfuse", "-cc", "-label", "me"])
-        except Exception as e:
-            print("{}".format(e))
+        from sys import platform
+        if platform == "linux" or platform == "linux2":
+            try:
+                from subprocess import call
+                call(["google-drive-ocamlfuse", "-cc", "-label", "me"])
+            except Exception as e:
+                print("{}".format(e))
 
     def __init__(self, configfile, buildtype=1):
         with open(configfile, 'r') as json5file:
             self.config = json5.load(json5file)
         self.config.update({'type': buildtype})
         self.config.update({'configfile': configfile})
-
         super().__init__(self.config)
-        # GDriveBuildCmder.force_clearn_cache()
+        GDriveBuildCmder.force_clearn_cache()
 
 
 import unittest
