@@ -79,7 +79,7 @@ class YoutubeUploader:
 
     # Authorize the request and store authorization credentials
     def __init__(self, channel: str):
-        self.youtube: Resource = self.get_youtube_handler(channel)
+        self.youtube: Resource = self.get_youtube_handler(channel.lower())
 
     @staticmethod
     def get_and_create_credential_file(channelname):
