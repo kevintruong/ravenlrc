@@ -14,8 +14,8 @@ class GDriveBuildCmder(BuildCmder):
                 from subprocess import call
                 # call(["google-drive-ocamlfuse", "-cc", "-label", "me"])
                 print('remount device')
-                call(["fusermount", "-u", "${HOME}/ytcreator/content"])
-                call(["google-drive-ocamlfuse", "-label", "me", "${HOME}/ytcreator/content"])
+                call(["fusermount", "-u", "/root/ytcreator/content"])
+                call(["google-drive-ocamlfuse", "-label", "me", "/root/ytcreator/content"])
             except Exception as e:
                 print("{}".format(e))
 
