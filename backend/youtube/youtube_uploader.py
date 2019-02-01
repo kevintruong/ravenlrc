@@ -78,8 +78,8 @@ class YtMvConfigRecordingDetails:
 class YoutubeUploader:
 
     # Authorize the request and store authorization credentials
-    def __init__(self, channel: str):
-        self.youtube: Resource = self.get_youtube_handler(channel.lower())
+    def __init__(self, channel: str, callback=None):
+        self.youtube: Resource = self.get_youtube_handler(channel.lower(), callback)
 
     @staticmethod
     def get_and_create_credential_file(channelname):
@@ -92,7 +92,7 @@ class YoutubeUploader:
     def get_secret_file():
         return os.path.join(AuthenticateFileDir, 'client_secrets.json')
 
-    def get_youtube_handler(self, channelname):
+    def get_youtube_handler(self, channelname, callback=None):
         """Return the API Youtube object."""
         try:
 
@@ -102,7 +102,10 @@ class YoutubeUploader:
             client_secrets = self.get_secret_file()
 
             credentials = default_credentials
-            get_code_callback = auth.console.get_code
+            if callback is None:
+                get_code_callback = auth.console.get_code
+            else:
+                get_code_callback = callback
             return auth.get_resource(client_secrets, credentials,
                                      get_code_callback=get_code_callback)
         except Exception as exp:

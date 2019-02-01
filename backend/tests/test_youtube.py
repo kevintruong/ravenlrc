@@ -1,4 +1,6 @@
 import unittest
+
+from backend.facebook.fb_publish import FbPageAPI
 from backend.youtube.youtube_uploader import *
 
 test_dir = os.path.dirname(__file__)
@@ -10,7 +12,7 @@ test_video = os.path.join(sample_data, "in1.mp4")
 class TestYoutubeChanelAPI(unittest.TestCase):
 
     def setUp(self):
-        self.uploader = YoutubeUploader('timeshel')
+        self.uploader = YoutubeUploader('timshel')
         pass
 
     def tearDown(self):
@@ -35,10 +37,13 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         self.assertEqual(info['title'], snippet.title)
 
     def test_get_video_info(self):
-        id = '5h7m7PXPbvc'
+        id = '5R1YpuxwsN0'
         info = self.uploader.get_video_info_by_id(id)
-        title = info['snippet']['title']
-        print(title)
+        tags = ','.join(info['snippet']['tags'])
+        description = tags + '\n' + info['snippet']['description']
+        link = "https://www.youtube.com/watch?v={}".format(id)
+        fbpage = FbPageAPI('timshel')
+        fbpage.post(message=description, link=link)
 
     def test_update_video_to_chanel(self):
         self.assertEqual(True, False)
@@ -55,5 +60,6 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         rsp = self.uploader.update_video_by_id(id, snippet, status)
         print(rsp)
 
-        if __name__ == '__main__':
-            unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()

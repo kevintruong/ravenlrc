@@ -1,3 +1,4 @@
+facepy
 beautifulsoup4
 unidecode
 gspread

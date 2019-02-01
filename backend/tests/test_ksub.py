@@ -17,7 +17,7 @@ if os.path.isdir(test_data_dir):
 else:
     os.mkdir(test_data_dir)
 
-full_test = "https://www.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong.EoqsR1AFD4SG.html"
+full_test = "https://www.nhaccuatui.com/bai-hat/thuong-em-la-dieu-anh-khong-the-ngo-noo-phuoc-thinh.xe5j8HaGtnY3.html"
 
 
 class ksub(unittest.TestCase):
@@ -51,9 +51,9 @@ class ksub(unittest.TestCase):
     def test_create_ass_sub(self):
         ass_out = os.path.join(curDir, "test.ass")
         subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
-                                'fontname': 'UTM Centur',
-                                'fontcolor': 0x018CA7,
-                                'fontsize': 20})
+                                   'fontname': 'UTM Centur',
+                                   'fontcolor': 0x018CA7,
+                                   'fontsize': 20})
         newass = create_ass_from_url(full_test, ass_out, subinfo=subinfo)
         self.assertTrue(os.path.isfile(newass))
         pass

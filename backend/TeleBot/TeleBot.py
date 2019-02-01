@@ -16,9 +16,10 @@ import logging
 import os
 import re
 import sqlite3
+import threading
 
-from telegram import Bot, Chat, Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Bot, Chat, Update, ForceReply
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, RegexHandler
 from telegram.ext.dispatcher import run_async
 
 from backend.TeleBot.GDriveFileManager import generate_html_file, YtCreatorGDrive
@@ -97,8 +98,9 @@ class TeleRegisterUserDb:
         curuser = self.get_userid(user.id)
         if curuser is not None:
             print("{} allready existed".format(user.username))
-            YtCreatorBot.sendMessage(chat_id=user.id, text="{} {} already added".format(user.first_name,
-                                                                                        user.last_name))
+            YtCreatorBot.sendMessage(chat_id=user.id,
+                                     text="{} {} already added".format(user.first_name,
+                                                                       user.last_name))
             return
         else:
             self.debugdbconn = sqlite3.connect(self.dbfile)
@@ -148,10 +150,15 @@ class TeleNotifyStream(logging.Handler):
 
 
 class YtCreatorTeleBotManager:
-    bot = None
+    input_return = None
+    bot: Bot = None
     elinkbot = None
     ytcreatorDriver = None
     gsheetsonginfodb = None
+    cur_chat = None
+    wait_input_evt = threading.Event()
+
+    GG_INPUT_TOKEN, TYPING_REPLY, TYPING_CHOICE = range(3)
 
     def __init__(self):
         self.testcases = []
@@ -162,9 +169,9 @@ class YtCreatorTeleBotManager:
 
     @classmethod
     def get_elinkbot(cls):
-        if YtCreatorTeleBotManager.elinkbot is None:
-            YtCreatorTeleBotManager.elinkbot = YtCreatorTeleBotManager()
-        return YtCreatorTeleBotManager.elinkbot
+        if cls.elinkbot is None:
+            cls.elinkbot = YtCreatorTeleBotManager()
+        return cls.elinkbot
 
     # Define a few command handlers. These usually take the two arguments bot and
     # update. Error handlers also receive the raised TelegramError object in error.
@@ -187,6 +194,42 @@ class YtCreatorTeleBotManager:
                                   'example: /build TocGioThoiBay release')
         update.message.reply_text('/build <configure_file> build type \n '
                                   'example: /build TocGioThoiBay release')
+
+    @classmethod
+    def wait_for_input(cls):
+        cls.wait_input_evt.wait()
+        return cls.input_return
+
+    @classmethod
+    def authenticate_new_channel(cls, authenticate_url):
+        print(authenticate_url)
+        cls.bot.sendMessage(cls.cur_chat.id, text=authenticate_url, reply_markup=ForceReply())
+        cls.wait_for_input()
+        return cls.input_return
+        pass
+
+    @classmethod
+    def input_token(cls, bot, update):
+        update.message.reply_text('Alright, please send me the category first, '
+                                  'for example "Most impressive skill"')
+        cls.input_return = update.message.text.split()[1]
+        cls.wait_input_evt.set()
+
+    @classmethod
+    @run_async
+    def new(cls, bot: Bot, update):
+        """
+        register new channel
+        :param bot:
+        :param update:
+        :return:
+        """
+        cls.cur_chat = update.message.chat
+        from backend.youtube.youtube_uploader import YoutubeUploader
+        register_newchannel = update.message.text
+        cmd_args = register_newchannel.split()
+        channel = cmd_args[1]
+        YoutubeUploader(channel, cls.authenticate_new_channel)
 
     @classmethod
     @run_async
@@ -277,23 +320,20 @@ class YtCreatorTeleBotManager:
     def TeleNotifier_Runner(cls):
         """Start the bot."""
         # Create the EventHandler and pass it your bot's token.
-        global YtCreatorBot
-        ytBot = YtCreatorBot
-        if ytBot is None:
-            ytBot = Bot(YtCreator_BotToken)
-            YtCreatorBot = ytBot
+        cls.bot = Bot(YtCreator_BotToken)
         YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
         YtCreatorTeleBotManager.gsheetsonginfodb = GoogleSheetStream()
-        updater = Updater(bot=ytBot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
+        updater = Updater(bot=cls.bot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
 
         # Get the dispatcher to register handlers
         dp = updater.dispatcher
-
         # on different commands - answer in Telegram
         dp.add_handler(CommandHandler("start", YtCreatorTeleBotManager.start))
         dp.add_handler(CommandHandler("help", YtCreatorTeleBotManager.help))
         dp.add_handler(CommandHandler("build", YtCreatorTeleBotManager.build))
         dp.add_handler(CommandHandler("publish", YtCreatorTeleBotManager.publish))
+        dp.add_handler(CommandHandler("new", YtCreatorTeleBotManager.new))
+        dp.add_handler(CommandHandler("input", YtCreatorTeleBotManager.input_token))
 
         # on noncommand i.e message - echo the message on Telegram
         dp.add_handler(MessageHandler(Filters.text, YtCreatorTeleBotManager.echo))
