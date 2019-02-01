@@ -4,6 +4,8 @@ import json
 #
 import os
 
+from backend.facebook.fb_publish import FbPageAPI
+
 
 class TelePublishCmder:
     def toJSON(self):
@@ -20,6 +22,7 @@ class TelePublishCmder:
         self.channel = cmd_args[2]
         self.cmder = GDriveBuildCmder(self.mvconfig_file, 1)
         self.ythandler = YoutubeUploader(self.channel)
+        self.fbpage = FbPageAPI(self.channel)
 
     def is_configfile_exist(self):
         from backend.BackendCmder import ContentDir
@@ -38,7 +41,8 @@ class TelePublishCmder:
         status = YtMvConfigStatus(3)
         snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
                                                                            self.mvconfig))
-        self.ythandler.upload_video(self.cmder.output, snippet, status)
+        resp = self.ythandler.upload_video(self.cmder.output, snippet, status)
+        self.fbpage.post_yt_mv_des(resp['snippet'], resp['id'])
         pass
 
     def run_publish_cmd(self):
