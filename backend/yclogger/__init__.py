@@ -29,36 +29,25 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 DEFAULT_CONFIGURE = {
     'version': 1,
-    'disable_existing_loggers': False,
     'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
+        'telegram': {
+            'class': 'telegram_handler.HtmlFormatter',
+            'fmt': '%(levelname)s %(message)s'
+        }
     },
     'handlers': {
-        'default': {
-            'level': 'DEBUG',
-            'formatter': 'standard',
-            'class': 'logging.FileHandler',
-            'filename': debugfile
-        },
-        'tele': {
-            'level': 'DEBUG',
-            'formatter': 'standard',
-            'class': 'backend.TeleBot.TeleBot.TeleNotifyStream',
-        },
-
+        'telegram': {
+            'class': 'telegram_handler.TelegramHandler',
+            'formatter': 'telegram',
+            'token': '714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8',
+            'chat_id': '338086459'
+        }
     },
     'loggers': {
-        'backend': {
-            'handlers': ['default'],
-            'level': logging.DEBUG,
-            'propagate': True
-        },
-        'telebot': {
-            'handlers': ['tele'],
+        'telelog': {
+            'handlers': ['telegram'],
             'level': logging.DEBUG
-        },
+        }
     }
 }
 
@@ -78,3 +67,4 @@ configure(
         processors.UnicodeDecoder(),
         stdlib.render_to_log_kwargs]
 )
+telelog = logging.getLogger('telelog')

@@ -3,6 +3,7 @@ beautifulsoup4
 unidecode
 gspread
 pydrive
+python-telegram-handler
 python-telegram-bot
 json5
 pydevd

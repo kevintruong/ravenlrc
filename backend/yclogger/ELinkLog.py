@@ -89,3 +89,13 @@ class ELinkLogFormatter(JsonFormatter):
                     if 'info' in key:
                         jsonrecord[key] = jsonrecord[key] + jsondata[key]
                 json.dump(jsonrecord, file, indent=4)
+
+
+import unittest
+from backend.yclogger import telelog
+
+
+class TestNewLog(unittest.TestCase):
+
+    def test_newlog(self):
+        telelog.debug('hello')

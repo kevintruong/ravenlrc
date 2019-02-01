@@ -26,7 +26,7 @@ from backend.TeleBot.GDriveFileManager import generate_html_file, YtCreatorGDriv
 from backend.TeleBot.GSheetInput import GoogleSheetStream
 from backend.TeleBot.TeleCmder import TeleBuildCmder, TelePublishCmder
 
-telelog = logging.getLogger('telebot')
+from backend.yclogger import telelog
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -246,6 +246,7 @@ class YtCreatorTeleBotManager:
             bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
+            telelog.info(exp)
             raise exp
 
     @classmethod
@@ -260,6 +261,7 @@ class YtCreatorTeleBotManager:
             update.message.reply_text('publis {} Complete'.format(buildcmder.cmder.songinfo.title))
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
+            telelog.debug(exp)
             raise exp
 
     @classmethod
@@ -287,6 +289,7 @@ class YtCreatorTeleBotManager:
                 update.message.reply_text('Hello, this is your message')
                 update.message.reply_text(update.message.text)
         except Exception as exp:
+            telelog.debug(exp)
             update.message.reply_text('something wrong error {}'.format(exp))
             raise exp
 
