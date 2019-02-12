@@ -271,14 +271,19 @@ class YtCreatorTeleBotManager:
         try:
             id_sheet = update.message.chat.id
             name = str(update.message.chat.first_name) + str(update.message.chat.last_name) + str(id_sheet)
-            message = update.message.text
-            isvalid = cls.url_validate(message)
-
+            message: str = update.message.text
+            values = message.split()
+            url = values[0]
+            if len(values) == 1:
+                record = None
+            else:
+                record = values[1]
+            isvalid = cls.url_validate(url)
             if isvalid:
                 print("url valid")
                 from backend.crawler.nct import SongInfoCrawler
-                songinfo = SongInfoCrawler.get_song_info(message)
-                if cls.gsheetsonginfodb.emit(songinfo):
+                songinfo = SongInfoCrawler.get_song_info(url)
+                if cls.gsheetsonginfodb.emit(songinfo, record):
                     update.message.reply_text(
                         'your song {} already updated to database(googlesheet)'.format(songinfo.title))
                 else:

@@ -55,7 +55,9 @@ class GoogleSheetStream:
             worksheet = wks.worksheet(channel_name)
         return worksheet
 
-    def emit(self, songinfo: SongInfo, worksheet='timshel'):
+    def emit(self, songinfo: SongInfo, worksheet=None):
+        if worksheet is None:
+            worksheet = 'timshel'
         worksheet_name = str(worksheet)
         fail_count = 0
         while True:

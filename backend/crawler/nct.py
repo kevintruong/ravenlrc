@@ -56,9 +56,12 @@ class NctCrawler(Crawler):
     key = "Lyr1cjust4nct"
 
     def __init__(self, ncturl: str):
-        songinfos = ncturl.split("/")
-        songid = songinfos[4]
-        self.mobileNctWmUrl = NctCrawler.nctWmUrl + '{}'.format(songid)
+        if self.nctWmUrl not in ncturl:
+            songinfos = ncturl.split("/")
+            songid = songinfos[4]
+            self.mobileNctWmUrl = NctCrawler.nctWmUrl + '{}'.format(songid)
+        else:
+            self.mobileNctWmUrl = ncturl
         self.songinfo = self.parser()
         pass
 
