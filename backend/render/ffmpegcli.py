@@ -67,8 +67,8 @@ class FfmpegCli(object):
         self.ffmpeg_cli.clear()
         # self.ffmpeg_cli = ['render', '-hide_banner', '-loglevel', 'panic', '-y']
 
-        self.ffmpeg_cli = ['ffmpeg', '-y']
-        # self.ffmpeg_cli = ['render', '-hide_banner', '-y']
+        # self.ffmpeg_cli = ['ffmpeg', '-y']
+        self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
         self.__add_system_prefix()
 
     def set_resolution(self, resolution: FFmpegProfile):
@@ -133,12 +133,13 @@ class FfmpegCli(object):
         cmd += self.bitrate_configure
         cmd.append(output)
         logger.debug(' '.join(map(str, cmd)))
-
-        p = subprocess.Popen(cmd)
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
-            raise Exception('ffmpeg', out, err)
+            raise Exception('ffmpeg',  err)
         return out, err
 
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):

@@ -63,7 +63,7 @@ class AssCustomizor(object):
         '@:type fontname: str'
 
         default_style = self.subs.styles["Default"]
-        default_style.italic = True
+        # default_style.italic = True
         default_style.fontname = fontname
         if size is None:
             default_style.fontsize = self.default_fontsize

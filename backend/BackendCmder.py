@@ -7,16 +7,11 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.utility.Utility import check_file_existed, FileInfo, non_accent_convert, create_mv_config_file, \
-    generate_mv_filename
+from backend.utility.Utility import check_file_existed, FileInfo, generate_mv_filename
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
-cachedcontentdir = os.path.join(CurDir, 'cachedcontent')
-
-import backend.yclogger
-
-telelog = logging.getLogger('telebot')
+cachedcontentdir = os.path.join(CurDir, 'content')
 
 
 class ContentDir(Enum):
@@ -87,7 +82,7 @@ class EffectCachedFile(CachedFile):
         return os.path.join(cls.CachedEffectDir, filename)
 
 
-class Bg_Effect_CachedFile(CachedFile):
+class BgEffectCachedFile(CachedFile):
     CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR.value, '.cache')
     BgEffectCachedDir = os.path.join(CachedEffectDir, 'BgEffect')
 
@@ -303,44 +298,70 @@ class BuildCmder(Cmder):
                             self.bginfo.subinfo,
                             preview_profile)
 
-        if self.lyric_effect is not None:
-            # TODO add process lyric effect
-            pass
-
         time_length = self.time_length
 
         logger.debug(preview_profile)
 
-        if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
-            preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
-            preview_affect = self.get_cached_effect_file(preview_profile)
+        if self.lyric_effect is not None:
+            # TODO add process lyric effect
+            pass
+
+        if self.effectinfo is not None:
+            if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
+                preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
+                preview_affect = self.get_cached_effect_file(preview_profile)
+            else:
+                preview_affect = self.effectinfo.effect_file
+                preview_bgtempfile = self.bginfo.bg_file
+
+            preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
+            preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
+
+            preview_bg_affect_mv = self.get_cached_bg_effect_file(preview_bgmv, preview_affectmv)
+
+            preview_bg_aff_sub_mv = MvTempFile().getfullpath()
+            ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                          preview_bg_affect_mv,
+                                          preview_bg_aff_sub_mv)
+
+            ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
+                                         self.songinfo.location,
+                                         self.output
+                                         )
         else:
-            preview_affect = self.effectinfo.effect_file
-            preview_bgtempfile = self.bginfo.bg_file
+            if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
+                preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
+                # preview_affect = self.get_cached_effect_file(preview_profile)
+            else:
+                # preview_affect = self.effectinfo.effect_file
+                preview_bgtempfile = self.bginfo.bg_file
 
-        preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
-        preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
-        preview_bg_affect_mv = self.get_cached_bg_effect_file(preview_bgmv, preview_affectmv)
+            preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
 
-        preview_bg_aff_sub_mv = MvTempFile().getfullpath()
-        ffmpegcli.adding_sub_to_video(preview_asstempfile,
-                                      preview_bg_affect_mv,
-                                      preview_bg_aff_sub_mv)
+            # preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
 
-        ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
-                                     self.songinfo.location,
-                                     self.output
-                                     )
+            preview_bg_affect_mv = preview_bgmv
+
+            preview_bg_aff_sub_mv = MvTempFile().getfullpath()
+            ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                          preview_bg_affect_mv,
+                                          preview_bg_aff_sub_mv)
+
+            ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
+                                         self.songinfo.location,
+                                         self.output
+                                         )
+            pass
+
         YtTempFile.delete_all()
         pass
 
     def get_cached_bg_effect_file(self, previewbgmv, previeweffectmv):
         ffmpegcli = FfmpegCli()
-        cached_filename = Bg_Effect_CachedFile.get_cached_file_name(previewbgmv, previeweffectmv)
-        effect_cachedfile = Bg_Effect_CachedFile.get_cachedfile(cached_filename)
-        # effect_cachedfile = None
+        cached_filename = BgEffectCachedFile.get_cached_file_name(previewbgmv, previeweffectmv)
+        effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
-            effect_cachedfile = Bg_Effect_CachedFile.create_cachedfile(cached_filename)
+            effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.add_affect_to_video(previeweffectmv, previewbgmv, effect_cachedfile)
         return effect_cachedfile
 
