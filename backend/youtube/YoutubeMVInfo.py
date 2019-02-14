@@ -67,12 +67,11 @@ class YoutubeMVInfo:
         self.mv_info = mv_info
         self.songinfo = self.get_songinfo(mv_info)
         self.channelinfo = ChannelInfoManger(channelname)
-        self.title = '{}\n'.format(self.songinfo.title +
+        self.title = '{}\n'.format(self.songinfo.title + ' || ' +
                                    self.songinfo.singerTitle + ' || ' +
                                    self.channelinfo.header.channel + ' || ' +
                                    ' [Lyrics Video] ')
         self.hashtags = '{},{}\n'.format(','.join(self.create_hashtags()), ','.join(self.channelinfo.footer.hashtags))
-
         self.description = self.description_formatter()
 
     def toJSON(self):
