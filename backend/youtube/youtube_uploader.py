@@ -173,11 +173,12 @@ class YoutubeUploader:
 
     def update_video_by_id(self, mvid, snippet: YtMvConfigSnippet, status: YtMvConfigStatus):
         youtube = self.youtube
-        body = dict(
-            snippet=snippet.to_dict(),
-            status=status.to_dict(),
-            id=mvid
-        )
+        body = {}
+        if snippet:
+            body['snippet'] = snippet.to_dict()
+        if status:
+            body['status'] = status.to_dict()
+        body['id'] = mvid
         print(json.dumps(body, indent=True))
         updatersp = youtube.videos().update(part=','.join(body.keys()), body=body).execute()
         return updatersp
