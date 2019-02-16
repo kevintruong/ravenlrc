@@ -26,9 +26,9 @@ class textrefactor(object):
         self.df_alpha_2 = 0x00
         self.df_plpha_3 = 0xff
         self.df_t1 = 0
-        self.df_t2 = 0.30
-        self.df_t3 = 1.00
-        self.df_t4 = 1.6
+        self.df_t2 = 0.40
+        self.df_t3 = 1.30
+        self.df_t4 = 1.8
         self.newtext = None
 
     def add_fade_effect(self):
@@ -41,6 +41,8 @@ class textrefactor(object):
                    self.df_alpha_2,
                    self.df_plpha_3,
                    t1, t2, t3, t4)
+
+        # self.newtext = self.text
         self.newtext = fade_affect + self.text
         pass
 
@@ -131,7 +133,7 @@ class AssCustomizor(object):
             else:
                 next_line_evt = None
             if next_line_evt is not None:
-                line_evt.end = line_evt.end + int(0.7 * next_line_evt.duration)
+                line_evt.end = line_evt.end + int(0.8 * next_line_evt.duration)
                 # line_evt.duration = line_evt.duration + int(0.7 * next_line_evt.duration)
                 # print("text {} , duration: {} start {} end {} ".
                 #       format(line_evt.text, line_evt.duration, line_evt.start, line_evt.end))

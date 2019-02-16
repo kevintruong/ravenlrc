@@ -293,17 +293,21 @@ class BuildCmder(Cmder):
 
         ffmpegcli.set_resolution(preview_profile)
         preview_asstempfile = AssTempFile().getfullpath()
-        create_ass_from_lrc(self.songinfo.lyric,
-                            preview_asstempfile,
-                            self.bginfo.subinfo,
-                            preview_profile)
+
+        asstemp = create_ass_from_lrc(self.songinfo.lyric,
+                                      preview_asstempfile,
+                                      self.bginfo.subinfo,
+                                      preview_profile)
 
         time_length = self.time_length
 
         logger.debug(preview_profile)
 
         if self.lyric_effect is not None:
-            # TODO add process lyric effect
+            new_ass_effect = AssTempFile().getfullpath()
+            # preview_asstempfile
+            self.lyric_effect.apply_lyric_effect_to_file(preview_asstempfile, new_ass_effect)
+            preview_asstempfile = new_ass_effect
             pass
 
         if self.effectinfo is not None:
@@ -331,9 +335,7 @@ class BuildCmder(Cmder):
         else:
             if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
                 preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
-                # preview_affect = self.get_cached_effect_file(preview_profile)
             else:
-                # preview_affect = self.effectinfo.effect_file
                 preview_bgtempfile = self.bginfo.bg_file
 
             preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
@@ -343,6 +345,7 @@ class BuildCmder(Cmder):
             preview_bg_affect_mv = preview_bgmv
 
             preview_bg_aff_sub_mv = MvTempFile().getfullpath()
+
             ffmpegcli.adding_sub_to_video(preview_asstempfile,
                                           preview_bg_affect_mv,
                                           preview_bg_aff_sub_mv)

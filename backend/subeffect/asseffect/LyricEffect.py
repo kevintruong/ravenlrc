@@ -4,6 +4,8 @@ from backend.subeffect.pysubs2 import SSAFile
 
 class KeyWordInfo:
     def __init__(self, keywordinfo: dict):
+        self.keywords = None
+        self.keyword_fmt = None
         for key in keywordinfo.keys():
             if 'keywords' in key:
                 self.keywords = keywordinfo['keywords']

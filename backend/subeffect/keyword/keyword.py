@@ -171,14 +171,25 @@ class AssDialogueTextProcessor:
                  formatter: dict,
                  animatedconf: dict) -> None:
         self.keyword = keyword
-        self.keywordformatter = AssDialogueTextKeyWordFormatter(formatter)
-        self.keywordanimatedtransform = AssDialueTextAnimatedTransform(animatedconf)
+        self.keywordformatter = None
+        self.keywordanimatedtransform = None
+        if formatter:
+            self.keywordformatter = AssDialogueTextKeyWordFormatter(formatter)
+        if animatedconf:
+            self.keywordanimatedtransform = AssDialueTextAnimatedTransform(animatedconf)
         super().__init__()
 
     def reconfig_keywords(self, duration=None):
         kwprocessor = KeywordProcessor()
-        keyword_formatter = self.keywordformatter.font_formatter()
-        animated_formatter = self.keywordanimatedtransform.create_full_transform(duration)
+        if self.keywordformatter:
+            keyword_formatter = self.keywordformatter.font_formatter()
+        else:
+            keyword_formatter = ""
+        if self.keywordanimatedtransform:
+            animated_formatter = self.keywordanimatedtransform.create_full_transform(duration)
+        else:
+            animated_formatter = ""
+
         reset = DialogueTextStyleCode.create_reset_style_code()
         for each_keyword in self.keyword:
             replace_keyword = keyword_formatter + animated_formatter + each_keyword + reset

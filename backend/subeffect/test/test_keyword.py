@@ -105,9 +105,9 @@ class testAssDialogueTextProcessor(unittest.TestCase):
         output = "sub_output.mp4"
 
         subinfo = LyricConfigInfo({'rectangle': [100, 100, 600, 400],
-                                'fontname': 'UTM Centur',
-                                'fontcolor': 0x018CA7,
-                                'fontsize': 40})
+                                   'fontname': 'UTM Centur',
+                                   'fontcolor': 0x018CA7,
+                                   'fontsize': 40})
         # create_ass_sub(full_test, ass_out, subinfo)
 
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
@@ -260,11 +260,30 @@ class test_LyricEffect(unittest.TestCase):
                         'quên',
                         'nhớ',
                         ]
-        lyric_effect = {  # can be None
-            'effect_type': 1,  # animation effect_code
+        lyric_effect = {
+            'effect_type': 1,
             'keyword_info': {
-                'keywords': self.keywork,  # Keyword for subtitle effect, can be None.
-                # if keywork is none => effect bellow apply for whole lyric
+                'keywords': ['khung hình',
+                             'một ngày',
+                             'gặp lại',
+                             'nỗi đau',
+                             'thương',
+                             'an yên',
+                             'mây ngàn',
+                             'thương anh',
+                             'Nơi xa',
+                             'Ngày mai', 'gió', 'thấy', 'gặp nhau', 'sống',
+                             'nắng', 'biến mất', 'hoa tàn',
+                             'Dòng thư',
+                             'giấc mơ',
+                             'Bên nhau',
+                             'xa nhau',
+                             'ký ức',
+                             'những nhiệm màu',
+                             'quên',
+                             'nhớ',
+                             ],
+
                 'keyword_fmt': {
                     'fontname': 'UTMAmericanaItalic',
                     'fontsize': 30,
@@ -272,18 +291,18 @@ class test_LyricEffect(unittest.TestCase):
                     'alignment': 3
                 }
             },
-            'effect_info': {
-                # Zoom in and change keyword color format
-                'effect_start': [[1,  # font size code
-                                  20],  # font size is 20
-                                 [2,  # font color code
-                                  0x345678  # font color hex code
-                                  ]],
-                'effect_transform': [[1, 50],
-                                     [2, 0xffeeff]],
-                'timing': "",  # timing is None mean mean duration = duration sub line
-                'accel': 0.8
-            }
+            # 'effect_info': {
+            #
+            #     'effect_start': [[1,
+            #                       20],
+            #                      [2,
+            #                       0x345678
+            #                       ]],
+            #     'effect_transform': [[1, 50],
+            #                          [2, 0xffeeff]],
+            #     'timing': "",
+            #     'accel': 0.8
+            # }
         }
         self.lyriceffect = LyricEffect(lyric_effect)
 
