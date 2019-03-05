@@ -22,7 +22,7 @@ class GDriveBuildCmder(BuildCmder):
 
     def __init__(self, configfile, buildtype=1):
         GDriveBuildCmder.force_clearn_cache()
-        with open(configfile, 'r') as json5file:
+        with open(configfile, 'r', encoding='UTF-8') as json5file:
             self.config = json5.load(json5file)
         self.config.update({'type': buildtype})
         self.config.update({'configfile': configfile})
@@ -34,8 +34,9 @@ import unittest
 
 class test_load_mv_config(unittest.TestCase):
     def setUp(self):
-        self.buildCmder = GDriveBuildCmder(os.path.join(ContentDir.MVCONF_DIR.value, 'TocGioThoiBay.json5'),
-                                           0)
+        self.buildCmder = GDriveBuildCmder(
+            os.path.join(ContentDir.MVCONF_DIR.value, 'co_sao_gio_lai_chia_xa.json5'),
+            1)
         pass
 
     def test_build_release(self):
