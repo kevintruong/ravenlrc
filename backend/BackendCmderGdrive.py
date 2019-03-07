@@ -35,7 +35,7 @@ import unittest
 class test_load_mv_config(unittest.TestCase):
     def setUp(self):
         self.buildCmder = GDriveBuildCmder(
-            os.path.join(ContentDir.MVCONF_DIR.value, 'co_sao_gio_lai_chia_xa.json5'),
+            os.path.join(ContentDir.MVCONF_DIR.value, 'gan_ngay_truoc_mat.json5'),
             1)
         pass
 
