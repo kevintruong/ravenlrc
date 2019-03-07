@@ -122,7 +122,9 @@ class FfmpegCli(object):
         self.ffmpeg_cli.append(cmd)
 
     def run_cmd(self, cmd: list):
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        p = subprocess.Popen(cmd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
@@ -139,7 +141,7 @@ class FfmpegCli(object):
         out, err = p.communicate(input)
         retcode = p.poll()
         if retcode:
-            raise Exception('ffmpeg',  err)
+            raise Exception('ffmpeg', err)
         return out, err
 
     def ffmpeg_cli_run(self, cmd: list, output: str, superfast=1, youtube=0):
@@ -156,7 +158,9 @@ class FfmpegCli(object):
         cmd.append(output)
         # logger.debug(' '.join(map(str, cmd)))
         try:
-            p = subprocess.Popen(cmd)
+            p = subprocess.Popen(cmd,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
             out, err = p.communicate(input)
             retcode = p.poll()
             self.reset_ffmpeg_cmd()
@@ -275,7 +279,7 @@ class FfmpegCli(object):
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
         ffmpeg_cmd=$(echo render -y -i ${input_vid} -vf subtitles='"'${ffmpeg_sub_cmd}"'"${ffmpeg_font_att}"'"'"':original_size=${FULLHD} ${output_mp4})
-        echo ${ffmpeg_cmd} | bash
+        echo ${ffmpeg_cmd} | bash , tình yêu như ngọn nến
 
         render -y -i input.mp4 -vf subtitles="f=/mnt/775AD44933621551/Project/MMO/youtube/test.ass:force_style='FontName=UTM Bustamalaka,FontSi
         ze=10,OutlineColour=&H66000000,BorderStyle=3'":original_size=1920x1080 002.mp4
