@@ -12,12 +12,11 @@ from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 
-from backend.crawler.nct import SongInfo
 from backend.utility.Utility import todict
-from backend.youtube import auth
+from backend.publisher.youtube import auth
 from enum import Enum
 
-from backend.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
+from backend.publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
 
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
@@ -103,7 +102,7 @@ class YoutubeUploader:
 
             credentials = default_credentials
             if callback is None:
-                get_code_callback = auth.console.get_code
+                get_code_callback = backend.publisher.youtube.auth.console.get_code
             else:
                 get_code_callback = callback
             return auth.get_resource(client_secrets, credentials,

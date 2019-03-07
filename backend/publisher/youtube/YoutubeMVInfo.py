@@ -191,7 +191,7 @@ class YtMvConfigSnippet:
 
 
 def create_status_obj(self, delaydays):
-    from backend.youtube.youtube_uploader import YtMvConfigStatus
+    from backend.publisher.youtube import YtMvConfigStatus
     self.status = YtMvConfigStatus(delaydays)
     pass
 

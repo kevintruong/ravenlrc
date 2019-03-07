@@ -4,7 +4,7 @@ import json
 #
 import os
 
-from backend.facebook.fb_publish import FbPageAPI
+from backend.publisher.fb_publish import FbPageAPI
 
 
 class TelePublishCmder:
@@ -14,7 +14,7 @@ class TelePublishCmder:
 
     def __init__(self, cmder: str):
         from backend.BackendCmderGdrive import GDriveBuildCmder
-        from backend.youtube.youtube_uploader import YoutubeUploader
+        from backend.publisher.youtube import YoutubeUploader
         cmd_args = cmder.split()
         self.publishcmd = cmd_args[0]
         self.mvconfig = cmd_args[1]
@@ -34,9 +34,9 @@ class TelePublishCmder:
         raise Exception("not found Mvconfigure {} on ContentDir".format(self.mvconfig))
 
     def publish_mv_to_channel(self):
-        from backend.youtube.youtube_uploader import YtMvConfigStatus
-        from backend.youtube.YoutubeMVInfo import YtMvConfigSnippet
-        from backend.youtube.YoutubeMVInfo import YoutubeMVInfo
+        from backend.publisher.youtube import YtMvConfigStatus
+        from backend.publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
+        from backend.publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
 
         status = YtMvConfigStatus(3)
         snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,

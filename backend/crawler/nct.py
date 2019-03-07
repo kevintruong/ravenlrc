@@ -135,7 +135,7 @@ import unittest
 
 class testnctcrawler(unittest.TestCase):
     def setUp(self):
-        self.url = r'https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html'
+        self.url = r'https://m.nhaccuatui.com/bai-hat/alone-alan-walker.dPAWTe6nAnZ8.html'
         self.nct = NctCrawler(self.url)
 
     def test_init(self):
@@ -157,7 +157,7 @@ class testnctcrawler(unittest.TestCase):
         print(jsonfile)
 
     def test_get_mp3file(self):
-        jsonfile = self.nct.get_mp3file()
+        jsonfile = self.nct.get_mp3file('./test/')
         print(jsonfile)
 
     def test_get_song_info(self):

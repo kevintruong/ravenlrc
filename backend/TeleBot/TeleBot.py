@@ -19,10 +19,10 @@ import sqlite3
 import threading
 
 from telegram import Bot, Chat, Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, RegexHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 
-from backend.TeleBot.GDriveFileManager import generate_html_file, YtCreatorGDrive
+from backend.TeleBot.GDriveFileManager import YtCreatorGDrive
 from backend.TeleBot.GSheetInput import GoogleSheetStream
 from backend.TeleBot.TeleCmder import TeleBuildCmder, TelePublishCmder
 
@@ -225,7 +225,7 @@ class YtCreatorTeleBotManager:
         :return:
         """
         cls.cur_chat = update.message.chat
-        from backend.youtube.youtube_uploader import YoutubeUploader
+        from backend.publisher.youtube import YoutubeUploader
         register_newchannel = update.message.text
         cmd_args = register_newchannel.split()
         channel = cmd_args[1]

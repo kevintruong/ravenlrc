@@ -1,10 +1,8 @@
 from backend.crawler.nct import NctCrawler
 from backend.render.ffmpegcli import *
 import unittest
-import shutil
 
 from backend.subeffect.asseditor import *
-from backend.crawler.subcrawler import download_mp3_file, AudioQuanlity
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")
@@ -80,9 +78,9 @@ class TestFFmpegCli(unittest.TestCase):
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
         subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
-                                'fontname': 'UTM Centur',
-                                'fontcolor': 0x018CA7,
-                                'fontsize': 20})
+                                   'fontname': 'UTM Centur',
+                                   'fontcolor': 0x018CA7,
+                                   'fontsize': 20})
         create_ass_from_url(full_test, ass_out, subinfo)
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
         length_in = self.ffmpeg.get_media_time_length(media_output)
@@ -118,9 +116,9 @@ class TestFFmpegCli(unittest.TestCase):
         self.ffmpeg.create_background_affect_with_length(bg_effect, audio_length, bg_effect_extend)
         # add sub to MV
         subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
-                                'fontname': 'UTM Centur',
-                                'fontcolor': 0x018CA7,
-                                'fontsize': 40})
+                                   'fontname': 'UTM Centur',
+                                   'fontcolor': 0x018CA7,
+                                   'fontsize': 40})
         create_ass_from_lrc(lyricfile, ass_out, subinfo=subinfo, resolution=[1920, 1080])  # get sub
         self.ffmpeg.adding_sub_to_video(ass_out, bg_mv, output)
         # add audio to MV

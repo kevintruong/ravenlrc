@@ -48,7 +48,7 @@ class AuthenticateManger:
         return self.get_channel_fbpage_auth()
 
     def add_new_channel_auth(self, channel, callback=None):
-        from backend.youtube.youtube_uploader import YoutubeUploader
+        from backend.publisher.youtube.youtube_uploader import YoutubeUploader
         YoutubeUploader(channel, callback)
 
         pass

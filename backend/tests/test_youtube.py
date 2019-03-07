@@ -1,7 +1,4 @@
-import unittest
-
-from backend.facebook.fb_publish import FbPageAPI
-from backend.youtube.youtube_uploader import *
+from backend.publisher.fb_publish import FbPageAPI
 
 test_dir = os.path.dirname(__file__)
 sample_data = os.path.join(test_dir, "sample_data")
@@ -52,12 +49,12 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         self.uploader.remove_video_by_id('Rhv7_5cK6DM')
 
     def test_update_video_by_id(self):
-        id = 'N4xvInoKuwI'
+        id = 'Xzpyz7ieDqo'
         status = YtMvConfigStatus(5)
-        mvinfo = YoutubeMVInfo('timshel', 'em a')
+        mvinfo = YoutubeMVInfo('timshel', 'hay ra khoi nguoi do')
         snippet = YtMvConfigSnippet.create_snippet_from_info(mvinfo)
         print(json.dumps(status.to_dict(), indent=True))
-        rsp = self.uploader.update_video_by_id(id, snippet, status)
+        rsp = self.uploader.update_video_by_id(id, snippet, None)
         print(rsp)
 
 
