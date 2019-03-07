@@ -9,10 +9,6 @@ from backend.subeffect import pylrc
 from backend.subeffect.pysubs2 import *
 from backend.subeffect.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
 
-temp_dowload_dir = os.path.join(os.path.dirname(__file__), 'Download')
-if not os.path.isdir(temp_dowload_dir):
-    os.mkdir(temp_dowload_dir)
-
 
 class textrefactor(object):
     """
@@ -152,7 +148,7 @@ class AssCustomizor(object):
         return assfile
 
 
-def convert_lrf_to_ass(inputlrf: str, assoutput="/tmp/test.ass"):
+def convert_lrf_to_ass(inputlrf: str, assoutput=AssTempFile().getfullpath()):
     lrc_file = open(inputlrf)
     lrc_string = ''.join(lrc_file.readlines())
     lrc_file.close()
@@ -163,15 +159,15 @@ def convert_lrf_to_ass(inputlrf: str, assoutput="/tmp/test.ass"):
     return outputfile
 
 
-def lrf_to_ass(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.ass")):
+def lrf_to_ass(lrccontent: str, output=AssTempFile().getfullpath()):
     subs = pylrc.parse(lrccontent)
     srt = subs.toSRT()  # convert lrc to srt string
-    srtfile = subs.save_to_file(os.path.join(temp_dowload_dir, 'output_test.srt'))
+    srtfile = subs.save_to_file(SrtTempfile().getfullpath())
     outputfile = AssCustomizor.convert_to_ass(srtfile, output)
     return outputfile
 
 
-def lrf_to_srt(lrccontent: str, output=os.path.join(temp_dowload_dir, "test.srt")):
+def lrf_to_srt(lrccontent: str, output=SrtTempfile.getfullpath()):
     subs = pylrc.parse(lrccontent)
     subs.toSRT()  # convert lrc to srt string
     subs.save_to_file(output)
