@@ -99,10 +99,10 @@ class BgEffectCachedFile(CachedFile):
         return os.path.join(cls.BgEffectCachedDir, filename)
 
     @classmethod
-    def get_cached_file_name(cls, previewbgmv, previeweffectmv):
+    def get_cached_file_name(cls, previewbgmv, previeweffectmv, opacity_val=0):
         bgmv_fileinfo = FileInfo(previewbgmv)
         effmv_fileinfo = FileInfo(previeweffectmv)
-        bgeff_cachedfilename = bgmv_fileinfo.name + '_' + effmv_fileinfo.name + '.mp4'
+        bgeff_cachedfilename = bgmv_fileinfo.name + '_' + effmv_fileinfo.name + str(opacity_val) + '.mp4'
         return bgeff_cachedfilename
 
 
@@ -361,11 +361,12 @@ class BuildCmder(Cmder):
 
     def get_cached_bg_effect_file(self, previewbgmv, previeweffectmv):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgEffectCachedFile.get_cached_file_name(previewbgmv, previeweffectmv)
+        cached_filename = BgEffectCachedFile.get_cached_file_name(previewbgmv, previeweffectmv, self.effectinfo.opacity)
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
             effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
-            ffmpegcli.add_affect_to_video(previeweffectmv, previewbgmv, effect_cachedfile)
+
+            ffmpegcli.add_affect_to_video(previeweffectmv, previewbgmv, effect_cachedfile, self.effectinfo.opacity)
         return effect_cachedfile
 
     def get_cached_effect_file(self, preview_profile):

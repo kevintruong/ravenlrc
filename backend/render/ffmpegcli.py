@@ -312,23 +312,23 @@ class FfmpegCli(object):
                                       [0:0]setdar=dar=0,format=rgba[b]; \
                                       [b][a]blend=all_mode='overlay':all_opacity=0.5" \
                                       $output_mp4
-        :param opacity_val:
         :param output:
         :param affect_vid:
         :param video:
         :return:
         """
-        FfmpegCli.check_file_exist(affect_vid)
-        FfmpegCli.check_file_exist(video)
-        self._ffmpeg_input(video)
-        self._ffmpeg_input(affect_vid)
-        self._ffmpeg_input_filter_complex_prefix()
-        self._ffmpeg_input_fill_cmd('overlay ')
-        # self._ffmpeg_input_fill_cmd('-r')
-        # self._ffmpeg_input_fill_cmd('25')
-        self._ffmpeg_input_fill_cmd('-shortest')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output)
-
+        has_alpha = self.check_alpha_channel(affect_vid)
+        if has_alpha:
+            FfmpegCli.check_file_exist(affect_vid)
+            FfmpegCli.check_file_exist(video)
+            self._ffmpeg_input(video)
+            self._ffmpeg_input(affect_vid)
+            self._ffmpeg_input_filter_complex_prefix()
+            self._ffmpeg_input_fill_cmd('overlay ')
+            self._ffmpeg_input_fill_cmd('-shortest')
+            self.ffmpeg_cli_run(self.ffmpeg_cli, output)
+        else:
+            self.add_nontransparent_effect_to_video(video, affect_vid, output, opacity_val)
         pass
 
     def add_nontransparent_effect_to_video(self, effect_vid: str, video: str, output: str, opacity_val: int):
@@ -470,6 +470,35 @@ class FfmpegCli(object):
         self._ffmpeg_input_fill_cmd('-vcodec')
         self._ffmpeg_input_fill_cmd('png')
         self.run(self.ffmpeg_cli, output)
+
+    def check_alpha_channel(self, affect_vid):
+        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', "-i",
+                        "{}".format(affect_vid)]
+        output, err = self.run_cmd(ffproble_cmd)
+        data = json.loads(output)
+        streams = data['streams']
+        if len(streams):
+            pix_format = streams[0]['pix_fmt']
+            if pix_format == 'argb' or pix_format == 'rgba':
+                return True
+        else:
+            return False
+        return False
+        pass
+
+
+import unittest
+
+
+class TestFfmpeg(unittest.TestCase):
+    def test_check_alphachannel(self):
+        ffmpeg = FfmpegCli()
+        not_alpha = ffmpeg.check_alpha_channel(
+            r'D:\Project\ytcreatorservice\backend\content\Effect\floating-particles-in-blue_W1Yh5u-ZH.mov')
+        self.assertFalse(not_alpha)
+        has_alpha = ffmpeg.check_alpha_channel(
+            r'D:\Project\ytcreatorservice\backend\content\Effect\Green_Bubble.mov')
+        self.assertTrue(has_alpha)
 
 # parser = argparse.ArgumentParser(description='Get video information')
 # parser.add_argument('in_filename', help='Input filename')

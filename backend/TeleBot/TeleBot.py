@@ -243,7 +243,11 @@ class YtCreatorTeleBotManager:
             output = buildcmder.run_build_cmd()
             update.message.reply_text('Build Complete {}'.format(output))
             previewfile = YtCreatorTeleBotManager.ytcreatorDriver.generate_html_preview_file(output)
-            bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
+            if previewfile:
+                bot.sendDocument(update.message.chat.id, document=open(previewfile, 'rb'))
+            else:
+                update.message.reply_text('Cannot create preview file, error: Timeout')
+
         except Exception as exp:
             update.message.reply_text('Build error {}'.format(exp))
             telelog.info(exp)

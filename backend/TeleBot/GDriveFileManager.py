@@ -41,11 +41,21 @@ class YtCreatorGDrive:
         file_list = self.drive.ListFile({'q': query}).GetList()
         for file in file_list:
             return (file['webContentLink'])
+        return None
 
     def generate_html_preview_file(self, filepath: str):
         from backend.utility.Utility import FileInfo
         fileinfo = FileInfo(filepath)
-        previewlink = self.get_share_link(fileinfo.filename)
+        timeout = 0
+        import time
+        while True:
+            previewlink = self.get_share_link(fileinfo.filename)
+            if previewlink:
+                break
+            time.sleep(3)
+            timeout = timeout + 1
+            if timeout > 3:
+                return None
         print(previewlink)
         preview_html = """<html>
                 <head>
