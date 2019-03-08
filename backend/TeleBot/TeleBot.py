@@ -225,7 +225,7 @@ class YtCreatorTeleBotManager:
         :return:
         """
         cls.cur_chat = update.message.chat
-        from backend.publisher.youtube import YoutubeUploader
+        from backend.publisher.youtube.youtube_uploader import YoutubeUploader
         register_newchannel = update.message.text
         cmd_args = register_newchannel.split()
         channel = cmd_args[1]

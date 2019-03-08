@@ -1,0 +1,3 @@
+[submodule "backend/vendor/lyriceffect"]
+	path = backend/vendor/lyriceffect
+	url = https://github.com/kevintruong/aegisub_autolua.git

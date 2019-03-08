@@ -95,7 +95,7 @@ class FfmpegCli(object):
         :return:
         """
         # ffprobe - v quiet - print_format json - show_format
-        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', "-i",
+        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', "-i",
                         "{}".format(input)]
         output, err = self.run_cmd(ffproble_cmd)
         data = json.loads(output)
@@ -302,7 +302,7 @@ class FfmpegCli(object):
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
         pass
 
-    def add_affect_to_video(self, affect_vid: str, video: str, output: str):
+    def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
         """
         input_bgvid=$1
         input_blendvid=$2
@@ -312,6 +312,7 @@ class FfmpegCli(object):
                                       [0:0]setdar=dar=0,format=rgba[b]; \
                                       [b][a]blend=all_mode='overlay':all_opacity=0.5" \
                                       $output_mp4
+        :param opacity_val:
         :param output:
         :param affect_vid:
         :param video:
@@ -327,6 +328,24 @@ class FfmpegCli(object):
         # self._ffmpeg_input_fill_cmd('25')
         self._ffmpeg_input_fill_cmd('-shortest')
         self.ffmpeg_cli_run(self.ffmpeg_cli, output)
+
+        pass
+
+    def add_nontransparent_effect_to_video(self, effect_vid: str, video: str, output: str, opacity_val: int):
+        FfmpegCli.check_file_exist(effect_vid)
+        FfmpegCli.check_file_exist(video)
+        self._ffmpeg_input(video)
+        self._ffmpeg_input(effect_vid)
+        self._ffmpeg_input_filter_complex_prefix()
+        opacity = float(opacity_val / 100)
+        filter_args = "[1:0]setdar=dar=0,format=rgba[a]; \
+                       [0:0]setdar=dar=0,format=rgba[b]; \
+                       [a][b]blend=all_mode='overlay':all_opacity={}".format(opacity)
+        self._ffmpeg_input_fill_cmd(filter_args)
+        self._ffmpeg_input_fill_cmd('-shortest')
+        self.ffmpeg_cli_run(self.ffmpeg_cli, output)
+
+        pass
 
     def clean_up_mp3_meta_data(self, mp3file, mp3out):
         """

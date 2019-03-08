@@ -167,7 +167,7 @@ def lrf_to_ass(lrccontent: str, output=AssTempFile().getfullpath()):
     return outputfile
 
 
-def lrf_to_srt(lrccontent: str, output=SrtTempfile.getfullpath()):
+def lrf_to_srt(lrccontent: str, output=SrtTempfile().getfullpath()):
     subs = pylrc.parse(lrccontent)
     subs.toSRT()  # convert lrc to srt string
     subs.save_to_file(output)
