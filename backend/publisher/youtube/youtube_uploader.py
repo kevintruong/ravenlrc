@@ -12,6 +12,7 @@ from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 
+import backend
 from backend.utility.Utility import todict
 from backend.publisher.youtube import auth
 from enum import Enum
@@ -27,7 +28,7 @@ RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnecte
 MAX_RETRIES = 1
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
-AuthenticateFileDir = os.path.join(CurDir, '../Authenticate')
+AuthenticateFileDir = os.path.join(CurDir, '../../Authenticate')
 
 AuthenticateDictFile = {
     "Timshel": os.path.join(AuthenticateFileDir, 'Timshel_credential.json'),
