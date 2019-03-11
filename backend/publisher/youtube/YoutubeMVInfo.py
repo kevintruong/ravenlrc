@@ -3,7 +3,8 @@ import os
 
 from backend.BackendCmder import ContentDir
 from backend.crawler.nct import SongInfo
-from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict
+from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict, non_accent_convert, \
+    generate_singer_song_hashtags
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -71,7 +72,8 @@ class YoutubeMVInfo:
                                    self.songinfo.singerTitle + ' || ' +
                                    self.channelinfo.header.channel + ' || ' +
                                    ' [Lyrics Video] ')
-        self.hashtags = '{},{}\n'.format(','.join(self.create_hashtags()), ','.join(self.channelinfo.footer.hashtags))
+        self.hashtags = self.create_hashtags()
+        self.tags = self.create_yt_tags()
         self.description = self.description_formatter()
 
     def toJSON(self):
@@ -99,7 +101,15 @@ class YoutubeMVInfo:
     def create_hashtags(self):
         singer = create_hashtag(self.songinfo.singerTitle)
         song = create_hashtag(self.songinfo.title)
-        return [song, singer]
+        return [singer, song]
+
+    def create_yt_tags(self):
+        hashtags = generate_singer_song_hashtags(self.songinfo.singerTitle, self.songinfo.title)
+        songinfo_hashtags = ",".join(hashtags)
+        channel_hashtags = ",".join(self.channelinfo.footer.hashtags)
+        # singer = create_hashtag(self.songinfo.singerTitle)
+        # song = create_hashtag(self.songinfo.title)
+        return songinfo_hashtags + "," + channel_hashtags
 
     def description_formatter(self):
         """
@@ -135,7 +145,7 @@ class YoutubeMVInfo:
         description = description + (
             '-------------------------------------------------------------------------------------\n')
         description = description + ('{}\n'.format(self.channelinfo.footer.copyright))
-        description = description + self.hashtags
+        description = description + self.tags
         return description
         pass
 
@@ -167,19 +177,21 @@ class YtMvConfigSnippet:
 
     @classmethod
     def create_snippet_from_info(cls, info: YoutubeMVInfo):
-        return YtMvConfigSnippet(info.title, info.description, info.hashtags)
+        return YtMvConfigSnippet(info.title, info.description, info.tags, info.hashtags)
         pass
 
     def __init__(self,
                  title: str,
                  description,
                  tags: str,
+                 hashtags: [],
                  categoryid=10
                  ):
         self.title = title.replace('\n', '')
         self.description = description
         self.categoryId = self.verify_categoryid(categoryid)
-        self.tags = self.tags_formatter(tags)
+        self.tags = tags.split(',')
+        self.hashtags = hashtags
 
     def snippet_formatter(self, channel, songinfo: SongInfo):
         pass
@@ -191,8 +203,6 @@ class YtMvConfigSnippet:
 
 
 def create_status_obj(self, delaydays):
-    from backend.publisher.youtube import YtMvConfigStatus
-    self.status = YtMvConfigStatus(delaydays)
     pass
 
 

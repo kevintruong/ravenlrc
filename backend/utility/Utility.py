@@ -82,10 +82,54 @@ def todict(obj, classkey=None):
         return obj
 
 
+def generate_youtube_singer_hashtags(singersinfo: str):
+    list_singers = singersinfo.split(',')
+    append_list = []
+    for each_singer in list_singers:
+        nolating_singer_name = non_accent_convert(each_singer).lower()
+        # onlylatin = only_latin_string(each_singer)
+        append_list.append(nolating_singer_name)
+        # append_list.append(onlylatin)
+    return list_singers + append_list
+
+
+def generate_song_hashtags(songname: str):
+    non_accent_singname = non_accent_convert(songname.lower())
+    # only_lating = only_latin_string(songname)
+    return [non_accent_singname, songname.lower()]
+
+
+def generate_singer_song_hash_combine(singerhashtags: list, songname_hashtags: list):
+    combine_hashtags = []
+    for singer_hashtag in singerhashtags:
+        for songname in songname_hashtags:
+            combine_hashtags.append(singer_hashtag.lower() + " " + songname)
+            # combine_hashtags.append(songname.lower() + " " + singer_hashtag.lower())
+    return combine_hashtags
+
+
+def generate_singer_song_hashtags(singers: str, songname: str):
+    singer_hashtags = generate_youtube_singer_hashtags(singers)
+    song_hashtags = generate_song_hashtags(songname)
+    combine_hashtags = generate_singer_song_hash_combine(singer_hashtags, song_hashtags)
+    return song_hashtags + combine_hashtags + singer_hashtags
+
+
 import unittest
 
 
 class Test_no_accent_vietnames(unittest.TestCase):
+    def test_generate_youtube_singer_hashtags(self):
+        test = "Hà Anh Tuấn"
+        song = "Em à"
+        hashtags = generate_youtube_singer_hashtags(test)
+        song_hashtags = generate_song_hashtags(song)
+        combine_hashtags = generate_singer_song_hash_combine(hashtags, song_hashtags)
+        print(hashtags)
+        print(song_hashtags)
+        print(combine_hashtags)
+        pass
+
     def test_hello_vietnam(self):
         test = "Em À"
         print(non_accent_convert(test))
