@@ -1,4 +1,10 @@
+import json
+import os
+import unittest
+
 from backend.publisher.fb_publish import FbPageAPI
+from backend.publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
+from backend.publisher.youtube.youtube_uploader import YoutubeUploader, YtMvConfigStatus
 
 test_dir = os.path.dirname(__file__)
 sample_data = os.path.join(test_dir, "sample_data")
@@ -34,7 +40,7 @@ class TestYoutubeChanelAPI(unittest.TestCase):
         self.assertEqual(info['title'], snippet.title)
 
     def test_get_video_info(self):
-        id = '5R1YpuxwsN0'
+        id = '3yoMBhCcBjs'
         info = self.uploader.get_video_info_by_id(id)
         tags = ','.join(info['snippet']['tags'])
         description = tags + '\n' + info['snippet']['description']
@@ -50,7 +56,7 @@ class TestYoutubeChanelAPI(unittest.TestCase):
 
     def test_update_video_by_id(self):
         id = 'Xzpyz7ieDqo'
-        status = YtMvConfigStatus(5)
+        status = YtMvConfigStatus()
         mvinfo = YoutubeMVInfo('timshel', 'hay ra khoi nguoi do')
         snippet = YtMvConfigSnippet.create_snippet_from_info(mvinfo)
         print(json.dumps(status.to_dict(), indent=True))

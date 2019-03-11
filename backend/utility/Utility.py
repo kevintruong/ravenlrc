@@ -94,17 +94,43 @@ def generate_youtube_singer_hashtags(singersinfo: str):
 
 
 def generate_song_hashtags(songname: str):
+    songname_other = None
+    songname_groups = re.search('\(([^)]+)', songname)
+    if songname_groups:
+        songname_other = songname_groups.group(1)
+    # songname_other = re.search('\(([^)]+)', songname).group(1)
+
+    newsongname = songname.split('(', 1)[0].lower().rstrip()
+    songtags = []
+    if newsongname:
+        print(newsongname)
+        songname = newsongname
+
     non_accent_singname = non_accent_convert(songname.lower())
     # only_lating = only_latin_string(songname)
-    return [non_accent_singname, songname.lower()]
+    songtags.append(non_accent_singname)
+    songtags.append(songname.lower())
+    if songname_other:
+        print(songname_other)
+        songtags.append(songname_other)
+        songtags.append(non_accent_convert(songname_other))
+    return songtags
 
 
 def generate_singer_song_hash_combine(singerhashtags: list, songname_hashtags: list):
+    from datetime import datetime
     combine_hashtags = []
     for singer_hashtag in singerhashtags:
-        for songname in songname_hashtags:
+        length = 0
+        combine_hashtags.append(singer_hashtag + " {}".format(datetime.now().year))
+        for songname in songname_hashtags[:1]:
             combine_hashtags.append(singer_hashtag.lower() + " " + songname)
             # combine_hashtags.append(songname.lower() + " " + singer_hashtag.lower())
+            combine_hashtags.append(songname + " lyrics")
+        for each in combine_hashtags:
+            length = length + len(each)
+            if length > 250:
+                break
     return combine_hashtags
 
 
@@ -112,7 +138,14 @@ def generate_singer_song_hashtags(singers: str, songname: str):
     singer_hashtags = generate_youtube_singer_hashtags(singers)
     song_hashtags = generate_song_hashtags(songname)
     combine_hashtags = generate_singer_song_hash_combine(singer_hashtags, song_hashtags)
-    return song_hashtags + combine_hashtags + singer_hashtags
+    final_hashtags = song_hashtags + combine_hashtags + singer_hashtags
+    lenth = 0
+    for each in final_hashtags:
+        lenth = lenth + len(each)
+    if lenth > 500:
+        raise Exception("hashtags too long")
+    print(lenth)
+    return final_hashtags
 
 
 import unittest
@@ -121,7 +154,7 @@ import unittest
 class Test_no_accent_vietnames(unittest.TestCase):
     def test_generate_youtube_singer_hashtags(self):
         test = "Hà Anh Tuấn"
-        song = "Em à"
+        song = "Em à (Ost hello world)"
         hashtags = generate_youtube_singer_hashtags(test)
         song_hashtags = generate_song_hashtags(song)
         combine_hashtags = generate_singer_song_hash_combine(hashtags, song_hashtags)
@@ -129,6 +162,16 @@ class Test_no_accent_vietnames(unittest.TestCase):
         print(song_hashtags)
         print(combine_hashtags)
         pass
+
+    def test_generate_singer_song_hashtags(self):
+        test = "Hà Anh Tuấn"
+        song = "Em à (Ost hello world)"
+        hashtags = generate_singer_song_hashtags(test, song)
+        lenth = 0
+        for each in hashtags:
+            lenth = lenth + len(each)
+        print(lenth)
+        print(hashtags)
 
     def test_hello_vietnam(self):
         test = "Em À"
