@@ -40,7 +40,7 @@ class GoogleSheetStream:
         return gspread.authorize(credentials)
 
     def format_songinfo(self, songinfo: SongInfo):
-        return [songinfo.id, songinfo.title, songinfo.singerTitle, songinfo.info]
+        return [songinfo.id, songinfo.title, songinfo.singer, songinfo.info]
 
     def get_worksheet(self, channel_name='timshel'):
         try:
@@ -50,7 +50,6 @@ class GoogleSheetStream:
         try:
             worksheet = wks.worksheet(channel_name)
         except Exception as e:
-            # if worksheet is None:
             wks.add_worksheet(channel_name, rows=1000, cols=30)
             worksheet = wks.worksheet(channel_name)
         return worksheet

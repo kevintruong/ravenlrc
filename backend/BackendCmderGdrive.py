@@ -2,10 +2,10 @@ import os
 
 import json5
 
-from backend.BackendCmder import BuildCmder, ContentDir
+from backend.BackendCmder import RenderCmder, ContentDir
 
 
-class GDriveBuildCmder(BuildCmder):
+class GDriveBuildCmder(RenderCmder):
     @classmethod
     def force_clearn_cache(cls):
         from sys import platform
@@ -35,8 +35,8 @@ import unittest
 class test_load_mv_config(unittest.TestCase):
     def setUp(self):
         self.buildCmder = GDriveBuildCmder(
-            os.path.join(ContentDir.MVCONF_DIR.value, 'gan_ngay_truoc_mat.json5'),
-            1)
+            os.path.join(ContentDir.MVCONF_DIR.value, 'test_render_api.json5'),
+            0)
         pass
 
     def test_build_release(self):

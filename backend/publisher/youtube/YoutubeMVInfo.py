@@ -28,6 +28,8 @@ class DescriptionFooter:
             self.copyright = footer['copyright']
         if 'hashtags' in footer:
             self.hashtags = footer['hashtags']
+        if 'tags' in footer:
+            self.tags = footer['tags']
 
 
 class ChannelInfoManger:
@@ -72,7 +74,7 @@ class YoutubeMVInfo:
                                    self.songinfo.singerTitle + ' || ' +
                                    self.channelinfo.header.channel + ' || ' +
                                    ' [Lyrics Video] ')
-        self.hashtags = self.create_hashtags()
+        self.hashtags = self.create_hashtags() + self.channelinfo.footer.hashtags
         self.tags = self.create_yt_tags()
         self.description = self.description_formatter()
 
@@ -96,7 +98,7 @@ class YoutubeMVInfo:
         with open(mvconfig_file, 'r') as fileconfig:
             mvconfig = json5.load(fileconfig)
             if 'songinfo' in mvconfig:
-                return SongInfo(mvconfig['songinfo'])
+                return SongInfo()
 
     def create_hashtags(self):
         singer = create_hashtag(self.songinfo.singerTitle)
@@ -106,7 +108,7 @@ class YoutubeMVInfo:
     def create_yt_tags(self):
         hashtags = generate_singer_song_hashtags(self.songinfo.singerTitle, self.songinfo.title)
         songinfo_hashtags = ",".join(hashtags)
-        channel_hashtags = ",".join(self.channelinfo.footer.hashtags)
+        channel_hashtags = ",".join(self.channelinfo.footer.tags)
         # singer = create_hashtag(self.songinfo.singerTitle)
         # song = create_hashtag(self.songinfo.title)
         return songinfo_hashtags + "," + channel_hashtags
@@ -145,6 +147,9 @@ class YoutubeMVInfo:
         description = description + (
             '-------------------------------------------------------------------------------------\n')
         description = description + ('{}\n'.format(self.channelinfo.footer.copyright))
+        description = description + ",".join(self.hashtags)
+        description = description + (
+            '\n-------------------------------------------------------------------------------------\n')
         description = description + self.tags
         return description
         pass

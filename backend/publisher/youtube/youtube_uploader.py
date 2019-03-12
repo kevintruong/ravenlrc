@@ -59,7 +59,7 @@ class YtMvConfigStatus:
             self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
             self.publishAt = publish_at
         else:
-            self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PRIVATE.value
+            self.privacyStatus = PrivacyStatus.PRIVACY_STATUS_PUBLIC.value
 
     def to_dict(self):
         return todict(self)

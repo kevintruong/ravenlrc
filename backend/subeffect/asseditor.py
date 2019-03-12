@@ -217,7 +217,7 @@ class LyricConfigInfo:
 
 
 def create_ass_from_lrc(lrcfile: str, output: str,
-                        subinfo: LyricConfigInfo,
+                        subinfo,
                         resolution=None):
     with open(lrcfile, 'r', encoding='utf-8') as lrcfd:
         lrccontent = lrcfd.read()
@@ -239,7 +239,7 @@ def load_lrc_file(lrcfile: str) -> SSAFile:
 
 def create_ass_subtitle(lrccontent: str,
                         output: str,
-                        subinfo: LyricConfigInfo,
+                        subinfo,
                         resolution=None):
     if resolution is None:
         res = [1920, 1080]
@@ -250,10 +250,9 @@ def create_ass_subtitle(lrccontent: str,
     else:
         res = [1920, 1080]
 
-    sub_rectangle = subinfo.rectangle
-    subcorlor = subinfo.fontcolor
-    font_name = subinfo.fontname
-    font_size = subinfo.fontsize
+    subcorlor = subinfo.font.color
+    font_name = subinfo.font.name
+    font_size = subinfo.font.size
 
     srttempfile = SrtTempfile().getfullpath()
 
@@ -263,10 +262,10 @@ def create_ass_subtitle(lrccontent: str,
     sub_customizer = AssCustomizor(subs, res[0], res[1])
     sub_customizer.setting_fonts(font_name, font_size)
 
-    sub_customizer.setting_margin_val(sub_rectangle.x,
-                                      sub_rectangle.y,
-                                      sub_rectangle.w,
-                                      sub_rectangle.h)
+    sub_customizer.setting_margin_val(subinfo.position.x,
+                                      subinfo.position.y,
+                                      subinfo.size.width,
+                                      subinfo.size.height)
     sub_customizer.setting_primary_colour(subcorlor)
 
     sub_customizer.add_fad_affect_to_sub()
@@ -283,7 +282,7 @@ def get_url(url: str):
     return lyricfile + ".ass"
 
 
-def create_ass_from_url(url: str, output: str, subinfo: LyricConfigInfo,
+def create_ass_from_url(url: str, output: str, subinfo,
                         resolution=[1920, 1080]):
     """
     create ass subtitle for

@@ -52,6 +52,7 @@ def only_latin_string(strtags):
 
 def generate_mv_filename(title: str):
     remove_accent = non_accent_convert(title).replace(" ", "_").lower()
+    # mvfilename = only_latin_string(remove_accent)
     return remove_accent + '.mp4'
 
 
@@ -123,14 +124,16 @@ def generate_singer_song_hash_combine(singerhashtags: list, songname_hashtags: l
     for singer_hashtag in singerhashtags:
         length = 0
         combine_hashtags.append(singer_hashtag + " {}".format(datetime.now().year))
-        for songname in songname_hashtags[:1]:
+        for songname in songname_hashtags[:2]:
             combine_hashtags.append(singer_hashtag.lower() + " " + songname)
             # combine_hashtags.append(songname.lower() + " " + singer_hashtag.lower())
             combine_hashtags.append(songname + " lyrics")
-        for each in combine_hashtags:
-            length = length + len(each)
-            if length > 250:
-                break
+            for each in combine_hashtags:
+                length = length + len(each)
+                if length > 250:
+                    return combine_hashtags
+                else:
+                    length = 0
     return combine_hashtags
 
 
@@ -143,7 +146,7 @@ def generate_singer_song_hashtags(singers: str, songname: str):
     for each in final_hashtags:
         lenth = lenth + len(each)
     if lenth > 500:
-        raise Exception("hashtags too long")
+        raise Exception("hashtags too long {}".format(lenth))
     print(lenth)
     return final_hashtags
 

@@ -34,15 +34,55 @@ class SongInfo:
         return json.dumps(self, default=lambda o: o.__dict__,
                           sort_keys=True, indent=4)
 
+    def __init__(self, nctsonginfo=None):
+        self.singer = None
+        self.info = None
+        self.title = None
+        self.songfile = None
+        self.id = None
+        self.lyrictext = None
+        self.lyric = None
+        self.id = None
+        if nctsonginfo:
+            for keyvalue in nctsonginfo.keys():
+                if keyvalue == 'singer':
+                    self.singer = nctsonginfo[keyvalue]
+                if keyvalue == 'info':
+                    self.info = nctsonginfo[keyvalue]
+                if keyvalue == 'title':
+                    self.title = nctsonginfo[keyvalue]
+                if keyvalue == 'songfile':
+                    self.songfile = nctsonginfo[keyvalue]
+                if keyvalue == 'id':
+                    self.id = nctsonginfo[keyvalue]
+                if keyvalue == 'lyrictext':
+                    self.lyrictext = nctsonginfo[keyvalue]
+                if keyvalue == 'lyric':
+                    self.lyric = nctsonginfo[keyvalue]
+
+    pass
+
+
+class NctSongInfo(SongInfo):
+
     def __init__(self, nctsonginfo: dict):
-        self.singerTitle = nctsonginfo['singerTitle']
-        self.info = nctsonginfo['info']
-        self.title = nctsonginfo['title']
-        self.lyric = nctsonginfo['lyric']
-        self.location = nctsonginfo['location']
+        super().__init__()
+        for keyvalue in nctsonginfo.keys():
+            if keyvalue == 'singerTitle':
+                self.singer = nctsonginfo[keyvalue]
+            if keyvalue == 'info':
+                self.info = nctsonginfo[keyvalue]
+            if keyvalue == 'title':
+                self.title = nctsonginfo[keyvalue]
+            if keyvalue == 'location':
+                self.songfile = nctsonginfo[keyvalue]
+            if keyvalue == 'id':
+                self.id = nctsonginfo[keyvalue]
+            if keyvalue == 'lyric_text':
+                self.lyrictext = nctsonginfo[keyvalue]
+            if keyvalue == 'lyric':
+                self.lyric = nctsonginfo[keyvalue]
         self.id = self.get_nct_id(self.info)
-        if 'lyric_text' in nctsonginfo:
-            self.lyric_text = nctsonginfo['lyric_text']
 
     def get_nct_id(self, ncturl: str):
         nct_url = ncturl.split('.')
@@ -94,7 +134,7 @@ class NctCrawler(Crawler):
         body = requests.get(downloadlink)
         songinfodata: dict = json.loads(body._content)
         songinfodata['data']['lyric_text'] = formatlyric
-        songinf = SongInfo(songinfodata['data'])
+        songinf: SongInfo = NctSongInfo(songinfodata['data'])
         return songinf
 
     def get_songinfo(self):
@@ -104,14 +144,14 @@ class NctCrawler(Crawler):
         songinfo: SongInfo = self.songinfo
         localmp3file = self.get_mp3file(outputdir)
         locallyricfile = self.get_lyric(outputdir)
-        songinfo.location = localmp3file
+        songinfo.songfile = localmp3file
         songinfo.lyric = locallyricfile
         return songinfo.toJSON()
 
     def get_mp3file(self, outputdir: str):
         songinfo: SongInfo = self.songinfo
-        mp3file = requests.get(songinfo.location, allow_redirects=True)
-        localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singerTitle)).encode('utf-8')
+        mp3file = requests.get(songinfo.songfile, allow_redirects=True)
+        localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singer)).encode('utf-8')
         with open(localmp3file, 'wb') as mp3filefd:
             mp3filefd.write(mp3file.content)
             mp3filefd.close()
