@@ -43,7 +43,7 @@ class DialogueTextStyleCode:
 
     @classmethod
     def create_subtitle_align_style_code(cls, subalign: SubtitleAlignment):
-        return "{{\\a{}}}".format(subalign)
+        return "{{\\an{}}}".format(subalign)
         pass
 
     @classmethod
@@ -74,16 +74,24 @@ class AssDialueTextAnimatedTransform:
         :param conf:
         """
         self.animatedtransform = AnimatedTransform()
-        self.effect_start = None
-        self.effect_transform = None
+        self.start = []
+        self.end = []
         self.timing = None
-        self.accel = None
+        self.accel = 0.9
 
         for each_key in conf.keys():
-            if 'effect_start' in each_key:
-                self.effect_start = conf['effect_start']
-            elif 'effect_transform' in each_key:
-                self.effect_transform = conf[each_key]
+            if 'start' in each_key:
+                effect_start_info: dict = conf[each_key]
+                for key, value in effect_start_info.items():
+                    effect = self.get_effect(key, value)
+                    if effect:
+                        self.start.append(effect)
+            elif 'end' in each_key:
+                effect_start_info: dict = conf[each_key]
+                for key, value in effect_start_info.items():
+                    effect = self.get_effect(key, value)
+                    if effect:
+                        self.end.append(self.get_effect(key, value))
             elif 'timing' in each_key:
                 if len(conf['timing']):
                     self.timing = conf['timing']
@@ -91,92 +99,121 @@ class AssDialueTextAnimatedTransform:
                 self.accel = conf['accel']
             pass
 
-    def create_full_transform(self, timing_duration=None):
+    def create_full_animation_transform(self, timing_duration=None):
         if timing_duration is not None:
             timing = [0, timing_duration]
         else:
             timing = self.timing
-        return self.animatedtransform.transform_from_effect_to_effect(orgeffect=self.effect_start,
-                                                                      nexteffect=self.effect_transform,
-                                                                      timing=timing,
-                                                                      accel=self.accel)
+        return self.animatedtransform.create_animation_transform(orgeffect=self.start,
+                                                                 nexteffect=self.end,
+                                                                 timing=timing,
+                                                                 accel=self.accel)
         pass
 
     @classmethod
-    def get_effect(cls, value: set):
-        effect_value = value.pop()
-        effect_id = value.pop()
-        if effect_id == 1:
-            return AnimatedEffect.FontSize(effect_value)
-        if effect_id == 2:
-            return AnimatedEffect.PrimaryFillColor(effect_value)
+    def get_effect(cls, key, value):
+        if key == 'font_size':
+            return AnimatedEffect.FontSize(value)
+        if key == 'primary_font_color':
+            return AnimatedEffect.PrimaryFillColor(value)
         # TODO need to fill missing effect id
 
     @classmethod
     def json2dict(cls, effectinfo: dict):
         effect_start = []
-        transform_effect = []
+        effect_end = []
         timing = []
         accel = None
         for key in effectinfo.keys():
-            if 'effect_start' in key:
-                effect_start_info: list = effectinfo[key]
+            if 'start' == key:
+                effect_start_info: dict = effectinfo[key]
                 if len(effect_start_info):
-                    for value in effect_start_info:
-                        effect_start.append(cls.get_effect(value))
-            if 'effect_transform' in key:
-                trans_effect: list = effectinfo[key]
+                    for key, value in effect_start_info.items():
+                        effect_start.append(cls.get_effect(key, value))
+            if 'end' in key:
+                trans_effect: dict = effectinfo[key]
                 if len(trans_effect):
-                    for effect in trans_effect:
-                        transform_effect.append(cls.get_effect(effect))
-            if 'timing' in key:
+                    for key, value in trans_effect.items():
+                        effect_end.append(cls.get_effect(key, value))
+            if 'timing' == key:
                 timing = effectinfo[key]
-            if 'accel' in key:
+            if 'accel' == key:
                 accel = effectinfo[key]
         return {
-            'effect_start': effect_start,
-            'effect_transform': transform_effect,
+            'start': effect_start,
+            'end': effect_end,
             'timming': timing,
             'accel': accel
         }
 
 
-class AssDialogueTextKeyWordFormatter:
+class AssDialogueTextFormatter:
 
     def __init__(self, formatinfo: dict) -> None:
-        self.fontname = formatinfo['fontname']
-        self.fontsize = formatinfo['fontsize']
-        self.fontcolor = formatinfo['fontcolor']
-        self.alignment = formatinfo['alignment']
+        self.name = None
+        self.color = None
+        self.size = None
+        self.newline = None
+        self.align = None
+        for key in formatinfo.keys():
+            if key == 'name':
+                self.name = formatinfo[key]
+            if key == 'size':
+                self.size = formatinfo[key]
+            if key == 'color':
+                self.color = formatinfo[key]
+            if key == 'align':
+                self.align = formatinfo[key]
+            if key == 'newline':
+                self.newline = formatinfo[key]
 
     def format_keyword(self, keyword: str):
-        fontname_code = DialogueTextStyleCode.create_fontname_style_code(self.fontname)
-        fontsize = DialogueTextStyleCode.create_fontsize_style_code(self.fontsize)
-        fontcolor = DialogueTextStyleCode.create_fontcolor_style_code(self.fontcolor)
-        subalign = DialogueTextStyleCode.create_subtitle_align_style_code(self.alignment)
+        fontname_code = ""
+        fontsize = ""
+        fontcolor = ""
+        subalign = ""
+        if self.name:
+            fontname_code = DialogueTextStyleCode.create_fontname_style_code(self.name)
+        if self.size:
+            fontsize = DialogueTextStyleCode.create_fontsize_style_code(self.size)
+        if self.color:
+            fontcolor = DialogueTextStyleCode.create_fontcolor_style_code(self.color)
+        if self.align:
+            subalign = DialogueTextStyleCode.create_subtitle_align_style_code(self.align)
         reset = DialogueTextStyleCode.create_reset_style_code()
         newword = fontname_code + fontsize + fontcolor + subalign + keyword + reset + '\\N'
         return newword
 
     def font_formatter(self):
-        fontname_code = DialogueTextStyleCode.create_fontname_style_code(self.fontname)
-        fontsize = DialogueTextStyleCode.create_fontsize_style_code(self.fontsize)
-        fontcolor = DialogueTextStyleCode.create_fontcolor_style_code(self.fontcolor)
-        subalign = DialogueTextStyleCode.create_subtitle_align_style_code(self.alignment)
-        return fontname_code + fontsize + fontcolor + subalign
+        final_format_code = ""
+        if self.name:
+            fontname_code = DialogueTextStyleCode.create_fontname_style_code(self.name)
+            final_format_code = final_format_code + fontname_code
+        if self.size:
+            fontsize = DialogueTextStyleCode.create_fontsize_style_code(self.size)
+            final_format_code = final_format_code + fontsize
+        if self.color:
+            fontcolor = DialogueTextStyleCode.create_fontcolor_style_code(self.color)
+            final_format_code = final_format_code + fontcolor
+        if self.align:
+            subalign = DialogueTextStyleCode.create_subtitle_align_style_code(self.align)
+            final_format_code = final_format_code + subalign
+        if self.newline:
+            final_format_code = '\\N' + final_format_code
+        return final_format_code
 
 
 class AssDialogueTextProcessor:
     def __init__(self, keyword: list,
-                 formatter: dict,
-                 animatedconf: dict) -> None:
+                 formatter=None,
+                 animatedconf=None) -> None:
         self.keyword = keyword
-        self.keywordformatter = None
-        self.keywordanimatedtransform = None
+        self.keywordformatter: AssDialogueTextFormatter = None
+        self.keywordanimatedtransform: AssDialueTextAnimatedTransform = None
         if formatter:
-            self.keywordformatter = AssDialogueTextKeyWordFormatter(formatter)
+            self.keywordformatter = formatter
         if animatedconf:
-            self.keywordanimatedtransform = AssDialueTextAnimatedTransform(animatedconf)
+            self.keywordanimatedtransform = animatedconf
         super().__init__()
 
     def reconfig_keywords(self, duration=None):
@@ -186,13 +223,19 @@ class AssDialogueTextProcessor:
         else:
             keyword_formatter = ""
         if self.keywordanimatedtransform:
-            animated_formatter = self.keywordanimatedtransform.create_full_transform(duration)
+            animated_formatter = self.keywordanimatedtransform.create_full_animation_transform(duration)
         else:
             animated_formatter = ""
 
         reset = DialogueTextStyleCode.create_reset_style_code()
         for each_keyword in self.keyword:
-            replace_keyword = keyword_formatter + animated_formatter + each_keyword + reset
+            replace_keyword = keyword_formatter + animated_formatter + each_keyword
+            if self.keywordformatter.newline:
+                replace_keyword = replace_keyword + '\\N'
+            # if self.keywordformatter.align:
+            #     replace_keyword = replace_keyword + DialogueTextStyleCode.create_subtitle_align_style_code(
+            #         self.keywordformatter.align)
+            replace_keyword = replace_keyword + "{\\rDefault}"
             kwprocessor.add_keyword(each_keyword, replace_keyword)
         return kwprocessor
 

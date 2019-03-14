@@ -7,6 +7,8 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
+from backend.subeffect.keyword.keyword import AssDialogueTextFormatter, AssDialueTextAnimatedTransform, \
+    AssDialogueTextProcessor
 from backend.utility.Utility import check_file_existed, FileInfo, generate_mv_filename
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
@@ -80,6 +82,29 @@ class EffectCachedFile(CachedFile):
     @classmethod
     def create_cachedfile(cls, filename):
         return os.path.join(cls.CachedEffectDir, filename)
+
+
+class MuxAudioVidCachedFile(CachedFile):
+    CachedEffectDir = os.path.join(CachedContentDir.BGIMG_DIR.value, '.cache')
+
+    @classmethod
+    def get_cachedfile(cls, filename):
+        listfiles = os.listdir(cls.CachedEffectDir)
+        for file in listfiles:
+            if filename in file:
+                return os.path.join(cls.CachedEffectDir, file)
+        return None
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.CachedEffectDir, filename)
+
+    @classmethod
+    def get_cached_file_name(cls, video, audio):
+        videofilename = FileInfo(video).name
+        videofilename = FileInfo(audio).name
+        bgeff_cachedfilename = videofilename + '_' + videofilename + '.mp4'
+        return bgeff_cachedfilename
 
 
 class BgEffectCachedFile(CachedFile):
@@ -164,7 +189,7 @@ class Cmder:
         pass
 
     @abc.abstractmethod
-    def run_create_ablum_multi_background(self):
+    def run_create_album_multi_background(self):
         pass
 
     def get_cached_bg_effect_file(self, previewbgmv, previeweffectmv):
@@ -229,6 +254,22 @@ class Cmder:
         else:
             preview_bgmv = bgvid_cachedfile
         return preview_bgmv
+
+    def get_cached_muxaudiovid(self, audiofile, videofile, time_length):
+        cached_filename = MuxAudioVidCachedFile.get_cached_file_name(videofile, audiofile)
+
+        effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
+        if effectmv_cachedfile is None:
+            ffmpegcli = FfmpegCli()
+            effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
+            preview_affectmv = effectmv_cachedfile
+            ffmpegcli.mux_audio_to_video(videofile,
+                                         audiofile,
+                                         preview_affectmv,
+                                         time_length)
+        else:
+            preview_affectmv = effectmv_cachedfile
+        return preview_affectmv
 
 
 class CrawlCmder(Cmder):
@@ -303,31 +344,88 @@ class Font:
         self.size = info['size']
 
 
-class Lyric:
-    def __init__(self, info: dict):
-        self.file = None
-        self.position = None
-        self.size = None
-        self.font = None
-        self.effect = None
-        if 'file' in info:
-            self.file = info['file']
-        if 'position' in info:
-            self.position = Position(info['position'])
-        if 'size' in info:
-            self.size = Size(info['size'])
-        if 'font' in info:
-            self.font = Font(info['font'])
-        if 'effect' in info:
-            self.effect = info['effect']
+import json
+
+
+class PyJSON(object):
+    def __init__(self, d):
+        if type(d) is str:
+            d = json.loads(d)
+
+        self.from_dict(d)
+
+    def from_dict(self, d):
+        self.__dict__ = {}
+        for key, value in d.items():
+            if type(value) is dict:
+                value = PyJSON(value)
+            self.__dict__[key] = value
+
+    def to_dict(self):
+        d = {}
+        for key, value in self.__dict__.items():
+            if type(value) is PyJSON:
+                value = value.to_dict()
+            d[key] = value
+        return d
+
+    def __repr__(self):
+        return str(self.to_dict())
+
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+
+class WordEffectConfigure:
+    def __init__(self, configure):
         pass
 
 
-class Spectrum:
+class WordEffect(PyJSON):
+    def __init__(self, d):
+        """
+        :self.code str
+        :self.type str
+        :param d:
+        """
+        super().__init__(d)
+        # for keyvalue in effect.keys():
+        #     if keyvalue == 'type':
+        #         self.type = effect[keyvalue]
+        #     if keyvalue == 'code':
+        #         self.code = effect[keyvalue]
+        #     if keyvalue == 'start':
+        #         pass
+        if 'config' in d:
+            self.config = AssDialueTextAnimatedTransform(d['config'])
+
+
+class Lyric:
+    def __init__(self, info: dict):
+        self.file = None
+        # self.effect = None
+        self.words = []
+        if 'file' in info:
+            self.file = info['file']
+        if 'words' in info:
+            for wordeffect in info['words']:
+                self.words.append(LyricEffect(wordeffect))
+        pass
+
+
+class Spectrum(PyJSON):
+    def __init__(self, d):
+        self.templatecode = None
+        self.custom = None
+        super().__init__(d)
+
+
+class BgSpectrum:
     def __init__(self, info: dict):
         for keyvalue in info.keys():
-            if keyvalue == 'template':
-                self.template = info[keyvalue]
             if keyvalue == 'position':
                 self.position = Position(info[keyvalue])
             if keyvalue == 'size':
@@ -354,15 +452,42 @@ class BgWaterMask:
         self.position = Position(info['position'])
 
 
+class BgLyric:
+    def __init__(self, info: dict):
+        if 'position' in info:
+            self.position = Position(info['position'])
+        if 'size' in info:
+            self.size = Size(info['size'])
+        if 'font' in info:
+            self.font = Font(info['font'])
+
+
+class BgTitle(BgLyric):
+    def __init__(self, info: dict):
+        super().__init__(info)
+
+
+class BgWaterMask(BgLyric):
+    def __init__(self, info: dict):
+        super().__init__(info)
+
+
 class Background:
     def __init__(self, info: dict):
         for field in info.keys():
-            if "file" in field:
-                # self.file = info[field]
+            if field == 'file':
                 self.file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, info[field])
                 check_file_existed(self.file)
-            elif "effect" in field:
+            elif field == 'effect':
                 self.effect = BgEffect(info[field])
+            elif field == 'lyric':
+                self.lyric = BgLyric(info[field])
+            elif field == 'watermask':
+                self.watermask = BgWaterMask(info[field])
+            elif field == 'title':
+                self.title = BgTitle(info[field])
+            elif field == 'spectrum':
+                self.spectrum = BgSpectrum(info[field])
 
     pass
 
@@ -413,7 +538,7 @@ class MusicVideoKind(IntEnum):
 
 class RenderCmder(Cmder):
 
-    def run_create_ablum_multi_background(self):
+    def run_create_album_multi_background(self):
         raise Exception("Not support render album multi background yet")
         pass
 
@@ -428,6 +553,7 @@ class RenderCmder(Cmder):
     def run_create_single_background_mv(self):
         self.background = self.backgrounds[0]
         self.song_url = self.song_urls[0]
+        self.song = SongInfo(self.songs[0])
         self.get_song_info_from_url()
         self.configure_output()
         try:
@@ -441,8 +567,6 @@ class RenderCmder(Cmder):
             print("Exception as {}".format(e))
         pass
 
-        return self.run()
-
     def run(self):
         if self.kindVid == MusicVideoKind.MV_SINGLE_BACKGROUND:
             self.run_create_single_background_mv()
@@ -451,7 +575,7 @@ class RenderCmder(Cmder):
         elif self.kindVid == MusicVideoKind.ALBUM_SINGLE_BACKGROUND:
             return self.run_create_album_single_background()
         elif self.kindVid == MusicVideoKind.ALBUM_MULTI_BACKGROUND:
-            return self.run_create_ablum_multi_background()
+            return self.run_create_album_multi_background()
         else:
             Exception("Not support render the Mv Kind {}".format(self.kindVid))
         pass
@@ -467,6 +591,8 @@ class RenderCmder(Cmder):
                 self.song_urls = cmd[keyvalue]
             if keyvalue == 'song':
                 self.song = SongInfo(cmd[keyvalue])
+            if keyvalue == 'songs':
+                self.songs = cmd[keyvalue]
             if keyvalue == 'backgrounds':
                 self.backgrounds = self.get_list_background(cmd[keyvalue])
             if keyvalue == 'spectrum':
@@ -475,6 +601,9 @@ class RenderCmder(Cmder):
                 self.lyric = Lyric(cmd[keyvalue])
             if keyvalue == 'rendertype':
                 self.rendertype = RenderType(cmd[keyvalue])
+            if keyvalue == 'song_effect':
+                self.song_effect = PyJSON(cmd[keyvalue])
+
         # self.get_song_info_from_url()
         # self.to_json()
         self.set_kind_of_video()
@@ -541,19 +670,21 @@ class RenderCmder(Cmder):
 
         create_ass_from_lrc(self.song.lyric,
                             preview_asstempfile,
-                            self.lyric,
+                            self.background.lyric,
                             preview_profile)
 
         time_length = self.rendertype.configure.duration
 
         logger.debug(preview_profile)
 
-        if self.lyric.effect is not None:
-            new_ass_effect = AssTempFile().getfullpath()
-            # preview_asstempfile
-            self.lyric.effect.apply_lyric_effect_to_file(preview_asstempfile, new_ass_effect)
-            preview_asstempfile = new_ass_effect
-            pass
+        preview_asstempfile = self.apply_effect_lyric(preview_asstempfile)
+
+        # if self.lyric.effect is not None:
+        #     new_ass_effect = AssTempFile().getfullpath()
+        #     preview_asstempfile
+        # self.lyric.effect.apply_lyric_effect_to_file(preview_asstempfile, new_ass_effect)
+        # preview_asstempfile = new_ass_effect
+        # pass
 
         if self.background.effect is not None:
             if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
@@ -568,15 +699,11 @@ class RenderCmder(Cmder):
 
             preview_bg_affect_mv = self.get_cached_bg_effect_file(preview_bgmv, preview_affectmv)
 
-            preview_bg_aff_sub_mv = MvTempFile().getfullpath()
-            ffmpegcli.adding_sub_to_video(preview_asstempfile,
-                                          preview_bg_affect_mv,
-                                          preview_bg_aff_sub_mv)
+            audiovid_mv = self.get_cached_muxaudiovid(self.song.songfile, preview_bg_affect_mv, time_length)
 
-            ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
-                                         self.song.songfile,
-                                         self.output
-                                         )
+            ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                          audiovid_mv,
+                                          self.output)
         else:
             if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
                 preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
@@ -585,20 +712,11 @@ class RenderCmder(Cmder):
 
             preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
 
-            # preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
-
-            preview_bg_affect_mv = preview_bgmv
-
-            preview_bg_aff_sub_mv = MvTempFile().getfullpath()
+            audiovid_mv = self.get_cached_muxaudiovid(self.song.songfile, preview_bgmv, time_length)
 
             ffmpegcli.adding_sub_to_video(preview_asstempfile,
-                                          preview_bg_affect_mv,
-                                          preview_bg_aff_sub_mv)
-
-            ffmpegcli.mux_audio_to_video(preview_bg_aff_sub_mv,
-                                         self.song.songfile,
-                                         self.output
-                                         )
+                                          audiovid_mv,
+                                          self.output)
             pass
 
         YtTempFile.delete_all()
@@ -611,6 +729,21 @@ class RenderCmder(Cmder):
     def build_release(self):
 
         pass
+
+    def apply_effect_lyric(self, preview_asstempfile):
+        new_ass_effect = AssTempFile().getfullpath()
+        # preview_asstempfile
+        # self.lyric.effect.apply_lyric_effect_to_file(preview_asstempfile, new_ass_effect)
+        # preview_asstempfile = new_ass_effect
+        try:
+            for lyricword in self.lyric.words:
+                if lyricword.effect:
+                    lyricword.apply_lyric_effect_to_file(preview_asstempfile, preview_asstempfile)
+                    print('process word data with the effect')
+            return preview_asstempfile
+        except Exception as e:
+            print('error when process effect lyric,use the original effect file')
+            return preview_asstempfile
 
 
 class BuildCmder(Cmder):

@@ -72,10 +72,10 @@ class AnimatedTransform:
         # still doing the 10 rotations in 5 seconds.
         pass
 
-    def transform_from_effect_to_effect(self, orgeffect: [AnimatedEffect.Effect],
-                                        nexteffect: [AnimatedEffect.Effect],
-                                        timing: list,
-                                        accel=1):
+    def create_animation_transform(self, orgeffect: [AnimatedEffect.Effect],
+                                   nexteffect: [AnimatedEffect.Effect],
+                                   timing: list,
+                                   accel=1):
         """
             {\<original effect[list]>\t(new effect[list])}<text>
            {\an5\fscx0\fscy0\t(0,500,\fscx100\fscy100)}Boo!

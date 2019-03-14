@@ -19,14 +19,18 @@ if os.path.isdir(test_data_dir):
 else:
     os.mkdir(test_data_dir)
 
+# input_mp4_file = os.path.join(sample_data_dir, "in1.mp4")
+
 input_mp4_file = os.path.join(sample_data_dir, "in1.mp4")
+
 bg_img00 = os.path.join(sample_data_dir, "bg_img00.png")
 bg_img01 = os.path.join(sample_data_dir, "bg_img01.png")
 logo00 = os.path.join(sample_data_dir, "logo00.png")
 audio00 = os.path.join(sample_data_dir, "audio01.mp3")
 background_effect_dir = os.path.join(sample_data_dir, "sample_data/Star/Comp1")
 bg_effect = os.path.join(sample_data_dir, "bgeffect.mov")
-sub_media = os.path.join(sample_data_dir, "sub_output.mp4")
+nontran_effect = r"D:\Project\ytcreatorservice\backend\content\Effect\floating-particles-in-blue_W1Yh5u-ZH.mov"
+sub_media = r"D:\Project\ytcreatorservice\backend\content\Mv\Release\alone.mp4"
 
 full_test = "https://www.nhaccuatui.com/bai-hat/ngay-chua-giong-bao-nguoi-bat-tu-ost-bui-lan-huong.EoqsR1AFD4SG.html"
 test_url00 = "https://www.nhaccuatui.com/bai-hat/xin-loi-anh-qua-phien-dong-nhi.WX2iJD8VU9ve.html"
@@ -91,6 +95,14 @@ class TestFFmpegCli(unittest.TestCase):
     def test_add_affect_to_video(self):
         output = os.path.join(test_data_dir, "affect_bg.mp4")
         self.ffmpeg.add_affect_to_video(sub_media, bg_effect, output)
+        inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
+        outputLeng = self.ffmpeg.get_media_time_length(output)
+        self.assertEqual(outputLeng, inputLeng)
+        pass
+
+    def test_add_nontransparent_affect_to_video(self):
+        output = os.path.join(sample_data_dir, "affect_bg.mp4")
+        self.ffmpeg.add_nontransparent_effect_to_video(sub_media, nontran_effect, output, 30)
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(outputLeng, inputLeng)

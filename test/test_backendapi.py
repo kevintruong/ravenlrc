@@ -255,5 +255,21 @@ class MyTestCase(unittest.TestCase):
         print(response.content)
 
 
+class Test_RenderCmder(unittest.TestCase):
+
+    def setUp(self):
+        import json5
+        with open(os.path.join(curDir, 'render_api.json5'), 'r', encoding='UTF-8') as json5file:
+            self.data = json5.load(json5file)
+        pass
+
+    def test_load_render_api(self):
+        from backend.BackendCmder import RenderCmder
+        self.renderconf = RenderCmder(self.data)
+        self.renderconf.run()
+        print(self.renderconf.toJSON())
+        pass
+
+
 if __name__ == '__main__':
     unittest.main()

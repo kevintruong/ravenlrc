@@ -28,18 +28,20 @@ class EffectInfo:
 
 class LyricEffect:
     def __init__(self, lrc_effect: dict):
-        self.keywordinfo = None
-        self.effect_info = None
+        self.formatter = None
+        self.data = None
+        self.effect = None
+
         for key in lrc_effect.keys():
-            if 'keyword_info' in key:
-                self.keywordinfo = KeyWordInfo(lrc_effect['keyword_info'])
-            if 'effect_info' in key:
-                effect_type = lrc_effect['effect_type']
-                self.effect_info = EffectInfo(effect_type,
-                                              lrc_effect['effect_info']).effect_info
-        self.lyriceffect_processor = AssDialogueTextProcessor(keyword=self.keywordinfo.keywords,
-                                                              formatter=self.keywordinfo.keyword_fmt,
-                                                              animatedconf=self.effect_info)
+            if 'data' == key:
+                self.data = lrc_effect[key]
+            if 'formatter' == key:
+                self.formatter = AssDialogueTextFormatter(lrc_effect[key])
+            if 'effect' in key:
+                self.effect = AssDialueTextAnimatedTransform(lrc_effect[key]['config'])
+        self.lyriceffect_processor = AssDialogueTextProcessor(keyword=self.data,
+                                                              formatter=self.formatter,
+                                                              animatedconf=self.effect)
 
     def apply_lyric_effect_by_line(self, line, duration):
         return self.lyriceffect_processor.keyword_process(line, duration)
@@ -50,6 +52,7 @@ class LyricEffect:
         subs = SSAFile.load(ass_file, encoding='utf-8')  # create ass file
         for line in subs:
             line.text = self.apply_lyric_effect_by_line(line.text, line.duration)
+            print(line.text)
         subs.save(output)
         return output
 

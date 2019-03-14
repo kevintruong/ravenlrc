@@ -28,9 +28,9 @@ class TestEffectTranformation(unittest.TestCase):
         primarycodedes = AnimatedEffect.PrimaryFillColor(0xFFEEFF)
         primaryalphades = AnimatedEffect.PrimaryFillAlpha(0xFF)
         animation = AnimatedTransform()
-        transform_code = animation.transform_from_effect_to_effect([primarycode, primaryalpha],
-                                                                   [primarycodedes, primaryalphades],
-                                                                   timing=Timing(0, 4000), accel=0.4)
+        transform_code = animation.create_animation_transform([primarycode, primaryalpha],
+                                                              [primarycodedes, primaryalphades],
+                                                              timing=Timing(0, 4000), accel=0.4)
         print(transform_code)
         self.assertEqual(transform_code, r'{\c&H785634&\a&Hab&\t(0,4000,0.4,\c&Hffeeff&\a&Hff&)}')
         pass

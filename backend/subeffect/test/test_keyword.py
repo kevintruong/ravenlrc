@@ -43,7 +43,7 @@ class testKeywordFormatter(unittest.TestCase):
         animation_conf = {
 
         }
-        self.formatter = AssDialogueTextKeyWordFormatter(keywork_config)
+        self.formatter = AssDialogueTextFormatter(keywork_config)
 
     def test_formatkeyword(self):
         formatted_keyword = self.formatter.format_keyword("Yêu anh")
@@ -77,18 +77,19 @@ class testAssDialogueTextProcessor(unittest.TestCase):
         super().setUp()
         self.ass_lyric = open('test.ass', 'r', encoding='utf-8')
         self.keyword_formatter = {
-            'fontname': 'UTMAmericanaItalic',
-            'fontsize': 30,
-            'fontcolor': 0x028CF7,
-            'alignment': SubtitleAlignment.SUB_ALIGN_RIGHT_JUSTIFIED
+            'name': 'UTMAmericanaItalic',
+            'size': 30,
+            'color': 0x028CF7,
+            'align': SubtitleAlignment.SUB_ALIGN_RIGHT_JUSTIFIED,
+            # 'newline': True
         }
 
-    def process_ass_with_effect(self, effectconf_dict: dict):
-        configure_dict = effectconf_dict
-        self.formatter = AssDialogueTextKeyWordFormatter(self.keyword_formatter)
+    def process_ass_with_effect(self, effectconf_dict):
+        configure_dict = AssDialueTextAnimatedTransform(effectconf_dict)
+        self.formatter = AssDialogueTextFormatter(self.keyword_formatter)
 
         self.textprocessor = AssDialogueTextProcessor(keyword=self.keywork,
-                                                      formatter=self.keyword_formatter,
+                                                      formatter=self.formatter,
                                                       animatedconf=configure_dict)
 
         content = self.ass_lyric.read()
@@ -108,7 +109,7 @@ class testAssDialogueTextProcessor(unittest.TestCase):
                                    'fontname': 'UTM Centur',
                                    'fontcolor': 0x018CA7,
                                    'fontsize': 40})
-        # create_ass_sub(full_test, ass_out, subinfo)
+        # create_ass_from_lrc(full_test, ass_out, subinfo)
 
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
         length_in = self.ffmpeg.get_media_time_length(media_output)
@@ -118,29 +119,30 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_zoom_in(self):
         configure_dict = {
-            'effect_start': [AnimatedEffect.FontSize(20)],
-            'effect_transform': [AnimatedEffect.FontSize(40)],
+            'start': [AnimatedEffect.FontSize(20)],
+            'end': [AnimatedEffect.FontSize(40)],
             'timing': [0, 5000],
-            'accel': 0.3
+            'accel': 0.9
         }
         self.process_ass_with_effect(configure_dict)
 
     def test_processkeyword_effect_zoom_out(self):
         configure_dict = {
-            'effect_start': [AnimatedEffect.FontSize(50),
-                             AnimatedEffect.BlurEdgesGaussian(2)],
-
-            'effect_transform': [AnimatedEffect.FontSize(10),
-                                 AnimatedEffect.BlurEdgesGaussian(20)],
-            'timing': [0, 5000],
-            'accel': 0.8
+            'accel': 0.9,
+            "start": {
+                "font_size": 20,
+            },
+            "end": {
+                "font_size": 50,
+                "primary_font_color": 0x23456,
+            },
         }
         self.process_ass_with_effect(configure_dict)
 
     def test_processkeyword_effect_border_increase(self):
         configure_dict = {
-            'effect_start': [AnimatedEffect.Border(50)],
-            'effect_transform': [AnimatedEffect.Border(0)],
+            'start': [AnimatedEffect.Border(50)],
+            'end': [AnimatedEffect.Border(0)],
             'timing': [0, 5000],
             'accel': 1
         }
@@ -148,11 +150,11 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_text_rotate_X(self):
         # \t{0,5000,\frz3600}Whell
-        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
-                                           AnimatedEffect.FontSize(20)],
-                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
-                                               AnimatedEffect.FontSize(40),
-                                               AnimatedEffect.TextRotationX(360 * 3)],
+        configure_dict = {'start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                    AnimatedEffect.FontSize(20)],
+                          'end': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                  AnimatedEffect.FontSize(40),
+                                  AnimatedEffect.TextRotationX(360 * 3)],
                           'timing': [0, 6000],
                           'accel': 0.8
                           }
@@ -160,11 +162,11 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_text_rotate_Y(self):
         # \t{0,5000,\frz3600}Whell
-        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
-                                           AnimatedEffect.FontSize(20)],
-                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
-                                               AnimatedEffect.FontSize(40),
-                                               AnimatedEffect.TextRotationY(360 * 3)],
+        configure_dict = {'start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                    AnimatedEffect.FontSize(20)],
+                          'end': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                  AnimatedEffect.FontSize(40),
+                                  AnimatedEffect.TextRotationY(360 * 3)],
                           'timing': [0, 6000],
                           'accel': 0.8
                           }
@@ -172,23 +174,23 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 
     def test_processkeyword_effect_text_rotate_Z(self):
         # \t{0,5000,\frz3600}Whell
-        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
-                                           AnimatedEffect.FontSize(20)],
-                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
-                                               AnimatedEffect.FontSize(40),
-                                               AnimatedEffect.TextRotationZ(60)],
+        configure_dict = {'start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                    AnimatedEffect.FontSize(20)],
+                          'end': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                  AnimatedEffect.FontSize(40),
+                                  AnimatedEffect.TextRotationZ(60)],
                           'timing': [0, 6000],
                           'accel': 0.8
                           }
         self.process_ass_with_effect(configure_dict)
 
     def test_animated_effect_text_shearing(self):
-        configure_dict = {'effect_start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
-                                           AnimatedEffect.FontSize(20)],
-                          'effect_transform': [AnimatedEffect.PrimaryFillColor(0x123456),
-                                               AnimatedEffect.FontSize(40),
-                                               AnimatedEffect.TextShearingX(1),
-                                               AnimatedEffect.TextShearingY(0.5)],
+        configure_dict = {'start': [AnimatedEffect.PrimaryFillColor(0xABFFCD),
+                                    AnimatedEffect.FontSize(20)],
+                          'end': [AnimatedEffect.PrimaryFillColor(0x123456),
+                                  AnimatedEffect.FontSize(40),
+                                  AnimatedEffect.TextShearingX(1),
+                                  AnimatedEffect.TextShearingY(0.5)],
                           'timing': [0, 6000],
                           'accel': 0.8
                           }
@@ -198,17 +200,17 @@ class testAssDialogueTextProcessor(unittest.TestCase):
 class testAssDialueTextAnimatedTransform(unittest.TestCase):
     def setUp(self):
         configure_dict = {
-            'effect_start': [AnimatedEffect.FontSize(10),
-                             AnimatedEffect.PrimaryFillColor(0xff0000)],
-            'effect_transform': [AnimatedEffect.FontSize(30),
-                                 AnimatedEffect.PrimaryFillColor(0xffeeff)],
+            'start': [AnimatedEffect.FontSize(10),
+                      AnimatedEffect.PrimaryFillColor(0xff0000)],
+            'end': [AnimatedEffect.FontSize(30),
+                    AnimatedEffect.PrimaryFillColor(0xffeeff)],
             'timing': [0, 5000],
             'accel': 0.3
         }
         self.assdialogueanimatedtransform = AssDialueTextAnimatedTransform(configure_dict)
 
     def test_create_full_transfer(self):
-        fulltransfer = self.assdialogueanimatedtransform.create_full_transform()
+        fulltransfer = self.assdialogueanimatedtransform.create_full_animation_transform()
         print(fulltransfer)
         self.assertEqual(fulltransfer, r'{\fs10\c&H0000ff&\t(0,5000,0.3,\fs50\c&Hffeeff&)}')
         if __name__ == '__main__':
@@ -222,11 +224,11 @@ class test_effectinfo(unittest.TestCase):
     def test_init(self):
         effect_info = {
             # Zoom in and change keyword color format
-            'effect_start': [[1,  # font size code
-                              20],  # font size is 20
-                             [2,  # font color code
-                              0x345678  # font color hex code
-                              ]],
+            'start': [[1,  # font size code
+                       20],  # font size is 20
+                      [2,  # font color code
+                       0x345678  # font color hex code
+                       ]],
             'transform_effect': [[1, 50],
                                  [2, 0xffeeff]],
             'timing': "",  # timing is None mean mean duration = duration sub line
@@ -234,7 +236,7 @@ class test_effectinfo(unittest.TestCase):
         }
         effect_info_dict = AssDialueTextAnimatedTransform.json2dict(effect_info)
         effctinfo = AssDialueTextAnimatedTransform(effect_info_dict)
-        effect = effctinfo.create_full_transform()
+        effect = effctinfo.create_full_animation_transform()
         print("hello {}", format(effect))
 
 
@@ -293,12 +295,12 @@ class test_LyricEffect(unittest.TestCase):
             },
             # 'effect_info': {
             #
-            #     'effect_start': [[1,
+            #     'start': [[1,
             #                       20],
             #                      [2,
             #                       0x345678
             #                       ]],
-            #     'effect_transform': [[1, 50],
+            #     'end': [[1, 50],
             #                          [2, 0xffeeff]],
             #     'timing': "",
             #     'accel': 0.8
