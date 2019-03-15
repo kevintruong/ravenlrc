@@ -1,3 +1,4 @@
+from backend.subeffect.Effect import WordEffect
 from backend.subeffect.keyword.keyword import *
 from backend.subeffect.pysubs2 import SSAFile
 
@@ -38,10 +39,11 @@ class LyricEffect:
             if 'formatter' == key:
                 self.formatter = AssDialogueTextFormatter(lrc_effect[key])
             if 'effect' in key:
-                self.effect = AssDialueTextAnimatedTransform(lrc_effect[key]['config'])
+                self.effect = WordEffect(lrc_effect[key])
+                # self.effect = AssDialueTextAnimatedTransform(lrc_effect[key]['config'])
         self.lyriceffect_processor = AssDialogueTextProcessor(keyword=self.data,
                                                               formatter=self.formatter,
-                                                              animatedconf=self.effect)
+                                                              animatedconf=self.effect.config)
 
     def apply_lyric_effect_by_line(self, line, duration):
         return self.lyriceffect_processor.keyword_process(line, duration)

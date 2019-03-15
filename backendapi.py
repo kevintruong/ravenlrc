@@ -3,8 +3,9 @@ import sys
 
 from backend.BackendCmder import *
 
-sys.path.append("pycharm-debug-py3k.egg")
-import pydevd
+
+# sys.path.append("pycharm-debug-py3k.egg")
+# import pydevd
 
 
 # pydevd.settrace('172.27.39.177', port=1234, stdoutToServer=True,
@@ -19,18 +20,18 @@ def crawl(body):
     return cmder.run()
 
 
-@hug.post('/build_mv')
-def build_mv(body):
-    cmder: Cmder = BuildCmder(body)
-    cmder.run()
-    return {'post_message': body}
-
-
-@hug.post('/build_template')
-def build_template(body):
-    return {'post_message': body}
-
-
-@hug.post('/build_album')
-def build_album(body):
-    return {'post_message': body}
+@hug.post('/render')
+def render(body):
+    cmder: Cmder = RenderCmder(body)
+    ret = cmder.run()
+    return {'output': ret}
+#
+#
+# @hug.post('/build_template')
+# def build_template(body):
+#     return {'post_message': body}
+#
+#
+# @hug.post('/build_album')
+# def build_album(body):
+#     return {'post_message': body}

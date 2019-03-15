@@ -2,7 +2,11 @@ import json
 import shutil
 import sys
 import unittest
+
+import json5
 import requests
+
+from backend.BackendCmder import RenderCmder
 from backend.utility.TempFileMnger import *
 
 curDir = os.path.dirname(__file__)
@@ -264,11 +268,17 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_load_render_api(self):
-        from backend.BackendCmder import RenderCmder
+        # from backend.BackendCmder import RenderCmder
         self.renderconf = RenderCmder(self.data)
         self.renderconf.run()
         print(self.renderconf.toJSON())
         pass
+
+    def test_render_api(self):
+        response = requests.post('http://localhost:8000/render',
+                                 json=self.data)
+        print(response.headers)
+        print(response.content)
 
 
 if __name__ == '__main__':

@@ -7,9 +7,7 @@ from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
 from backend.subeffect.asseditor import *
 from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.subeffect.keyword.keyword import AssDialogueTextFormatter, AssDialueTextAnimatedTransform, \
-    AssDialogueTextProcessor
-from backend.utility.Utility import check_file_existed, FileInfo, generate_mv_filename
+from backend.utility.Utility import check_file_existed, FileInfo, generate_mv_filename, PyJSON
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, 'content')
@@ -344,65 +342,6 @@ class Font:
         self.size = info['size']
 
 
-import json
-
-
-class PyJSON(object):
-    def __init__(self, d):
-        if type(d) is str:
-            d = json.loads(d)
-
-        self.from_dict(d)
-
-    def from_dict(self, d):
-        self.__dict__ = {}
-        for key, value in d.items():
-            if type(value) is dict:
-                value = PyJSON(value)
-            self.__dict__[key] = value
-
-    def to_dict(self):
-        d = {}
-        for key, value in self.__dict__.items():
-            if type(value) is PyJSON:
-                value = value.to_dict()
-            d[key] = value
-        return d
-
-    def __repr__(self):
-        return str(self.to_dict())
-
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
-
-    def __getitem__(self, key):
-        return self.__dict__[key]
-
-
-class WordEffectConfigure:
-    def __init__(self, configure):
-        pass
-
-
-class WordEffect(PyJSON):
-    def __init__(self, d):
-        """
-        :self.code str
-        :self.type str
-        :param d:
-        """
-        super().__init__(d)
-        # for keyvalue in effect.keys():
-        #     if keyvalue == 'type':
-        #         self.type = effect[keyvalue]
-        #     if keyvalue == 'code':
-        #         self.code = effect[keyvalue]
-        #     if keyvalue == 'start':
-        #         pass
-        if 'config' in d:
-            self.config = AssDialueTextAnimatedTransform(d['config'])
-
-
 class Lyric:
     def __init__(self, info: dict):
         self.file = None
@@ -552,14 +491,13 @@ class RenderCmder(Cmder):
 
     def run_create_single_background_mv(self):
         self.background = self.backgrounds[0]
-        self.song_url = self.song_urls[0]
-        self.song = SongInfo(self.songs[0])
         self.get_song_info_from_url()
         self.configure_output()
         try:
             if self.rendertype.type == RenderTypeCode.BUILD_PREVIEW.value:
                 self.time_length = BuildCmder.preview_build_time_length
                 self.build_preview()
+                return self.output
             elif self.rendertype.type == RenderTypeCode.BUILD_RELEASE.value:
                 self.build_release()
             return self.output
@@ -569,7 +507,7 @@ class RenderCmder(Cmder):
 
     def run(self):
         if self.kindVid == MusicVideoKind.MV_SINGLE_BACKGROUND:
-            self.run_create_single_background_mv()
+            return self.run_create_single_background_mv()
         elif self.kindVid == MusicVideoKind.MV_MULTI_BACKGROUND:
             return self.run_create_multi_background_mv()
         elif self.kindVid == MusicVideoKind.ALBUM_SINGLE_BACKGROUND:
@@ -589,6 +527,8 @@ class RenderCmder(Cmder):
         for keyvalue in cmd.keys():
             if keyvalue == 'song_urls':
                 self.song_urls = cmd[keyvalue]
+            if keyvalue == 'song_url':
+                self.song_url = cmd[keyvalue]
             if keyvalue == 'song':
                 self.song = SongInfo(cmd[keyvalue])
             if keyvalue == 'songs':
@@ -609,7 +549,7 @@ class RenderCmder(Cmder):
         self.set_kind_of_video()
 
     def set_kind_of_video(self):
-        num_songs = len(self.song_urls)
+        num_songs = 1
         num_backgrounds = len(self.backgrounds)
         if num_songs > 1 and num_backgrounds > 1:
             print('build album with multi background (album with multi background')
