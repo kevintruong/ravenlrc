@@ -1,17 +1,21 @@
 {
-  "song_url": "https://www.nhaccuatui.com/bai-hat/xa-em-may-ngay-yanbi-ft-weeza-ft-machiot.XJll5pFCcAlq.html",
-  "song": {
-    "id": "1iDSDdrDFCCs",
-    "info": "https://m.nhaccuatui.com/bai-hat/vi-em-van-hari-won.1iDSDdrDFCCs.html",
-    "songfile": "D:\\Project\\ytcreatorservice\\backend\\content\\Song\\V\u00ec Em V\u1eabn_Hari Won.mp3",
-    "lyric": "D:\\Project\\ytcreatorservice\\backend\\content\\Song\\V\u00ec Em V\u1eabn.lrc",
-    "lyrictext": "\nB\u00e0i h\u00e1t: V\u00ec Em V\u1eabn - Hari Won\n\nCho bao nhi\u00eau y\u00eau thu\u01a1ng nay bay xa, trong kh\u00f4ng gian c\u00f4 \u0111\u01a1n ch\u1ec9 m\u00ecnh ta\nNg\u00f3ng ch\u1edd m\u00e3i r\u1ed3i anh s\u1ebd ch\u1eb3ng quay v\u1ec1\nKhi x\u01b0a \u00f4m gi\u1ea5c m\u01a1 kh\u00f4ng chia ly, trong y\u00eau \u0111\u01b0\u01a1ng gi\u00f3 m\u00e2y nh\u01b0 l\u1eb7ng \u0111i\nCh\u1ec9 c\u00f3 ti\u1ebfng c\u01b0\u1eddi gi\u1edd th\u00ec tan m\u00e3i nh\u01b0 l\u00e0n s\u01b0\u01a1ng\n\nM\u1eb7c th\u1eddi gian v\u00f4 t\u00e2m kh\u00f4ng bi\u1ebft t\u00ecnh em t\u1ed3n t\u1ea1i\nAnh h\u1eefng h\u1edd\nR\u1ed3i \u0111\u1ebfn khi \u0111au trong tim em kh\u00f3c v\u00ec anh ch\u1eb3ng c\u1ea7n\nCh\u1eb3ng mu\u1ed1n em n\u1eefa\n\nV\u00ec em v\u1eabn c\u1ee9 gi\u1eef m\u00e3i nh\u1eefng k\u1ef7 ni\u1ec7m, gi\u1eef bao n\u1ee5 h\u1ed3n d\u1ecbu v\u1eddi\nCh\u1eb3ng c\u00f2n ai vui bu\u1ed3n l\u1eafng nghe t\u1eebng l\u1eddi em h\u00e1t\nR\u1ed3i khi xa anh m\u00ecnh em bi\u1ebft sao, n\u1ed7i \u0111au n\u00e0y ch\u1eb3ng c\u00f3 t\u00ean\nKh\u00fac ca \u1ea5y th\u00f4i \u0111\u00e0nh ch\u00ecm v\u00e0o l\u00e3ng qu\u00ean\n\nL\u00e0 v\u00ec em v\u1eabn c\u1ee9 nh\u1edb v\u1eabn c\u1ee9 ng\u00f3ng th\u1ebf th\u00f4i, l\u00e0 v\u00ec khi y\u00eau ai con tim th\u1eadt v\u00f4 l\u1ed1i\nTrao h\u1ebft ch\u00e2n t\u00ecnh n\u00e0y r\u1ed3i mang v\u1ec1 cay \u0111\u1eafng\n\u0110\u1eebng h\u1ecfi em x\u01b0a nay y\u00eau \u0111\u01b0\u01a1ng nh\u01b0 th\u1ebf n\u00e0o, v\u00ec em v\u1eabn gi\u1eef m\u00e3i nh\u1eefng ng\u1ecdt ng\u00e0o\nD\u1eabu bi\u1ebft r\u1eb1ng anh \u0111\u1ed5i thay\n\nM\u1eb7c th\u1eddi gian v\u00f4 t\u00e2m kh\u00f4ng bi\u1ebft t\u00ecnh em t\u1ed3n t\u1ea1i\nAnh h\u1eefng h\u1edd\nR\u1ed3i \u0111\u1ebfn khi \u0111au trong tim em kh\u00f3c \u0111\u1eb1ng sau n\u1ee5 c\u01b0\u1eddi\nGi\u00f4ng t\u1ed1 k\u00e9o \u0111\u1ebfn\n\nV\u00ec em v\u1eabn c\u1ee9 gi\u1eef m\u00e3i nh\u1eefng k\u1ef7 ni\u1ec7m, gi\u1eef bao n\u1ee5 h\u1ed3n d\u1ecbu v\u1eddi\nCh\u1eb3ng c\u00f2n ai vui bu\u1ed3n l\u1eafng nghe t\u1eebng l\u1eddi em h\u00e1t\nR\u1ed3i khi xa anh m\u00ecnh em bi\u1ebft sao, n\u1ed7i \u0111au n\u00e0y ch\u1eb3ng c\u00f3 t\u00ean\nKh\u00fac ca \u1ea5y th\u00f4i \u0111\u00e0nh ch\u00ecm v\u00e0o l\u00e3ng qu\u00ean\n\n...V\u00ec em v\u1eabn\n...V\u00ec anh\n\n",
-    "singer": "Hari Won",
-    "title": "V\u00ec Em V\u1eabn"
-  },
+  "song_urls": [
+    "https://www.nhaccuatui.com/bai-hat/xa-em-may-ngay-yanbi-ft-weeza-ft-machiot.XJll5pFCcAlq.html",
+  ],
+  "songs": [
+    {
+      "id": "1iDSDdrDFCCs",
+      "info": "https://m.nhaccuatui.com/bai-hat/vi-em-van-hari-won.1iDSDdrDFCCs.html",
+      "songfile": "D:\\Project\\ytcreatorservice\\backend\\content\\Song\\V\u00ec Em V\u1eabn_Hari Won.mp3",
+      "lyric": "D:\\Project\\ytcreatorservice\\backend\\content\\Song\\V\u00ec Em V\u1eabn.lrc",
+      "lyrictext": "\nB\u00e0i h\u00e1t: V\u00ec Em V\u1eabn - Hari Won\n\nCho bao nhi\u00eau y\u00eau thu\u01a1ng nay bay xa, trong kh\u00f4ng gian c\u00f4 \u0111\u01a1n ch\u1ec9 m\u00ecnh ta\nNg\u00f3ng ch\u1edd m\u00e3i r\u1ed3i anh s\u1ebd ch\u1eb3ng quay v\u1ec1\nKhi x\u01b0a \u00f4m gi\u1ea5c m\u01a1 kh\u00f4ng chia ly, trong y\u00eau \u0111\u01b0\u01a1ng gi\u00f3 m\u00e2y nh\u01b0 l\u1eb7ng \u0111i\nCh\u1ec9 c\u00f3 ti\u1ebfng c\u01b0\u1eddi gi\u1edd th\u00ec tan m\u00e3i nh\u01b0 l\u00e0n s\u01b0\u01a1ng\n\nM\u1eb7c th\u1eddi gian v\u00f4 t\u00e2m kh\u00f4ng bi\u1ebft t\u00ecnh em t\u1ed3n t\u1ea1i\nAnh h\u1eefng h\u1edd\nR\u1ed3i \u0111\u1ebfn khi \u0111au trong tim em kh\u00f3c v\u00ec anh ch\u1eb3ng c\u1ea7n\nCh\u1eb3ng mu\u1ed1n em n\u1eefa\n\nV\u00ec em v\u1eabn c\u1ee9 gi\u1eef m\u00e3i nh\u1eefng k\u1ef7 ni\u1ec7m, gi\u1eef bao n\u1ee5 h\u1ed3n d\u1ecbu v\u1eddi\nCh\u1eb3ng c\u00f2n ai vui bu\u1ed3n l\u1eafng nghe t\u1eebng l\u1eddi em h\u00e1t\nR\u1ed3i khi xa anh m\u00ecnh em bi\u1ebft sao, n\u1ed7i \u0111au n\u00e0y ch\u1eb3ng c\u00f3 t\u00ean\nKh\u00fac ca \u1ea5y th\u00f4i \u0111\u00e0nh ch\u00ecm v\u00e0o l\u00e3ng qu\u00ean\n\nL\u00e0 v\u00ec em v\u1eabn c\u1ee9 nh\u1edb v\u1eabn c\u1ee9 ng\u00f3ng th\u1ebf th\u00f4i, l\u00e0 v\u00ec khi y\u00eau ai con tim th\u1eadt v\u00f4 l\u1ed1i\nTrao h\u1ebft ch\u00e2n t\u00ecnh n\u00e0y r\u1ed3i mang v\u1ec1 cay \u0111\u1eafng\n\u0110\u1eebng h\u1ecfi em x\u01b0a nay y\u00eau \u0111\u01b0\u01a1ng nh\u01b0 th\u1ebf n\u00e0o, v\u00ec em v\u1eabn gi\u1eef m\u00e3i nh\u1eefng ng\u1ecdt ng\u00e0o\nD\u1eabu bi\u1ebft r\u1eb1ng anh \u0111\u1ed5i thay\n\nM\u1eb7c th\u1eddi gian v\u00f4 t\u00e2m kh\u00f4ng bi\u1ebft t\u00ecnh em t\u1ed3n t\u1ea1i\nAnh h\u1eefng h\u1edd\nR\u1ed3i \u0111\u1ebfn khi \u0111au trong tim em kh\u00f3c \u0111\u1eb1ng sau n\u1ee5 c\u01b0\u1eddi\nGi\u00f4ng t\u1ed1 k\u00e9o \u0111\u1ebfn\n\nV\u00ec em v\u1eabn c\u1ee9 gi\u1eef m\u00e3i nh\u1eefng k\u1ef7 ni\u1ec7m, gi\u1eef bao n\u1ee5 h\u1ed3n d\u1ecbu v\u1eddi\nCh\u1eb3ng c\u00f2n ai vui bu\u1ed3n l\u1eafng nghe t\u1eebng l\u1eddi em h\u00e1t\nR\u1ed3i khi xa anh m\u00ecnh em bi\u1ebft sao, n\u1ed7i \u0111au n\u00e0y ch\u1eb3ng c\u00f3 t\u00ean\nKh\u00fac ca \u1ea5y th\u00f4i \u0111\u00e0nh ch\u00ecm v\u00e0o l\u00e3ng qu\u00ean\n\n...V\u00ec em v\u1eabn\n...V\u00ec anh\n\n",
+      "singer": "Hari Won",
+      "title": "V\u00ec Em V\u1eabn"
+    }
+  ],
   "backgrounds": [
     {
-      "file": "CoKhiNaoRoiXa.png",
+      "file": "cokhinaoroixa.png",
       "effect": {
         "file": "Green_Bubble.mov",
         "opacity": 30

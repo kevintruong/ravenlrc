@@ -2,6 +2,7 @@ import hug
 import sys
 
 from backend.BackendCmder import *
+from backend.TeleBot.GDriveFileManager import *
 
 
 # sys.path.append("pycharm-debug-py3k.egg")
@@ -24,7 +25,11 @@ def crawl(body):
 def render(body):
     cmder: Cmder = RenderCmder(body)
     ret = cmder.run()
+    gdrive_share_link = YtCreatorGDrive().get_share_link(ret)
+    if gdrive_share_link:
+        ret = gdrive_share_link
     return {'output': ret}
+
 #
 #
 # @hug.post('/build_template')

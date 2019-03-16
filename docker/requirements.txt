@@ -1,0 +1,17 @@
+json5
+facepy
+beautifulsoup4
+unidecode
+gspread
+pydrive
+python-telegram-handler
+python-telegram-bot
+json5
+pydevd
+structlog
+python-json-logger
+requests
+google
+flashtext
+hug
+urllib3
