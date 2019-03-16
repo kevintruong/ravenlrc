@@ -14,65 +14,64 @@
       "file": "cokhinaoroixa.png",
       "effect": {
         "file": "Green_Bubble.mov",
-        "opacity": 30
+        "opacity": "30"
       },
-      'title': {
+      "title": {
         "position": {
-          "x": 221,
-          "y": 900
+          "x": "221",
+          "y": "900"
         },
         "size": {
-          "width": 691,
-          "height": 43
+          "width": "691",
+          "height": "43"
         },
         "font": {
           "name": "SVN-Futura Light",
-          "color": 0xAABBCC,
-          // 0xRRGGBB
-          "size": 30,
+          "color": "0xAABBCC",
+          "size": "30"
         }
       },
-      'watermask': {
+      "watermask": {
         "position": {
-          "x": 221,
-          "y": 900
+          "x": "221",
+          "y": "900"
         },
         "size": {
-          "width": 691,
-          "height": 43
+          "width": "691",
+          "height": "43"
         },
         "font": {
           "name": "SVN-Futura Light",
-          "color": "",
-          "size": 30,
+          "color": "0xabcdef",
+          "size": "30"
         }
       },
-      'spectrum': {
+      "spectrum": {
         "position": {
-          "x": 221,
-          "y": 900
+          "x": "221",
+          "y": "900"
         },
         "size": {
-          "width": 691,
-          "height": 43
+          "width": "691",
+          "height": "43"
         }
       },
       "lyric": {
         "position": {
-          "x": 221,
-          "y": 900
+          "x": "221",
+          "y": "900"
         },
         "size": {
-          "width": 691,
-          "height": 43
+          "width": "691",
+          "height": "43"
         },
         "font": {
           "name": "SVN-Futura Light",
-          "color": 0x345678,
-          "size": 30,
+          "color": "0x345678",
+          "size": "30"
         }
-      },
-    },
+      }
+    }
   ],
   "song_effect": {
     "type": "SONG",
@@ -80,7 +79,6 @@
   },
   "lyric": {
     "file": "http://url-to-lyric-file",
-    //    "content": "",
     "words": [
       {
         "data": [
@@ -91,23 +89,22 @@
         "formatter": {
           "name": "UTMAmericanaItalic",
           "size": 30,
-          "color": 0x028CF7,
+          "color": "0x028CF7",
           "align": 2
-          // 1 : left , 2:middle , 3: right
         },
         "effect": {
           "type": "WORD",
           "code": "WORD ZOOM IN",
           "config": {
-            'accel': 0.9,
+            "accel": 0.9,
             "start": {
-              "font_size": 20,
+              "font_size": 20
             },
             "end": {
               "font_size": 50,
-              "primary_font_color": 0x23456,
-            },
-          },
+              "primary_font_color": "0x23456"
+            }
+          }
         }
       },
       {
@@ -119,56 +116,47 @@
         "formatter": {
           "name": "UTMAmericanaItalic",
           "size": 30,
-          "color": 0x028CF7,
+          "color": "0x028CF7"
         },
         "effect": {
           "type": "WORD",
           "code": "WORD COLOR CHANGE",
           "config": {
-            'accel': 0.9,
+            "accel": 0.9,
             "start": {
-              "font_size": 20,
+              "font_size": 20
             },
             "end": {
               "font_size": 50,
-              "primary_font_color": 0x23456,
-            },
-          },
+              "primary_font_color": "0x23456"
+            }
+          }
         }
       }
     ]
   },
-  'spectrum': {
+  "spectrum": {
     "templatecode": "circle light",
     "custom": {
       "option1": "option1_value",
-      "option2": "option1_value",
-      // optional
-    },
+      "option2": "option1_value"
+    }
   },
-  watermask: {
-    'file': "http://link-to-watermask-file.png",
-    'option': 'option_value'
-    // optional
+  "watermask": {
+    "file": "http://link-to-watermask-file.png",
+    "option": "option_value"
   },
-  title: {
-    //Optional , if the section not exist => BE will auto render the BE using Text with configure in Background.title section
-    'file': "http://link-to-title-file.png",
-    'option': 'option_value'
-    // optional
+  "title": {
+    "file": "http://link-to-title-file.png",
+    "option": "option_value"
   },
-  'rendersetting': {
-    // Optional
-    // preview default : 90 seconds and 1280x720 resolution, release full length of song full HD
-    'type': 'preview',
-    // preview or release
-    'config': {
-      // if the section not exist => BE use the default configure , otherwise will render based on following config
-      'duration': 90,
-      // seconds
-      'resolution': {
-        'width': 1280,
-        'height': 720
+  "rendersetting": {
+    "type": "preview",
+    "config": {
+      "duration": 90,
+      "resolution": {
+        "width": 1280,
+        "height": 720
       }
     }
   }

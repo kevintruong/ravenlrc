@@ -259,12 +259,28 @@ class MyTestCase(unittest.TestCase):
         print(response.content)
 
 
+def pretty_print_POST(req):
+    """
+    At this point it is completely built and ready
+    to be fired; it is "prepared".
+
+    However pay attention at the formatting used in
+    this function because it is programmed to be pretty
+    printed and may differ from the actual request.
+    """
+    print('{}\n{}\n{}\n\n{}'.format(
+        '-----------START-----------',
+        req.method + ' ' + req.url,
+        '\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
+        req.body,
+    ))
+
+
 class Test_RenderCmder(unittest.TestCase):
 
     def setUp(self):
-        import json5
-        with open(os.path.join(curDir, 'render_api.json5'), 'r', encoding='UTF-8') as json5file:
-            self.data = json5.load(json5file)
+        with open(os.path.join(curDir, 'request.json'), 'r', encoding='UTF-8') as json5file:
+            self.data = json.load(json5file)
         pass
 
     def test_load_render_api(self):
@@ -277,12 +293,17 @@ class Test_RenderCmder(unittest.TestCase):
 
     def test_render_api(self):
         rest_api = 'http://35.237.140.210:8000/render'
-        rest_api = 'http://localhost:8000/render'
-
-        response = requests.post(rest_api,
-                                 json=self.data)
-        print(response.headers)
-        print(response.content)
+        # rest_api = 'http://localhost:8000/render'
+        req = requests.Request('POST', rest_api, json=self.data)
+        prepared = req.prepare()
+        pretty_print_POST(prepared)
+        with open('test.bin', 'wb') as file:
+            file.write(prepared.body)
+        # response = requests.post(rest_api,
+        #                          json=self.data)
+        #
+        # print(response.headers)
+        # print(response.content)
 
 
 if __name__ == '__main__':

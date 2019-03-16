@@ -23,12 +23,18 @@ def crawl(body):
 
 @hug.post('/render')
 def render(body):
-    cmder: Cmder = RenderCmder(body)
-    ret = cmder.run()
-    gdrive_share_link = YtCreatorGDrive().get_share_link(ret)
-    if gdrive_share_link:
-        ret = gdrive_share_link
-    return {'output': ret}
+    try:
+        cmder: Cmder = RenderCmder(body)
+        ret = cmder.run()
+        gdrive_share_link = YtCreatorGDrive().get_share_link(ret)
+        if gdrive_share_link:
+            ret = gdrive_share_link
+    except Exception as exp:
+        return {'status': 'error',
+                'message': "{}".format(exp)
+                }
+
+    return {'url': ret}
 
 #
 #

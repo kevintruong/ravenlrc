@@ -338,21 +338,21 @@ class BackgroundInfo:
 
 class Position:
     def __init__(self, info: dict):
-        self.x = info['x']
-        self.y = info['y']
+        self.x = int(info['x'])
+        self.y = int(info['y'])
 
 
 class Size:
     def __init__(self, info: dict):
-        self.width = info['width']
-        self.height = info['height']
+        self.width = int(info['width'])
+        self.height = int(info['height'])
 
 
 class Font:
     def __init__(self, info: dict):
         self.name = info['name']
-        self.color = info['color']
-        self.size = info['size']
+        self.color = int(info['color'], 16)
+        self.size = int(info['size'])
 
 
 class Lyric:

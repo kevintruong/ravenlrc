@@ -153,9 +153,9 @@ class AnimatedEffect:
             return self.effect_code + "&{}&".format(self.effect_param)
             pass
 
-        def __init__(self, colorvalue: int):
+        def __init__(self, colorvalue: str):
             self.effect_code = FontEffect.PRIMARY_FILL_COLOR.value
-            rgb = RGB(colorvalue)
+            rgb = RGB(int(colorvalue, 16))
             self.effect_param = "H{}{}{}".format(rgb.b, rgb.g, rgb.r)
             pass
 
