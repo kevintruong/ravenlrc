@@ -67,6 +67,18 @@ class CachedFile:
         pass
 
 
+class SongFile:
+    CachedEffectDir = ContentDir.SONG_DIR.value
+
+    @classmethod
+    def get_fullpath(cls, filename):
+        listfiles = os.listdir(cls.CachedEffectDir)
+        for file in listfiles:
+            if filename in file:
+                return os.path.join(cls.CachedEffectDir, file)
+        return None
+
+
 class EffectCachedFile(CachedFile):
     CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR.value, '.cache')
 
@@ -684,7 +696,6 @@ class RenderCmder(Cmder):
             for lyricword in self.lyric.words:
                 if lyricword.effect:
                     lyricword.apply_lyric_effect_to_file(preview_asstempfile, preview_asstempfile)
-                    print('process word data with the effect')
             return preview_asstempfile
         except Exception as e:
             print('error when process effect lyric,use the original effect file')

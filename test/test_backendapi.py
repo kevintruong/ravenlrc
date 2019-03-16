@@ -270,12 +270,16 @@ class Test_RenderCmder(unittest.TestCase):
     def test_load_render_api(self):
         # from backend.BackendCmder import RenderCmder
         self.renderconf = RenderCmder(self.data)
-        self.renderconf.run()
+        output = self.renderconf.run()
         print(self.renderconf.toJSON())
+        print(output)
         pass
 
     def test_render_api(self):
-        response = requests.post('http://localhost:8000/render',
+        rest_api = 'http://35.237.140.210:8000/render'
+        rest_api = 'http://localhost:8000/render'
+
+        response = requests.post(rest_api,
                                  json=self.data)
         print(response.headers)
         print(response.content)

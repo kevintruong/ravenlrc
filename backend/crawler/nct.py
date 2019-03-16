@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 
 from backend.crawler.rc4_py3 import decrypt
 from backend.utility.TempFileMnger import *
+from backend.utility.Utility import FileInfo
 
 
 class Crawler(abc.ABC):
@@ -53,12 +54,15 @@ class SongInfo:
                     self.title = nctsonginfo[keyvalue]
                 if keyvalue == 'songfile':
                     self.songfile = nctsonginfo[keyvalue]
+                    from backend.BackendCmder import SongFile
+                    self.songfile = SongFile.get_fullpath(self.songfile)
                 if keyvalue == 'id':
                     self.id = nctsonginfo[keyvalue]
                 if keyvalue == 'lyrictext':
                     self.lyrictext = nctsonginfo[keyvalue]
                 if keyvalue == 'lyric':
                     self.lyric = nctsonginfo[keyvalue]
+                    self.lyric = SongFile.get_fullpath(self.lyric)
 
     pass
 
@@ -90,8 +94,8 @@ class NctSongInfo(SongInfo):
 
 
 class NctCrawler(Crawler):
-    nctWmUrl = "https://m.nhaccuatui.com/bai-hat/"
-    nctLinkInfo = "https://m.nhaccuatui.com/ajax/get-media-info?key1={}&key2=&key3="
+    nctWmUrl = "https://www.nhaccuatui.com/bai-hat/"
+    nctLinkInfo = "https://www.nhaccuatui.com/ajax/get-media-info?key1={}&key2=&key3=&ip=123.23.58.251"
     songkey = r'songencryptkey=\"([a-zA-Z0-9]*)\"'
     key = "Lyr1cjust4nct"
 
@@ -131,17 +135,7 @@ class NctCrawler(Crawler):
         songkey = self.get_songkey(html)
         downloadlink = NctCrawler.nctLinkInfo.format(songkey)
         print(downloadlink)
-
-        cookies = r'autoPlayNext=true; playLoopAll=true; playLoopOne=false; _ga=GA1.2.1940168918.1541896043; _gac_UA-273986-1=1.1547164360.Cj0KCQiApvbhBRDXARIsALnNoK2RKvYZc80J_RpXn3Jb4LU7QHBrpr25Cu65uBSfVcZxKw7M1GzuEkcaAu8qEALw_wcB; _gcl_aw=GCL.1547606435.~Cj0KCQiApvbhBRDXARIsALnNoK2RKvYZc80J_RpXn3Jb4LU7QHBrpr25Cu65uBSfVcZxKw7M1GzuEkcaAu8qEALw_wcB; fbm_414296278689656=base_domain=.nhaccuatui.com; nctads_ck=1nljhm822jsa92l9i268099up_1551140815432; NCTNPLV=bd2b3212fdbcbecbcee0e61c1e30af20; NCT_AUTH_JWT=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NTQyMTM5MDEsImxvZ2luTWV0aG9kIjoiMiIsInVzZXJJZCI6Ijg1MzMzMDUiLCJuYmYiOjE1NTE2MjE5MDEsImlhdCI6MTU1MTYyMTkwMSwiZGV2aWNlSWQiOiI4MDVCQ0MyNDY0Qjk0NkIxQTNCNjVFQjgyRjE3RkJGNCJ9.Sw8fKHUdKl9O6WGYq3CYRh28375ydPO5-4z7w-D_ik4; NCT_PAYMENT_AUTORENEW=new; NCT_ONOFF_ADV=1; NCT_AUTH=; NCTNPLP=a3ea07fc2d6effdd3a85e501605ed9bd12c11768d967c37df7619909317d4d18; __utmz=157020004.1552358143.97.38.utmcsr=nhaccuatui.com|utmccn=(referral)|utmcmd=referral|utmcct=/bai-hat/bai-hat-moi-nhat.2.html; NCT_BALLOON_INDEX-hoanvu1990=true; __utma=157020004.1940168918.1541896043.1552358143.1552435830.98; __utmc=157020004; autoPlayNext=true; NCTNPLS=694ef28e54da8dbb294f637ea6354a6b; NCTCRLS=a96bb374287c68776a3e799147fac7f0d5af6cb3b1d44c8f994de3955845e5340b55426eed9e02e206186b8e8b1bced3eb20c6b1f6b0a456f9b9a783f649100c96811a72690b4d6242915ac751a96a78c27f31bbc7d2df91442bd4b30d2f4edf7448f2812f9016efecd02319e5bba87a502d1c1d4f3784b33762f49121dcdf326fe087b2a1f9249493dc24815452778cc12c72780202fa4fc1a5fa169027bd314aa26eb9548937ebd4894c4aa53fa84e46de4bc73fe0b7878dae07a7650253074efe8795ebb24477dc9d9c2bbb8c580c39bb971a40478b6626bfe32cdb2d09473ddc6e5b8ff90bd6684dd102e9a9ad0f; __utmb=157020004.20.9.1552436738054; touchEnable=true'
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Mobile Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            'Upgrade-Insecure-Requests': '1',
-            'accept-endcoding': 'gzip, deflate, br',
-            'accept-language': 'en-US,en;q=0.9',
-            'cookie': cookies
-        }
-        body = requests.get(downloadlink, headers=headers)
+        body = requests.get(downloadlink)
         songinfodata: dict = json.loads(body._content)
         songinfodata['data']['lyric_text'] = formatlyric
         songinf: SongInfo = NctSongInfo(songinfodata['data'])
@@ -154,8 +148,8 @@ class NctCrawler(Crawler):
         songinfo: SongInfo = self.songinfo
         localmp3file = self.get_mp3file(outputdir)
         locallyricfile = self.get_lyric(outputdir)
-        songinfo.songfile = localmp3file
-        songinfo.lyric = locallyricfile
+        songinfo.songfile = FileInfo(localmp3file).filename
+        songinfo.lyric = FileInfo(locallyricfile).filename
         return songinfo.toJSON()
 
     def get_mp3file(self, outputdir: str):
@@ -185,7 +179,7 @@ import unittest
 
 class testnctcrawler(unittest.TestCase):
     def setUp(self):
-        self.url = r'https://m.nhaccuatui.com/bai-hat/alone-alan-walker.dPAWTe6nAnZ8.html'
+        self.url = r'https://www.nhaccuatui.com/bai-hat/giu-cho-em-mot-the-gioi-trang-ft-khoa-vu.yuJlBrY4KIqO.html'
         self.nct = NctCrawler(self.url)
 
     def test_init(self):

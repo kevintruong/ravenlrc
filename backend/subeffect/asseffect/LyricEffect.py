@@ -54,7 +54,6 @@ class LyricEffect:
         subs = SSAFile.load(ass_file, encoding='utf-8')  # create ass file
         for line in subs:
             line.text = self.apply_lyric_effect_by_line(line.text, line.duration)
-            print(line.text)
         subs.save(output)
         return output
 
