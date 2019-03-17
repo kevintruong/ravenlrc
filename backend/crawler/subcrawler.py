@@ -1,13 +1,12 @@
+import logging
 import re
 import urllib
-from enum import IntEnum
 from time import sleep
 
 import requests
 
-from backend.subeffect.asseditor import *
 from backend.crawler.rc4_py3 import decrypt
-import logging
+from backend.subeffect.asseditor import *
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)
@@ -128,3 +127,45 @@ def wait_for_download(directory, timeout, nfiles=None):
     logger.debug("Download complete after {}".format(seconds))
     return os.path.join(directory, os.path.splitext(download_file)[0])
     # return download_file
+
+
+def selenium_get(url: str):
+    import time
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+
+    mobile_emulation = {
+
+        "deviceMetrics": {"width": 360, "height": 640, "pixelRatio": 3.0},
+
+        "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"}
+
+    chrome_options = Options()
+
+    chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
+    chrome_options.add_argument("--headless")
+
+    driver = webdriver.Chrome(chrome_options=chrome_options)
+
+    # driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
+    driver.get(url)
+    sleep(1)
+    import re
+    songkey = r'songencryptkey=\"([a-zA-Z0-9]*)\"'
+    express = re.compile(songkey)
+    matchlist = express.findall(driver.page_source)
+    if len(matchlist):
+        return matchlist[0]
+    raise Exception("not found song key encrypt")
+
+
+import unittest
+
+
+class Test_Selenium_crawler(unittest.TestCase):
+    def setUp(self):
+        self.url = 'https://www.nhaccuatui.com/bai-hat/chi-can-anh-noi-mei.AjyxRsfbKTld.html'
+
+    def test_selenium_get(self):
+        songkey = selenium_get(self.url)
+        print(songkey)

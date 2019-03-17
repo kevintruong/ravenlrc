@@ -3,6 +3,7 @@ import codecs
 import json
 
 import requests
+from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 
 from backend.crawler.rc4_py3 import decrypt
@@ -126,11 +127,19 @@ class NctCrawler(Crawler):
         pass
 
     def parser(self):
-        body = requests.get(self.mobileNctWmUrl)
+        session = HTMLSession(browser_args=["--no-sandbox",
+                                            "--user-agent='Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'"])
+        # session = HTMLSession()
+
+        # headers_mobile = {
+        #     'User-Agent': ''}
+
+        body: requests.Response = session.get(self.mobileNctWmUrl)
+        body.html.render()
         soup = BeautifulSoup(body.text, 'html.parser')
         lyric_text = soup.find(attrs={'class': 'lyric'}).text
         formatlyric = self.reformat_lyric(lyric_text)
-        # print(formatlyric)
+        print(formatlyric)
         html = body._content.decode('utf-8')
         songkey = self.get_songkey(html)
         downloadlink = NctCrawler.nctLinkInfo.format(songkey)
@@ -172,6 +181,10 @@ class NctCrawler(Crawler):
 
     def get_lyric_text(self):
         pass
+
+
+# class NctCrawler_fix():
+#     def __init__(self):
 
 
 import unittest

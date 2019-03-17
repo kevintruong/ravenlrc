@@ -1,9 +1,7 @@
 import json
 import shutil
-import sys
 import unittest
 
-import json5
 import requests
 
 from backend.BackendCmder import RenderCmder
@@ -299,11 +297,11 @@ class Test_RenderCmder(unittest.TestCase):
         pretty_print_POST(prepared)
         with open('test.bin', 'wb') as file:
             file.write(prepared.body)
-        # response = requests.post(rest_api,
-        #                          json=self.data)
-        #
-        # print(response.headers)
-        # print(response.content)
+        response = requests.post(rest_api,
+                                 json=self.data)
+
+        print(response.headers)
+        print(response.content)
 
 
 if __name__ == '__main__':

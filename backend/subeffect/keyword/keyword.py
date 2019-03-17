@@ -161,7 +161,7 @@ class AssDialogueTextFormatter:
             if key == 'size':
                 self.size = formatinfo[key]
             if key == 'color':
-                self.color = formatinfo[key]
+                self.color = int(formatinfo[key], 16)
             if key == 'align':
                 self.align = formatinfo[key]
             if key == 'newline':
