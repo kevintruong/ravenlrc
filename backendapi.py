@@ -1,3 +1,5 @@
+import traceback
+
 import hug
 import sys
 
@@ -30,10 +32,15 @@ def render(body):
         if gdrive_share_link:
             ret = gdrive_share_link
     except Exception as exp:
+        print("exception here")
+        print("*" * 60)
+        tracebackmsg = traceback.format_exc()
+        print(tracebackmsg)
+        print("*" * 60)
         return {'status': 'error',
-                'message': "{}".format(exp)
+                'message': "{}".format(exp),
+                'traceback': "{}".format(tracebackmsg)
                 }
-
     return {'url': ret}
 
 #

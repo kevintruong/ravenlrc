@@ -289,18 +289,17 @@ class Test_RenderCmder(unittest.TestCase):
         print(output)
         pass
 
-    def test_render_api(self):
+    def test_server_send_render_api(self):
         rest_api = 'http://35.237.140.210:8000/render'
-        # rest_api = 'http://localhost:8000/render'
-        req = requests.Request('POST', rest_api, json=self.data)
-        prepared = req.prepare()
-        pretty_print_POST(prepared)
-        with open('test.bin', 'wb') as file:
-            file.write(prepared.body)
         response = requests.post(rest_api,
                                  json=self.data)
-
         print(response.headers)
+        print(response.content)
+
+    def test_local_send_render_api(self):
+        rest_api = 'http://localhost:8000/render'
+        response = requests.post(rest_api,
+                                 json=self.data)
         print(response.content)
 
 
