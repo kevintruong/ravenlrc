@@ -157,22 +157,28 @@ class NctCrawler(Crawler):
         return songinfo.toJSON()
 
     def get_mp3file(self, outputdir: str):
-        songinfo: SongInfo = self.songinfo
-        mp3file = requests.get(songinfo.songfile, allow_redirects=True)
-        localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singer)).encode('utf-8')
-        with open(localmp3file, 'wb') as mp3filefd:
-            mp3filefd.write(mp3file.content)
-            mp3filefd.close()
-        return localmp3file.decode('utf8')
+        try:
+            songinfo: SongInfo = self.songinfo
+            mp3file = requests.get(songinfo.songfile, allow_redirects=True)
+            localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singer)).encode('utf-8')
+            with open(localmp3file, 'wb') as mp3filefd:
+                mp3filefd.write(mp3file.content)
+                mp3filefd.close()
+            return localmp3file.decode('utf8')
+        except Exception as exp:
+            raise Exception('can not get mp3 file from the url {}'.format(self.songinfo.info))
 
     def get_lyric(self, outputdir: str):
-        songinfo: SongInfo = self.songinfo
-        locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title)).encode('utf-8')
-        lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
-        returndata = decrypt(NctCrawler.key, lyricfile.content)
-        with codecs.open(locallyricfile, 'w', "utf-8") as f:
-            f.write(returndata)
-        return locallyricfile.decode('utf-8')
+        try:
+            songinfo: SongInfo = self.songinfo
+            locallyricfile = os.path.join(outputdir, '{}.lrc'.format(songinfo.title)).encode('utf-8')
+            lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
+            returndata = decrypt(NctCrawler.key, lyricfile.content)
+            with codecs.open(locallyricfile, 'w', "utf-8") as f:
+                f.write(returndata)
+            return locallyricfile.decode('utf-8')
+        except Exception as exp:
+            raise Exception('can not get lyric file from the url {}'.format(self.songinfo.info))
 
     def get_lyric_text(self):
         pass

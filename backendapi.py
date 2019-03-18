@@ -15,12 +15,23 @@ from backend.TeleBot.GDriveFileManager import *
 #                 stderrToServer=True)
 
 
-@hug.post('/crawl')
-def crawl(body):
-    # body is dictbuild_mv
-    print(body)
-    cmder: Cmder = CrawlCmder(body)
-    return cmder.run()
+@hug.get('/api/song')
+def song(url):
+    try:
+        # body is dictbuild_mv
+        print(url)
+        cmder: Cmder = CrawlCmder({'url': url})
+        return cmder.run()
+    except Exception as exp:
+        print("exception here")
+        print("*" * 60)
+        tracebackmsg = traceback.format_exc()
+        print(tracebackmsg)
+        print("*" * 60)
+        return {'status': 'error',
+                'message': "{}".format(exp),
+                'traceback': "{}".format(tracebackmsg)
+                }
 
 
 @hug.post('/render')
@@ -28,9 +39,13 @@ def render(body):
     try:
         cmder: Cmder = RenderCmder(body)
         ret = cmder.run()
-        gdrive_share_link = YtCreatorGDrive().get_share_link(ret)
-        if gdrive_share_link:
-            ret = gdrive_share_link
+        try:
+            gdrive_share_link = YtCreatorGDrive().get_share_link(ret)
+            if gdrive_share_link:
+                ret = gdrive_share_link
+        except Exception as exp:
+            return {'url': FileInfo(ret).filename,
+                    'message': 'can not get share link from gdrive'}
     except Exception as exp:
         print("exception here")
         print("*" * 60)

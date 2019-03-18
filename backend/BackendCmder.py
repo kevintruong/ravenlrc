@@ -289,15 +289,20 @@ class Cmder:
 
 
 class CrawlCmder(Cmder):
-
     def __init__(self, crawlcmd: dict):
         super().__init__()
-        self.crawl_url = crawlcmd['crawl_url']
-        self.output = crawlcmd['output']
+        for key in crawlcmd.keys():
+            if 'url' == key:
+                self.url = crawlcmd[key]
+            if 'output' == key:
+                self.output = crawlcmd['output']
+            else:
+                self.output = ContentDir.SONG_DIR.value
+        print(self.url + self.output)
 
     def crawl_parser(self):
-        if 'nhaccuatui' in self.crawl_url:
-            return NctCrawler(self.crawl_url)
+        if 'nhaccuatui' in self.url:
+            return NctCrawler(self.url)
 
     def run(self):
         crawler: Crawler = self.crawl_parser()
@@ -597,10 +602,7 @@ class RenderCmder(Cmder):
 
     def get_song_info_from_url(self):
         if self.song is None and self.song_url:
-            crawlerdict = {
-                'crawl_url': self.song_url,
-                'output': ContentDir.SONG_DIR.value
-            }
+            crawlerdict = {'url': self.song_url}
             crawler = CrawlCmder(crawlerdict)
             self.song: SongInfo = SongInfo(json.loads(crawler.run()))
             pass
