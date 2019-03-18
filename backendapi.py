@@ -34,7 +34,7 @@ def song(url):
                 }
 
 
-@hug.post('/render')
+@hug.post('/api/video/render')
 def render(body):
     try:
         cmder: Cmder = RenderCmder(body)
