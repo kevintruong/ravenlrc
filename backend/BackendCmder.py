@@ -2,7 +2,7 @@ from enum import Enum, IntEnum
 
 import json5
 
-from backend.TeleBot.GDriveFileManager import YtCreatorGDrive
+from backend.Storage.GDriveFileManager import GDriveFileStorage
 from backend.crawler.nct import *
 from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
@@ -521,7 +521,7 @@ class RenderCmder(Cmder):
                 self.time_length = BuildCmder.preview_build_time_length
                 self.build_preview()
                 filename = FileInfo(self.output).filename
-                gdrive_share_link = YtCreatorGDrive().get_share_link(filename)
+                gdrive_share_link = GDriveFileStorage().get_share_link(filename)
                 if gdrive_share_link:
                     return gdrive_share_link
                 return self.output

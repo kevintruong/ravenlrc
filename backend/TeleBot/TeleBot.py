@@ -22,8 +22,8 @@ from telegram import Bot, Chat, Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 
-from backend.TeleBot.GDriveFileManager import YtCreatorGDrive
-from backend.TeleBot.GSheetInput import GoogleSheetStream
+from backend.Storage.GDriveFileManager import GDriveFileStorage
+from backend.Storage.GSheetInput import GoogleSheetStream
 from backend.TeleBot.TeleCmder import TeleBuildCmder, TelePublishCmder
 
 from backend.yclogger import telelog
@@ -333,7 +333,7 @@ class YtCreatorTeleBotManager:
         """Start the bot."""
         # Create the EventHandler and pass it your bot's token.
         cls.bot = Bot(YtCreator_BotToken)
-        YtCreatorTeleBotManager.ytcreatorDriver = YtCreatorGDrive()
+        YtCreatorTeleBotManager.ytcreatorDriver = GDriveFileStorage()
         YtCreatorTeleBotManager.gsheetsonginfodb = GoogleSheetStream()
         updater = Updater(bot=cls.bot, request_kwargs={'read_timeout': 1000, 'connect_timeout': 1000})
 

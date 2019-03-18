@@ -1,10 +1,9 @@
 import traceback
 
 import hug
-import sys
 
 from backend.BackendCmder import *
-from backend.TeleBot.GDriveFileManager import *
+from backend.Storage.GDriveFileManager import *
 
 
 # sys.path.append("pycharm-debug-py3k.egg")
@@ -39,14 +38,6 @@ def render(body):
     try:
         cmder: Cmder = RenderCmder(body)
         ret = cmder.run()
-        filename = FileInfo(ret).filename
-        try:
-            gdrive_share_link = YtCreatorGDrive().get_share_link(filename)
-            if gdrive_share_link:
-                ret = gdrive_share_link
-        except Exception as exp:
-            return {'url': filename,
-                    'message': 'can not get share link from gdrive'}
     except Exception as exp:
         print("exception here")
         print("*" * 60)

@@ -159,7 +159,7 @@ class FfmpegCli(object):
         # logger.debug(' '.join(map(str, cmd)))
         try:
             p = subprocess.Popen(cmd,
-                                 stdout=subprocess.PIPE,
+                                 # stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             out, err = p.communicate(input)
             retcode = p.poll()
