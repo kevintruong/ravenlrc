@@ -1,0 +1,16 @@
+[Unit] 
+Description=Raven backend 
+AssertPathExists=/root/raven_backend
+[Service] 
+WorkingDirectory=/root/raven_backend
+ExecStart=/usr/local/bin/hug -f backendapi.py
+TimeoutSec=30 
+Restart=on-failure 
+RestartSec=30 
+StartLimitInterval=350 
+StartLimitBurst=10
+Restart=always 
+PrivateTmp=true 
+NoNewPrivileges=true
+[Install] 
+WantedBy=default.target
