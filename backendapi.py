@@ -39,12 +39,13 @@ def render(body):
     try:
         cmder: Cmder = RenderCmder(body)
         ret = cmder.run()
+        filename = FileInfo(ret).filename
         try:
-            gdrive_share_link = YtCreatorGDrive().get_share_link(ret)
+            gdrive_share_link = YtCreatorGDrive().get_share_link(filename)
             if gdrive_share_link:
                 ret = gdrive_share_link
         except Exception as exp:
-            return {'url': FileInfo(ret).filename,
+            return {'url': filename,
                     'message': 'can not get share link from gdrive'}
     except Exception as exp:
         print("exception here")
