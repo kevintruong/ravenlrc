@@ -58,13 +58,18 @@ class CachedContentDir(Enum):
 
 class CachedFile:
     @classmethod
-    def get_cached_profile_filename(cls, filepath: str, profile, extension=None):
+    def get_cached_profile_filename(cls, filepath: str, profile=None, extension=None):
         filename = os.path.basename(filepath)
         name, ext = os.path.splitext(filename)
+        cachedfilename = name
+        if profile:
+            cachedfilename = cachedfilename + "_" + profile
         if extension:
-            return name + '_' + profile + extension
-        return name + '_' + profile + ext
-        pass
+            cachedfilename = cachedfilename + extension
+        else:
+            cachedfilename = cachedfilename + ext
+        return cachedfilename
+        # return name + '_' + profile + ext
 
 
 class SongFile:
@@ -113,8 +118,8 @@ class MuxAudioVidCachedFile(CachedFile):
     @classmethod
     def get_cached_file_name(cls, video, audio):
         videofilename = FileInfo(video).name
-        videofilename = FileInfo(audio).name
-        bgeff_cachedfilename = videofilename + '_' + videofilename + '.mp4'
+        audiofilename = FileInfo(audio).name
+        bgeff_cachedfilename = videofilename + '_' + audiofilename + '.mp4'
         return bgeff_cachedfilename
 
 
@@ -240,7 +245,7 @@ class Cmder:
 
     def get_cached_effectvid(self, preview_affect, preview_profile, time_length):
         ffmpegcli = FfmpegCli()
-        cached_filename = EffectCachedFile.get_cached_profile_filename(preview_affect, preview_profile,
+        cached_filename = EffectCachedFile.get_cached_profile_filename(preview_affect,
                                                                        extension='.mp4')
         effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
@@ -255,7 +260,7 @@ class Cmder:
 
     def get_cached_bgvid(self, preview_bgtempfile, preview_profile, time_length):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgVidCachedFile.get_cached_profile_filename(preview_bgtempfile, preview_profile,
+        cached_filename = BgVidCachedFile.get_cached_profile_filename(preview_bgtempfile,
                                                                       extension='.mp4')
         bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         if bgvid_cachedfile is None:
@@ -388,7 +393,7 @@ class BgEffect:
     def __init__(self, info: dict):
         self.file = ContentDir.get_file_path(ContentDir.EFFECT_DIR.value, info['file'])
         check_file_existed(self.file)
-        self.opacity = info['opacity']
+        self.opacity = int(info['opacity'])
         pass
 
 

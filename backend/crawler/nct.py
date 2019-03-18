@@ -3,9 +3,9 @@ import codecs
 import json
 
 import requests
-from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 
+from backend.crawler.Crawler import SeleniumCrawler
 from backend.crawler.rc4_py3 import decrypt
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import FileInfo
@@ -62,6 +62,7 @@ class SongInfo:
                 if keyvalue == 'lyrictext':
                     self.lyrictext = nctsonginfo[keyvalue]
                 if keyvalue == 'lyric':
+                    from backend.BackendCmder import SongFile
                     self.lyric = nctsonginfo[keyvalue]
                     self.lyric = SongFile.get_fullpath(self.lyric)
 
@@ -127,25 +128,19 @@ class NctCrawler(Crawler):
         pass
 
     def parser(self):
-        session = HTMLSession(browser_args=["--no-sandbox",
-                                            "--user-agent='Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'"])
-        # session = HTMLSession()
-
-        # headers_mobile = {
-        #     'User-Agent': ''}
-
-        body: requests.Response = session.get(self.mobileNctWmUrl)
-        body.html.render()
-        soup = BeautifulSoup(body.text, 'html.parser')
+        crawler = SeleniumCrawler(self.mobileNctWmUrl)
+        page_source = crawler.get_page_source()
+        soup = BeautifulSoup(page_source, 'html.parser')
         lyric_text = soup.find(attrs={'class': 'lyric'}).text
         formatlyric = self.reformat_lyric(lyric_text)
         print(formatlyric)
-        html = body._content.decode('utf-8')
-        songkey = self.get_songkey(html)
+        songkey = self.get_songkey(page_source)
         downloadlink = NctCrawler.nctLinkInfo.format(songkey)
         print(downloadlink)
-        body = requests.get(downloadlink)
-        songinfodata: dict = json.loads(body._content)
+        crawler.reload_page(downloadlink)
+        page_source = crawler.driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser').text
+        songinfodata: dict = json.loads(soup)
         songinfodata['data']['lyric_text'] = formatlyric
         songinf: SongInfo = NctSongInfo(songinfodata['data'])
         return songinf
