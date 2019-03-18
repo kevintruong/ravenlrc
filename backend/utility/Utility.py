@@ -51,7 +51,8 @@ def only_latin_string(strtags):
 
 
 def generate_mv_filename(title: str):
-    remove_accent = non_accent_convert(title).replace(" ", "_").lower()
+    remove_extra_info = title.split('(', 1)[0].lower().rstrip()  # if file name content (), let get the first
+    remove_accent = non_accent_convert(remove_extra_info).replace(" ", "_").lower()
     # mvfilename = only_latin_string(remove_accent)
     return remove_accent + '.mp4'
 
