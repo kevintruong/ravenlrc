@@ -8,24 +8,26 @@ class Crawler:
 
 
 class SeleniumCrawler(Crawler):
-    driver = None
-
     def __init__(self, url: str):
         super().__init__()
-        if self.driver is None:
-            mobile_emulation = {
-                "deviceMetrics": {"width": 360, "height": 640, "pixelRatio": 3.0},
-                "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"}
+        mobile_emulation = {
 
-            chrome_options = Options()
-            chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("disable-gpu")
+            "deviceMetrics": {"width": 360, "height": 640, "pixelRatio": 3.0},
 
-            self.driver = webdriver.Chrome(chrome_options=chrome_options)
-            self.driver.get(url)
+            "userAgent": "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"}
+
+        chrome_options = Options()
+        chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox");
+        chrome_options.add_argument("--headless");
+        chrome_options.add_argument("disable-gpu");
+
+        self.driver = webdriver.Chrome(chrome_options=chrome_options)
+        self.driver.get(url)
+
+    def __del__(self):
+        self.driver.quit()
 
     def get_value_element_value(self, callback):
         val = callback(self.driver.page_source)
