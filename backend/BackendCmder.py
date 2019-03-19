@@ -424,9 +424,19 @@ class BgLyric:
             self.font = Font(info['font'])
 
 
+class Title:
+    def __init__(self):
+        pass
+
+
 class BgTitle(BgLyric):
     def __init__(self, info: dict):
         super().__init__(info)
+
+
+class WaterMask:
+    def __init__(self, info: dict):
+        pass
 
 
 class BgWaterMask(BgLyric):
@@ -436,6 +446,13 @@ class BgWaterMask(BgLyric):
 
 class Background:
     def __init__(self, info: dict):
+        self.file = None
+        self.effect = None
+        self.lyric = None
+        self.title = None
+        self.spectrum = None
+        self.watermask = None
+        self.timing = None
         for field in info.keys():
             if field == 'file':
                 self.file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, info[field])
@@ -450,6 +467,8 @@ class Background:
                 self.title = BgTitle(info[field])
             elif field == 'spectrum':
                 self.spectrum = BgSpectrum(info[field])
+            elif field == 'timing':
+                self.timing = info[field]
 
     pass
 
@@ -482,7 +501,7 @@ class RenderType:
             for keyvalue in info.keys():
                 if keyvalue == 'type':
                     self.type = info[keyvalue]
-                if keyvalue == 'configure':
+                if keyvalue == 'config':
                     self.configure = RenderConfigure(info[keyvalue])
         else:
             self.type = 'preview'
@@ -499,6 +518,41 @@ class MusicVideoKind(IntEnum):
 
 
 class RenderCmder(Cmder):
+    song_urls: str
+
+    def __init__(self, cmd: dict):
+        super().__init__()
+        self.watermask = None
+        self.rendertype = RenderType()
+        self.song = None
+        self.song_url = None
+        self.output = None
+        for keyvalue in cmd.keys():
+            if keyvalue == 'song_urls':
+                self.song_urls = cmd[keyvalue]
+            if keyvalue == 'song_url':
+                self.song_url = cmd[keyvalue]
+            if keyvalue == 'song':
+                self.song = SongInfo(cmd[keyvalue])
+            if keyvalue == 'songs':
+                self.songs = cmd[keyvalue]
+            if keyvalue == 'backgrounds':
+                self.backgrounds = self.get_list_background(cmd[keyvalue])
+            if keyvalue == 'spectrum':
+                self.spectrum = Spectrum(cmd[keyvalue])
+            if keyvalue == 'title':
+                self.title = (cmd[keyvalue])
+            if keyvalue == 'watermask':
+                self.watermask = WaterMask(cmd[keyvalue])
+            if keyvalue == 'lyric':
+                self.lyric = Lyric(cmd[keyvalue])
+            if keyvalue == 'rendertype':
+                self.rendertype = RenderType(cmd[keyvalue])
+            if keyvalue == 'song_effect':
+                self.song_effect = PyJSON(cmd[keyvalue])
+        # self.get_song_info_from_url()
+        # self.to_json()
+        self.set_kind_of_video()
 
     def run_create_album_multi_background(self):
         raise Exception("Not support render album multi background yet")
@@ -544,36 +598,6 @@ class RenderCmder(Cmder):
         else:
             Exception("Not support render the Mv Kind {}".format(self.kindVid))
         pass
-
-    def __init__(self, cmd: dict):
-        super().__init__()
-        self.rendertype = RenderType()
-        self.song = None
-        self.song_url = None
-        self.output = None
-        for keyvalue in cmd.keys():
-            if keyvalue == 'song_urls':
-                self.song_urls = cmd[keyvalue]
-            if keyvalue == 'song_url':
-                self.song_url = cmd[keyvalue]
-            if keyvalue == 'song':
-                self.song = SongInfo(cmd[keyvalue])
-            if keyvalue == 'songs':
-                self.songs = cmd[keyvalue]
-            if keyvalue == 'backgrounds':
-                self.backgrounds = self.get_list_background(cmd[keyvalue])
-            if keyvalue == 'spectrum':
-                self.spectrum = Spectrum(cmd[keyvalue])
-            if keyvalue == 'lyric':
-                self.lyric = Lyric(cmd[keyvalue])
-            if keyvalue == 'rendertype':
-                self.rendertype = RenderType(cmd[keyvalue])
-            if keyvalue == 'song_effect':
-                self.song_effect = PyJSON(cmd[keyvalue])
-
-        # self.get_song_info_from_url()
-        # self.to_json()
-        self.set_kind_of_video()
 
     def set_kind_of_video(self):
         num_songs = 1
@@ -627,64 +651,59 @@ class RenderCmder(Cmder):
 
     def build_mv(self, profile):
         preview_profile = profile
-        ffmpegcli = FfmpegCli()
-
-        ffmpegcli.set_resolution(preview_profile)
-        preview_asstempfile = AssTempFile().getfullpath()
-
-        create_ass_from_lrc(self.song.lyric,
-                            preview_asstempfile,
-                            self.background.lyric,
-                            preview_profile)
-
         time_length = self.rendertype.configure.duration
 
-        logger.debug(preview_profile)
-
-        preview_asstempfile = self.apply_effect_lyric(preview_asstempfile)
-
-        # if self.lyric.effect is not None:
-        #     new_ass_effect = AssTempFile().getfullpath()
-        #     preview_asstempfile
-        # self.lyric.effect.apply_lyric_effect_to_file(preview_asstempfile, new_ass_effect)
-        # preview_asstempfile = new_ass_effect
-        # pass
+        preview_asstempfile = self.generate_lyric_effect_file(preview_profile)
 
         if self.background.effect is not None:
-            if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
-                preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
-                preview_affect = self.get_cached_effect_file(preview_profile)
-            else:
-                preview_affect = self.background.effect.file
-                preview_bgtempfile = self.background.file
-
-            preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
-            preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
-
-            preview_bg_affect_mv = self.get_cached_bg_effect_file(preview_bgmv, preview_affectmv)
-
-            audiovid_mv = self.get_cached_muxaudiovid(self.song.songfile, preview_bg_affect_mv, time_length)
-
-            ffmpegcli.adding_sub_to_video(preview_asstempfile,
-                                          audiovid_mv,
-                                          self.output)
+            self.create_mv_without_bg_effect(preview_asstempfile, preview_profile, time_length)
         else:
-            if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
-                preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
-            else:
-                preview_bgtempfile = self.background.file
-
-            preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
-
-            audiovid_mv = self.get_cached_muxaudiovid(self.song.songfile, preview_bgmv, time_length)
-
-            ffmpegcli.adding_sub_to_video(preview_asstempfile,
-                                          audiovid_mv,
-                                          self.output)
+            self.create_mv_with_bgeffect(preview_asstempfile, preview_profile, time_length)
             pass
 
         YtTempFile.delete_all()
         pass
+
+    def generate_lyric_effect_file(self, preview_profile):
+        preview_asstempfile = AssTempFile().getfullpath()
+        create_ass_from_lrc(self.song.lyric,
+                            preview_asstempfile,
+                            self.background.lyric,
+                            preview_profile)
+        preview_asstempfile = self.apply_effect_lyric(preview_asstempfile)
+        return preview_asstempfile
+
+    def create_mv_with_bgeffect(self, preview_asstempfile, preview_profile, time_length):
+        ffmpegcli = FfmpegCli()
+        ffmpegcli.set_resolution(preview_profile)
+        if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
+            preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
+        else:
+            preview_bgtempfile = self.background.file
+        preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
+        audiovid_mv = self.get_cached_muxaudiovid(self.song.songfile, preview_bgmv, time_length)
+        ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                      audiovid_mv,
+                                      self.output)
+
+    def create_mv_without_bg_effect(self, preview_asstempfile, preview_profile, time_length):
+        ffmpegcli = FfmpegCli()
+        ffmpegcli.set_resolution(preview_profile)
+        if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
+            preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
+            preview_affect = self.get_cached_effect_file(preview_profile)
+        else:
+            preview_affect = self.background.effect.file
+            preview_bgtempfile = self.background.file
+
+        preview_bgmv = self.get_cached_bgvid(preview_bgtempfile, preview_profile, time_length)
+        preview_affectmv = self.get_cached_effectvid(preview_affect, preview_profile, time_length)
+
+        preview_bg_affect_mv = self.get_cached_bg_effect_file(preview_bgmv, preview_affectmv)
+        audiovid_mv = self.get_cached_muxaudiovid(self.song.songfile, preview_bg_affect_mv, time_length)
+        ffmpegcli.adding_sub_to_video(preview_asstempfile,
+                                      audiovid_mv,
+                                      self.output)
 
     def build_preview(self):
         return self.build_mv(FFmpegProfile.PROFILE_MEDIUM.value)
@@ -695,10 +714,6 @@ class RenderCmder(Cmder):
         pass
 
     def apply_effect_lyric(self, preview_asstempfile):
-        new_ass_effect = AssTempFile().getfullpath()
-        # preview_asstempfile
-        # self.lyric.effect.apply_lyric_effect_to_file(preview_asstempfile, new_ass_effect)
-        # preview_asstempfile = new_ass_effect
         try:
             for lyricword in self.lyric.words:
                 if lyricword.effect:
