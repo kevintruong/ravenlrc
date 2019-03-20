@@ -47,6 +47,7 @@ class SongApi:
         self.title = None
         self.watermask = None
         self.spectrum = None
+        self.lyric = None
         for keyvalue in jsondata.keys():
             if keyvalue == 'song_url':
                 self.song_url = jsondata[keyvalue]

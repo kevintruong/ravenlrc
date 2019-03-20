@@ -183,14 +183,18 @@ class RenderBgEffect(RenderEngine):
 
 class RenderLyric(RenderEngine):
 
-    def __init__(self, lrcconf: BgLyric, lyric: Lyric):
+    def __init__(self, lrcconf: BgLyric, lyric: Lyric, lyricfile=None):
         super().__init__()
         self.lyric = lyric
         self.lrcconf = lrcconf
+        if self.lyric is None:
+            self.lyricfile = lyricfile
+        else:
+            self.lyricfile = lyricfile
 
     def generate_lyric_effect_file(self, preview_profile):
         preview_asstempfile = AssTempFile().getfullpath()
-        create_ass_from_lrc(self.lyric.file,
+        create_ass_from_lrc(self.lyricfile,
                             preview_asstempfile,
                             self.lrcconf,
                             preview_profile)
@@ -210,13 +214,15 @@ class RenderLyric(RenderEngine):
 
     def create_effect_lyric_file(self, ass_file):
         try:
-            for lyricword in self.lyric.words:
-                if lyricword.effect:
-                    ass_file = lyricword.apply_lyric_effect_to_file(ass_file)
-            return ass_file
+            if self.lyric:
+                for lyricword in self.lyric.words:
+                    if lyricword.effect:
+                        ass_file = lyricword.apply_lyric_effect_to_file(ass_file)
+                return ass_file
         except Exception as exp:
             print('error when process effect lyric,use the original effect file')
             return ass_file
+        return ass_file
 
 
 class BackgroundRender:
@@ -324,36 +330,35 @@ class BackgroundsRender:
         pass
 
     def generate_render_engine(self):
-        for index, background_item in enumerate(self.renderinfo.backgrounds):
+        for index, background_item in enumerate(self.songapi.backgrounds):
             bgRender = BackgroundRender()
             if background_item.file:
                 bgRender.file = background_item.file
             if background_item.effect:
                 bgRender.effect = RenderBgEffect(background_item.effect)
-            if background_item.title and self.renderinfo.title:
-                bgRender.title = RenderTitle(background_item.title, self.renderinfo.title)
-            if background_item.lyric and self.renderinfo.lyric:
-                if self.renderinfo.song:
-                    self.renderinfo.lyric.file = self.renderinfo.song.lyric
-                bgRender.lyric = RenderLyric(background_item.lyric, self.renderinfo.lyric)
-            if background_item.spectrum and self.renderinfo.spectrum:
+            if background_item.title and self.songapi.title:
+                bgRender.title = RenderTitle(background_item.title, self.songapi.title)
+            if background_item.lyric:
+                lyricfile = self.songapi.song.lyric
+                bgRender.lyric = RenderLyric(background_item.lyric, self.songapi.lyric, lyricfile)
+            if background_item.spectrum and self.songapi.spectrum:
                 bgRender.spectrum = RenderSpectrum(background_item.spectrum,
-                                                   self.renderinfo.spectrum)
-            if background_item.watermask and self.renderinfo.watermask:
+                                                   self.songapi.spectrum)
+            if background_item.watermask and self.songapi.watermask:
                 bgRender.watermask = RenderWaterMask(background_item.watermask,
-                                                     self.renderinfo.watermask)
-            if self.renderinfo.song:
-                bgRender.song = RenderSong(self.renderinfo.song)
+                                                     self.songapi.watermask)
+            if self.songapi.song:
+                bgRender.song = RenderSong(self.songapi.song)
             if background_item.timing:
                 print('not support yet')
-            if self.renderinfo.rendertype:
-                bgRender.rendertype = self.renderinfo.rendertype
+            if self.songapi.rendertype:
+                bgRender.rendertype = self.songapi.rendertype
             self.bgrenderengine.append(bgRender)
             pass
 
     def __init__(self, renderdata: SongApi):
         self.bgrenderengine = []
-        self.renderinfo = renderdata
+        self.songapi = renderdata
         self.generate_render_engine()
         super().__init__()
 
@@ -376,5 +381,6 @@ class Test_Render_Engine(unittest.TestCase):
         self.bgsRender = BackgroundsRender(self.renderconf)
 
     def test_run(self):
-        # output = self.bgsRender.run()
+        output = self.bgsRender.run()
+        print(output)
         pass
