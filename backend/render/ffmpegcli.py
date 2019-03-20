@@ -8,6 +8,8 @@ from pathlib import Path
 import platform
 import logging
 
+from backend.render.type import Size, Position
+
 logger = logging.getLogger('backend')
 
 
@@ -75,6 +77,7 @@ class FfmpegCli(object):
         self.default_resolution = resolution
 
     def __init__(self):
+        # TODO print(os.cpu_count()) find cpu count
         self.ffmpeg_cli = []
         self.default_resolution = '1920x1080'
         self.default_bitrate = 8000000
@@ -156,7 +159,7 @@ class FfmpegCli(object):
             cmd += self.bitrate_configure
 
         cmd.append(output)
-        # logger.debug(' '.join(map(str, cmd)))
+        print(' '.join(cmd))
         try:
             p = subprocess.Popen(cmd,
                                  # stdout=subprocess.PIPE,
@@ -267,6 +270,24 @@ class FfmpegCli(object):
         self._ffmpeg_input_filter_complex_prefix()
         cmd = 'scale={}:{}'.format(res.res_x, res.res_y)
         self._ffmpeg_input_fill_cmd(cmd)
+        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
+
+    def scale_media_by_width_ratio(self, input_bg, resolution: Size, output_bg):
+        '''
+        the function will create an output backgound vid from input backround image
+        render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
+        :param resolution:
+        :param input_bg:
+        :param output_bg:
+        :return:
+        '''
+        FfmpegCli.check_file_exist(input_bg)
+        self._ffmpeg_input(input_bg)
+        self._ffmpeg_input_filter_complex_prefix()
+        cmd = 'scale={}:-1'.format(resolution.width, resolution.height)
+        self._ffmpeg_input_fill_cmd(cmd)
+        self._ffmpeg_input_fill_cmd('-c:v')
+        self._ffmpeg_input_fill_cmd('png')
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
         # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
@@ -391,8 +412,10 @@ class FfmpegCli(object):
         # self._ffmpeg_input_fill_cmd('copy')
         self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
 
-    def add_logo_to_bg_img(self, input_bg: str, input_logo: str, output: str,
-                           coordinate=Coordinate(512, 512), transparent=0.9):
+    def add_logo_to_bg_img(self, input_bg: str,
+                           input_logo: str,
+                           output: str,
+                           coordinate: Position):
         """
         render -i small.mp4 -i avatar.png -filter_complex
                     "[1:v]format=argb,colorchannelmixer=aa=0.5[zork];
@@ -400,7 +423,6 @@ class FfmpegCli(object):
                     -codec:a copy output.mp4
 
         :param output:
-        :param transparent:
         :param input_bg:
         :param input_logo:
         :param coordinate:
@@ -411,10 +433,9 @@ class FfmpegCli(object):
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input(input_logo)
         self._ffmpeg_input_filter_complex_prefix()
-        filter = "[1:v]format=argb,colorchannelmixer=aa={}[zork];\
-                    [0:v][zork]overlay={}:{}".format(transparent, coordinate.x, coordinate.y)
+        filter = "[0:v][1:v]overlay={}:{}" \
+            .format(coordinate.x, coordinate.y)
         self._ffmpeg_input_fill_cmd(filter)
-
         logger.debug('{}'.format(self.ffmpeg_cli))
         self.run(self.ffmpeg_cli, output)
         self.reset_ffmpeg_cmd()

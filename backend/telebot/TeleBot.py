@@ -22,9 +22,9 @@ from telegram import Bot, Chat, Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 
-from backend.Storage.GDriveFileManager import GDriveFileStorage
-from backend.Storage.GSheetInput import GoogleSheetStream
-from backend.TeleBot.TeleCmder import TeleBuildCmder, TelePublishCmder
+from backend.storage.GDriveFileManager import GDriveFileStorage
+from backend.storage.GSheetInput import GoogleSheetStream
+from backend.telebot.TeleCmder import TeleBuildCmder, TelePublishCmder
 
 from backend.yclogger import telelog
 

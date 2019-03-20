@@ -2,7 +2,8 @@ from enum import Enum, IntEnum
 
 import json5
 
-from backend.Storage.GDriveFileManager import GDriveFileStorage
+from backend.render.type import Size, Position, Font
+from backend.storage.GDriveFileManager import GDriveFileStorage
 from backend.crawler.nct import *
 from backend.crawler.subcrawler import *
 from backend.render.ffmpegcli import FfmpegCli
@@ -98,6 +99,32 @@ class EffectCachedFile(CachedFile):
     @classmethod
     def create_cachedfile(cls, filename):
         return os.path.join(cls.CachedEffectDir, filename)
+
+
+class SecondBgImgCachedFile(CachedFile):
+    CachedDir = os.path.join(CachedContentDir.BGIMG_DIR.value, '.cache')
+
+    @classmethod
+    def get_file_name(cls, bgimg: str, watermask: str, size: Size):
+
+        bgimg_name = FileInfo(bgimg).name
+        ext = FileInfo(bgimg).ext
+        watermask_name = FileInfo(watermask).name
+        return bgimg_name + "_" + watermask_name + "_" + "{}".format(size.width) + "." + ext
+
+        pass
+
+    @classmethod
+    def get_cachedfile(cls, filename):
+        listfiles = os.listdir(cls.CachedDir)
+        for file in listfiles:
+            if filename in file:
+                return os.path.join(cls.CachedDir, file)
+        return None
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.CachedDir, filename)
 
 
 class MuxAudioVidCachedFile(CachedFile):
@@ -346,25 +373,6 @@ class BackgroundInfo:
                 self.titleinfo = TitleInfo(bginfo[keyfield])
 
 
-class Position:
-    def __init__(self, info: dict):
-        self.x = int(info['x'])
-        self.y = int(info['y'])
-
-
-class Size:
-    def __init__(self, info: dict):
-        self.width = int(info['width'])
-        self.height = int(info['height'])
-
-
-class Font:
-    def __init__(self, info: dict):
-        self.name = info['name']
-        self.color = int(info['color'], 16)
-        self.size = int(info['size'])
-
-
 class Lyric:
     def __init__(self, info: dict):
         self.file = None
@@ -424,9 +432,9 @@ class BgLyric:
             self.font = Font(info['font'])
 
 
-class Title:
-    def __init__(self):
-        pass
+class Title(PyJSON):
+    def __init__(self, d):
+        super().__init__(d)
 
 
 class BgTitle(BgLyric):
@@ -434,9 +442,9 @@ class BgTitle(BgLyric):
         super().__init__(info)
 
 
-class WaterMask:
-    def __init__(self, info: dict):
-        pass
+class WaterMask(PyJSON):
+    def __init__(self, d):
+        super().__init__(d)
 
 
 class BgWaterMask(BgLyric):
@@ -675,7 +683,6 @@ class RenderCmder(Cmder):
 
     def create_mv_with_bgeffect(self, preview_asstempfile, preview_profile, time_length):
         ffmpegcli = FfmpegCli()
-        ffmpegcli.set_resolution(preview_profile)
         if preview_profile != FFmpegProfile.PROFILE_FULLHD.value:
             preview_bgtempfile = self.get_cached_backgroundimg(preview_profile)
         else:
@@ -901,14 +908,14 @@ class BuildCmder(Cmder):
                                        effect_cachedfile)
         return effect_cachedfile
 
-    def get_cached_backgroundimg(self, preview_profile):
+    def get_cached_backgroundimg(self, profile_size):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgImgCachedFile.get_cached_profile_filename(self.bginfo.bg_file, preview_profile)
+        cached_filename = BgImgCachedFile.get_cached_profile_filename(self.bginfo.bg_file, profile_size)
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.scale_background_img(self.bginfo.bg_file,
-                                           preview_profile,
+                                           profile_size,
                                            bg_cachedfile)
         return bg_cachedfile
 

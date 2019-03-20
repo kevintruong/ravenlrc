@@ -60,6 +60,11 @@ class AffMvTemplateFile(YtTempFile):
         super().__init__(pre, sub, autodel)
 
 
+class SpectrumMvTemplateFile(YtTempFile):
+    def __init__(self, pre='spectrum_', sub=".mov", autodel=False) -> None:
+        super().__init__(pre, sub, autodel)
+
+
 class PngTempFile(YtTempFile):
 
     def __init__(self, pre='img_', sub='.png', autodel=False) -> None:

@@ -52,7 +52,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_add_logo_to_bg_img(self):
         bg_logo_output = os.path.join(test_data_dir, "bg_logo.png")
-        self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_logo_output)
+        self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_logo_output, Coordinate(500, 200))
         self.assertTrue(os.path.isfile(bg_logo_output))
         pass
 
