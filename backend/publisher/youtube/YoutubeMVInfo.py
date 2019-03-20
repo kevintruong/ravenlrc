@@ -1,7 +1,7 @@
 import json5
 import os
 
-from backend.BackendCmder import ContentDir
+from backend.render.cache import ContentDir
 from backend.crawler.nct import SongInfo
 from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict, non_accent_convert, \
     generate_singer_song_hashtags

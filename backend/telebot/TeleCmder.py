@@ -25,7 +25,7 @@ class TelePublishCmder:
         self.fbpage = FbPageAPI(self.channel)
 
     def is_configfile_exist(self):
-        from backend.BackendCmder import ContentDir
+        from backend.render.cache import ContentDir
         mvconfigdir = ContentDir.MVCONF_DIR.value
         for file in os.listdir(mvconfigdir):
             if self.mvconfig.lower() in file.lower():
@@ -76,7 +76,7 @@ class TeleBuildCmder:
         self.is_configfile_exist()
 
     def is_configfile_exist(self):
-        from backend.BackendCmder import ContentDir
+        from backend.render.cache import ContentDir
         mvconfigdir = ContentDir.MVCONF_DIR.value
         for file in os.listdir(mvconfigdir):
             if self.mvconfig.lower() in file.lower():

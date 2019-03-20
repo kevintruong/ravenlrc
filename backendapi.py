@@ -27,7 +27,7 @@ def song(url):
 @hug.post('/api/video/render')
 def render(body):
     try:
-        cmder: Cmder = RenderCmder(body)
+        cmder: Cmder = SongApi(body)
         ret = cmder.run()
     except Exception as exp:
         return error_msg_handle(exp)

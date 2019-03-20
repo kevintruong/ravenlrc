@@ -185,7 +185,7 @@ class SubRectangle:
 class LyricConfigInfo:
     @classmethod
     def get_font_file(cls, fontname):
-        from backend.BackendCmder import ContentDir
+        from backend.render.cache import ContentDir
         fontdir = ContentDir.FONTFILES_DIR.value
         try:
             fontfile = ContentDir.get_file_path(fontdir, fontname)

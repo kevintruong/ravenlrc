@@ -2,10 +2,11 @@ import os
 
 import json5
 
-from backend.BackendCmder import RenderCmder, ContentDir
+from backend.BackendCmder import SongApi
+from backend.render.cache import ContentDir
 
 
-class GDriveBuildCmder(RenderCmder):
+class GDriveBuildCmder(SongApi):
     @classmethod
     def force_clearn_cache(cls):
         from sys import platform

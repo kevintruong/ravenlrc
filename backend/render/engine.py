@@ -1,6 +1,7 @@
-from backend.BackendCmder import Background, Spectrum, BgWaterMask, BgTitle, RenderCmder, BgEffect, BgLyric, Lyric, \
-    Title, BgSpectrum, WaterMask, RenderType, BgImgCachedFile, RenderTypeCode, FFmpegProfile, EffectCachedFile, \
-    BgEffectCachedFile, BgVidCachedFile, MuxAudioVidCachedFile, ContentDir, SecondBgImgCachedFile
+from backend.BackendCmder import Background, Spectrum, BgWaterMask, BgTitle, SongApi, BgEffect, BgLyric, Lyric, \
+    Title, BgSpectrum, WaterMask, RenderType, RenderTypeCode, FFmpegProfile
+from backend.render.cache import ContentDir, EffectCachedFile, SecondBgImgCachedFile, MuxAudioVidCachedFile, \
+    BgEffectCachedFile, BgImgCachedFile, BgVidCachedFile
 from backend.crawler.nct import SongInfo
 from abc import *
 
@@ -347,7 +348,7 @@ class BackgroundsRender:
             self.bgrenderengine.append(bgRender)
             pass
 
-    def __init__(self, renderdata: RenderCmder):
+    def __init__(self, renderdata: SongApi):
         self.bgrenderengine = []
         self.renderinfo = renderdata
         self.generate_render_engine()
@@ -364,7 +365,7 @@ class Test_Render_Engine(unittest.TestCase):
         jsonfile = r'D:\Project\ytcreatorservice\test\request.json'
         with open(jsonfile, 'r', encoding='UTF-8') as json5file:
             self.data = json.load(json5file)
-        self.renderconf = RenderCmder(self.data)
+        self.renderconf = SongApi(self.data)
         self.bgsRender = BackgroundsRender(self.renderconf)
 
     def test_run(self):
