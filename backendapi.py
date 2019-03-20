@@ -2,7 +2,7 @@ import traceback
 
 import hug
 
-from backend.BackendCmder import *
+from backend.render.parser import *
 
 # sys.path.append("pycharm-debug-py3k.egg")
 # import pydevd

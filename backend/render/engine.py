@@ -1,6 +1,6 @@
 from abc import *
 
-from backend.BackendCmder import SongApi, WaterMask, RenderTypeCode, BgTitle
+from backend.render.parser import SongApi, WaterMask, RenderTypeCode, BgTitle
 from backend.crawler.nct import SongInfo
 from backend.render.cache import ContentDir, EffectCachedFile, SecondBgImgCachedFile, MuxAudioVidCachedFile, \
     BgEffectCachedFile, BgImgCachedFile, BgVidCachedFile
