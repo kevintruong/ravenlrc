@@ -1,9 +1,7 @@
-from enum import Enum, IntEnum
-
 from backend.crawler.nct import *
-from backend.render.cache import ContentDir
-from backend.render.type import Lyric, Spectrum, Title, BgLyric, BgEffect, BgSpectrum, RenderType
-from backend.utility.Utility import check_file_existed, PyJSON
+from backend.render.type import *
+from backend.render.type import Background
+from backend.utility.Utility import *
 
 
 class Cmder:
@@ -36,62 +34,6 @@ class CrawlCmder(Cmder):
         crawler: Crawler = self.crawl_parser()
         return crawler.getdownload(self.output)
         pass
-
-
-class RenderTypeCode(Enum):
-    BUILD_PREVIEW = "preview"
-    BUILD_RELEASE = "release"
-
-
-class BgTitle(BgLyric):
-    def __init__(self, info: dict):
-        super().__init__(info)
-
-
-class WaterMask(PyJSON):
-    def __init__(self, d):
-        super().__init__(d)
-
-
-class BgWaterMask(BgLyric):
-    def __init__(self, info: dict):
-        super().__init__(info)
-
-
-class Background:
-    def __init__(self, info: dict):
-        self.file = None
-        self.effect = None
-        self.lyric = None
-        self.title = None
-        self.spectrum = None
-        self.watermask = None
-        self.timing = None
-        for field in info.keys():
-            if field == 'file':
-                self.file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, info[field])
-                check_file_existed(self.file)
-            elif field == 'effect':
-                self.effect = BgEffect(info[field])
-            elif field == 'lyric':
-                self.lyric = BgLyric(info[field])
-            elif field == 'watermask':
-                self.watermask = BgWaterMask(info[field])
-            elif field == 'title':
-                self.title = BgTitle(info[field])
-            elif field == 'spectrum':
-                self.spectrum = BgSpectrum(info[field])
-            elif field == 'timing':
-                self.timing = info[field]
-
-    pass
-
-
-class MusicVideoKind(IntEnum):
-    ALBUM_SINGLE_BACKGROUND = 0
-    ALBUM_MULTI_BACKGROUND = 1
-    MV_MULTI_BACKGROUND = 2
-    MV_SINGLE_BACKGROUND = 3
 
 
 class SongApi:

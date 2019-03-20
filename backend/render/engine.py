@@ -1,11 +1,12 @@
 from abc import *
 
-from backend.render.parser import SongApi, WaterMask, RenderTypeCode, BgTitle
+from backend.render.parser import SongApi
 from backend.crawler.nct import SongInfo
 from backend.render.cache import ContentDir, EffectCachedFile, SecondBgImgCachedFile, MuxAudioVidCachedFile, \
     BgEffectCachedFile, BgImgCachedFile, BgVidCachedFile
 from backend.render.ffmpegcli import FfmpegCli, FFmpegProfile
-from backend.render.type import Lyric, Spectrum, BgSpectrum, BgEffect, BgWaterMask, BgLyric, Title, RenderType
+from backend.render.type import Lyric, Spectrum, BgSpectrum, BgEffect, BgWaterMask, BgLyric, Title, RenderType, \
+    RenderTypeCode, BgTitle, WaterMask
 from backend.subeffect.asseditor import create_ass_from_lrc
 from backend.utility.TempFileMnger import AssTempFile, PngTempFile, SpectrumMvTemplateFile
 from backend.utility.Utility import generate_mv_filename
@@ -276,8 +277,8 @@ class BackgroundRender:
 
     def run(self):
         self.detect_rendertype()
-        # self.input = self.init_background_render()
         if self.timming:
+            # TODO need to implement for the new feature
             pass
         else:
             return self.render_background_full_time_length()
@@ -316,7 +317,8 @@ class BackgroundsRender:
     def run(self):
         bgrender_engine: BackgroundRender
         for bgrender_engine in self.bgrenderengine:
-            bgrender_engine.run()
+            # TODO for now return for the first background render
+            return bgrender_engine.run()
             pass
         pass
 
