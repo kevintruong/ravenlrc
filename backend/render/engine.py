@@ -10,6 +10,7 @@ from backend.render.type import Lyric, Spectrum, BgSpectrum, BgEffect, BgWaterMa
 from backend.subeffect.asseditor import create_ass_from_lrc
 from backend.utility.TempFileMnger import AssTempFile, PngTempFile, SpectrumMvTemplateFile
 from backend.utility.Utility import generate_mv_filename
+from backend.yclogger import telelog
 
 
 class RenderEngine(ABC):
@@ -367,10 +368,13 @@ class Test_Render_Engine(unittest.TestCase):
         jsonfile = r'D:\Project\ytcreatorservice\test\request.json'
         with open(jsonfile, 'r', encoding='UTF-8') as json5file:
             self.data = json.load(json5file)
+        jsondata = json.dumps(self.data, indent=1)
+        telelog.debug(jsondata)
         self.renderconf = SongApi(self.data)
+        log = self.renderconf.toJSON()
+        print(log)
         self.bgsRender = BackgroundsRender(self.renderconf)
 
     def test_run(self):
-        output = self.bgsRender.run()
-        print(output)
+        # output = self.bgsRender.run()
         pass

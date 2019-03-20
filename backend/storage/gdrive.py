@@ -32,7 +32,7 @@ class GDriveMnger:
         return
 
     def get_share_link(self, filepath: str):
-        filename = FileInfo(filepath)
+        filename = FileInfo(filepath).filename
         fileinfo = self.viewFile(filename)
         if 'webContentLink' in fileinfo:
             return fileinfo['webContentLink']

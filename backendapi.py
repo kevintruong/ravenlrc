@@ -15,11 +15,19 @@ from backend.storage.gdrive import GDriveMnger
 from backend.yclogger import telelog
 
 
+def error_msg_handle(exp):
+    tracebackmsg = traceback.format_exc()
+    telelog.error("{}".format(exp) + '\n' + '```{}```'.format(tracebackmsg))
+    return {'status': 'error',
+            'message': "{}".format(exp),
+            'traceback': "{}".format(tracebackmsg)
+            }
+
+
 @hug.get('/api/song')
 def song(url):
     try:
-        # body is dictbuild_mv
-        print(url)
+        telelog.debug('```{}```'.format(json.dumps(url, indent=1)))
         cmder: Cmder = CrawlCmder({'url': url})
         return cmder.run()
     except Exception as exp:
@@ -29,6 +37,7 @@ def song(url):
 @hug.post('/api/video/render')
 def render(body):
     try:
+        telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
         songapi = SongApi(body)
         song_render = BackgroundsRender(songapi)
         ret = song_render.run()
@@ -38,12 +47,3 @@ def render(body):
     except Exception as exp:
         return error_msg_handle(exp)
     return {'url': ret}
-
-
-def error_msg_handle(exp):
-    tracebackmsg = traceback.format_exc()
-    telelog.debug("{}".format(exp) + '\n' + tracebackmsg)
-    return {'status': 'error',
-            'message': "{}".format(exp),
-            'traceback': "{}".format(tracebackmsg)
-            }

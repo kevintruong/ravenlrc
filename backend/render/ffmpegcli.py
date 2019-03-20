@@ -159,7 +159,7 @@ class FfmpegCli(object):
             cmd += self.bitrate_configure
 
         cmd.append(output)
-        print(' '.join(cmd))
+        # print(' '.join(cmd))
         try:
             p = subprocess.Popen(cmd,
                                  # stdout=subprocess.PIPE,

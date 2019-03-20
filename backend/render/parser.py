@@ -2,6 +2,7 @@ from backend.crawler.nct import *
 from backend.render.type import *
 from backend.render.type import Background
 from backend.utility.Utility import *
+from backend.yclogger import telelog
 
 
 class Cmder:
@@ -63,6 +64,10 @@ class SongApi:
             if keyvalue == 'song_effect':
                 self.song_effect = PyJSON(jsondata[keyvalue])
         self.get_song_info_from_url()
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
 
     def get_song_info_from_url(self):
         if self.song is None and self.song_url:

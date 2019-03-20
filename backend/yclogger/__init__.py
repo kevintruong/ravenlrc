@@ -31,7 +31,7 @@ DEFAULT_CONFIGURE = {
     'version': 1,
     'formatters': {
         'telegram': {
-            'class': 'telegram_handler.HtmlFormatter',
+            'class': 'telegram_handler.MarkdownFormatter',
             'fmt': '%(levelname)s %(message)s'
         }
     },
