@@ -8,7 +8,7 @@ from pathlib import Path
 import platform
 import logging
 
-from backend.render.type import Size, Position
+# from backend.render.type import Size, Position
 
 logger = logging.getLogger('backend')
 
@@ -272,7 +272,7 @@ class FfmpegCli(object):
         self._ffmpeg_input_fill_cmd(cmd)
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
-    def scale_media_by_width_ratio(self, input_bg, resolution: Size, output_bg):
+    def scale_media_by_width_ratio(self, input_bg, resolution, output_bg):
         '''
         the function will create an output backgound vid from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
@@ -281,6 +281,8 @@ class FfmpegCli(object):
         :param output_bg:
         :return:
         '''
+        from backend.render.type import Size
+        resolution: Size
         FfmpegCli.check_file_exist(input_bg)
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input_filter_complex_prefix()
@@ -415,7 +417,7 @@ class FfmpegCli(object):
     def add_logo_to_bg_img(self, input_bg: str,
                            input_logo: str,
                            output: str,
-                           coordinate: Position):
+                           coordinate):
         """
         render -i small.mp4 -i avatar.png -filter_complex
                     "[1:v]format=argb,colorchannelmixer=aa=0.5[zork];
@@ -428,6 +430,8 @@ class FfmpegCli(object):
         :param coordinate:
         :return:
         """
+        from backend.render.type import Position
+        coordinate: Position
         FfmpegCli.check_file_exist(input_bg)
         FfmpegCli.check_file_exist(input_logo)
         self._ffmpeg_input(input_bg)

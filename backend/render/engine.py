@@ -1,11 +1,11 @@
-from backend.BackendCmder import Background, Spectrum, BgWaterMask, BgTitle, SongApi, BgEffect, BgLyric, Lyric, \
-    Title, BgSpectrum, WaterMask, RenderType, RenderTypeCode, FFmpegProfile
-from backend.render.cache import ContentDir, EffectCachedFile, SecondBgImgCachedFile, MuxAudioVidCachedFile, \
-    BgEffectCachedFile, BgImgCachedFile, BgVidCachedFile
-from backend.crawler.nct import SongInfo
 from abc import *
 
-from backend.render.ffmpegcli import FfmpegCli
+from backend.BackendCmder import SongApi, WaterMask, RenderTypeCode, BgTitle
+from backend.crawler.nct import SongInfo
+from backend.render.cache import ContentDir, EffectCachedFile, SecondBgImgCachedFile, MuxAudioVidCachedFile, \
+    BgEffectCachedFile, BgImgCachedFile, BgVidCachedFile
+from backend.render.ffmpegcli import FfmpegCli, FFmpegProfile
+from backend.render.type import Lyric, Spectrum, BgSpectrum, BgEffect, BgWaterMask, BgLyric, Title, RenderType
 from backend.subeffect.asseditor import create_ass_from_lrc
 from backend.utility.TempFileMnger import AssTempFile, PngTempFile, SpectrumMvTemplateFile
 from backend.utility.Utility import generate_mv_filename

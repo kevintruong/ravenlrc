@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 
-from backend.render.type import Size
+# from backend.render.type import Size
 from backend.utility.Utility import FileInfo
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
@@ -98,8 +98,9 @@ class SecondBgImgCachedFile(CachedFile):
     CachedDir = os.path.join(CachedContentDir.BGIMG_DIR.value, '.cache')
 
     @classmethod
-    def get_file_name(cls, bgimg: str, watermask: str, size: Size):
-
+    def get_file_name(cls, bgimg: str, watermask: str, size):
+        from backend.render.type import Size
+        size: Size
         bgimg_name = FileInfo(bgimg).name
         ext = FileInfo(bgimg).ext
         watermask_name = FileInfo(watermask).name

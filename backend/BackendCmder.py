@@ -1,16 +1,9 @@
 from enum import Enum, IntEnum
 
-import json5
-
-from backend.render.cache import ContentDir, EffectCachedFile, MuxAudioVidCachedFile, BgEffectCachedFile, \
-    BgImgCachedFile, BgVidCachedFile
-from backend.render.type import Size, Position, Font
 from backend.crawler.nct import *
-from backend.crawler.subcrawler import *
-from backend.render.ffmpegcli import FfmpegCli
-from backend.subeffect.asseditor import *
-from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.utility.Utility import check_file_existed, generate_mv_filename, PyJSON
+from backend.render.cache import ContentDir
+from backend.render.type import Lyric, Spectrum, Title, BgLyric, BgEffect, BgSpectrum, RenderType
+from backend.utility.Utility import check_file_existed, PyJSON
 
 
 class Cmder:
@@ -45,104 +38,9 @@ class CrawlCmder(Cmder):
         pass
 
 
-class BuildType(IntEnum):
-    BUILD_PREVIEW = 0
-    BUILD_RELEASE = 1
-
-
 class RenderTypeCode(Enum):
     BUILD_PREVIEW = "preview"
     BUILD_RELEASE = "release"
-
-
-class Rectangle:
-    def __init__(self, coordinate: list):
-        self.x = coordinate[0]
-        self.y = coordinate[1]
-        self.w = coordinate[2]
-        self.h = coordinate[3]
-
-
-class TitleInfo(LyricConfigInfo):
-
-    def __init__(self, titleinfo: dict):
-        super().__init__(titleinfo)
-
-
-class BackgroundInfo:
-    def __init__(self, bginfo: dict):
-        for keyfield in bginfo.keys():
-            if 'bg_file' in keyfield:
-                self.bg_file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, bginfo[keyfield])
-                check_file_existed(self.bg_file)
-            if 'lyric_info' in keyfield:
-                self.subinfo: LyricConfigInfo = LyricConfigInfo(bginfo[keyfield])
-            if 'title_info' in keyfield:
-                self.titleinfo = TitleInfo(bginfo[keyfield])
-
-
-class Lyric:
-    def __init__(self, info: dict):
-        self.file = None
-        # self.effect = None
-        self.words = []
-        if 'file' in info:
-            self.file = info['file']
-        if 'words' in info:
-            for wordeffect in info['words']:
-                self.words.append(LyricEffect(wordeffect))
-        pass
-
-
-class Spectrum(PyJSON):
-    def __init__(self, d):
-        self.templatecode = None
-        self.custom = None
-        super().__init__(d)
-
-
-class BgSpectrum:
-    def __init__(self, info: dict):
-        for keyvalue in info.keys():
-            if keyvalue == 'position':
-                self.position = Position(info[keyvalue])
-            if keyvalue == 'size':
-                self.size = Size(info[keyvalue])
-
-
-class BgEffect:
-    def __init__(self, info: dict):
-        self.file = ContentDir.get_file_path(ContentDir.EFFECT_DIR.value, info['file'])
-        check_file_existed(self.file)
-        self.opacity = int(info['opacity'])
-        pass
-
-
-class BgTitle:
-    def __init__(self, cmd: dict):
-        self.file = cmd['file']
-        self.position = Position(cmd['position'])
-
-
-class BgWaterMask:
-    def __init__(self, info: dict):
-        self.file = info['file']
-        self.position = Position(info['position'])
-
-
-class BgLyric:
-    def __init__(self, info: dict):
-        if 'position' in info:
-            self.position = Position(info['position'])
-        if 'size' in info:
-            self.size = Size(info['size'])
-        if 'font' in info:
-            self.font = Font(info['font'])
-
-
-class Title(PyJSON):
-    def __init__(self, d):
-        super().__init__(d)
 
 
 class BgTitle(BgLyric):
@@ -189,43 +87,6 @@ class Background:
     pass
 
 
-class EffectInfo:
-    def __init__(self, effinfo: dict):
-        self.file = ContentDir.get_file_path(ContentDir.EFFECT_DIR.value, effinfo['file'])
-        check_file_existed(self.file)
-        self.opacity = effinfo['opacity']
-
-
-class Resolution(Size):
-
-    def __init__(self, info: dict):
-        super().__init__(info)
-
-
-class RenderConfigure:
-    def __init__(self, info: dict):
-        for keyvalue in info.keys():
-            if keyvalue == 'duration':
-                self.duration = info[keyvalue]
-            if keyvalue == 'resolution':
-                self.resolution = Resolution(info[keyvalue])
-
-
-class RenderType:
-    def __init__(self, info=None):
-        if info:
-            for keyvalue in info.keys():
-                if keyvalue == 'type':
-                    self.type = info[keyvalue]
-                if keyvalue == 'config':
-                    self.configure = RenderConfigure(info[keyvalue])
-        else:
-            self.type = 'preview'
-            self.configure = RenderConfigure({'duration': 90,
-                                              'resolution': {'width': 1280, 'height': 720}
-                                              })
-
-
 class MusicVideoKind(IntEnum):
     ALBUM_SINGLE_BACKGROUND = 0
     ALBUM_MULTI_BACKGROUND = 1
@@ -234,8 +95,6 @@ class MusicVideoKind(IntEnum):
 
 
 class SongApi:
-    song_urls: str
-
     def __init__(self, jsondata: dict):
         super().__init__()
         self.watermask = None
