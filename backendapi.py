@@ -26,8 +26,9 @@ def error_msg_handle(exp):
 
 @hug.get('/api/song')
 def song(url):
+    print(url)
     try:
-        telelog.debug('```{}```'.format(json.dumps(url, indent=1)))
+        telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
         return cmder.run()
     except Exception as exp:

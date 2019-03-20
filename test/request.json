@@ -1,5 +1,4 @@
 {
-  "song_url": "https://www.nhaccuatui.com/bai-hat/xa-em-may-ngay-yanbi-ft-weeza-ft-machiot.XJll5pFCcAlq.html",
   "song": {
     "id": "1iDSDdrDFCCs",
     "info": "https://m.nhaccuatui.com/bai-hat/vi-em-van-hari-won.1iDSDdrDFCCs.html",
@@ -11,9 +10,49 @@
   },
   "backgrounds": [
     {
-      "file": "cokhinaoroixa.png",
+      "id": "backgroundid",
+      "file": "CoSaoGioLaiChiaXa.png",
+      "timming": [
+        {
+          "start": "0",
+          "end": "50000"
+        }
+      ],
+      "assest": [
+        {
+          "type": "text",
+          "format": {
+            "position": {
+              "x": "221",
+              "y": "900"
+            },
+            "size": {
+              "width": "691",
+              "height": "43"
+            },
+            "font": {
+              "name": "SVN-Futura Light",
+              "color": "0xAABBCC",
+              "size": "30"
+            }
+          }
+        },
+        {
+          "type": "graphic",
+          "format": {
+            "position": {
+              "x": "221",
+              "y": "900"
+            },
+            "size": {
+              "width": "691",
+              "height": "43"
+            }
+          }
+        }
+      ],
       "effect": {
-        "file": "Green_Bubble.mov",
+        "file": "Heart Fly Orange.mov",
         "opacity": "30"
       },
       "title": {
@@ -33,11 +72,11 @@
       },
       "watermask": {
         "position": {
-          "x": "221",
-          "y": "900"
+          "x": "200",
+          "y": "200"
         },
         "size": {
-          "width": "691",
+          "width": "150",
           "height": "43"
         },
         "font": {
@@ -49,10 +88,10 @@
       "spectrum": {
         "position": {
           "x": "221",
-          "y": "900"
+          "y": "200"
         },
         "size": {
-          "width": "691",
+          "width": "391",
           "height": "43"
         }
       },
@@ -110,8 +149,13 @@
       {
         "data": [
           "anh",
-          "noi ay",
-          "noi buon"
+          "nơi ấy",
+          "kỷ niệm",
+          "lắng nghe",
+          "noi buon",
+          "yêu thương",
+          "nụ hồn",
+          "nỗi đau"
         ],
         "formatter": {
           "name": "UTMAmericanaItalic",
@@ -124,11 +168,12 @@
           "config": {
             "accel": 0.9,
             "start": {
-              "font_size": 20
+              "font_size": 50,
+              "primary_font_color": "0x000000"
             },
             "end": {
-              "font_size": 50,
-              "primary_font_color": "0x23456"
+              "font_size": 30,
+              "primary_font_color": "0xFFEEFF"
             }
           }
         }
@@ -137,20 +182,23 @@
   },
   "spectrum": {
     "templatecode": "circle light",
+    "file": "D:\\Project\\ytcreatorservice\\backend\\content\\Spectrum\\anhdechcangingoaiem.mov",
     "custom": {
       "option1": "option1_value",
       "option2": "option1_value"
     }
   },
   "watermask": {
-    "file": "http://link-to-watermask-file.png",
+    "file": "D:\\Project\\ytcreatorservice\\backend\\content\\Watermask\\timshel_logo.png",
+    "text": "#timshel",
     "option": "option_value"
   },
   "title": {
-    "file": "http://link-to-title-file.png",
+    "file": "D:\\Project\\ytcreatorservice\\backend\\content\\Titile\\ThuongEmLaDieuAnhKhongTheNgo.png",
+    "text": "Vì em vẫn - Hariwon",
     "option": "option_value"
   },
-  "rendersetting": {
+  "rendertype": {
     "type": "preview",
     "config": {
       "duration": 90,

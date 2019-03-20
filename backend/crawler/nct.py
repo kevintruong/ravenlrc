@@ -133,10 +133,8 @@ class NctCrawler(Crawler):
         soup = BeautifulSoup(page_source, 'html.parser')
         lyric_text = soup.find(attrs={'class': 'lyric'}).text
         formatlyric = self.reformat_lyric(lyric_text)
-        print(formatlyric)
         songkey = self.get_songkey(page_source)
         downloadlink = NctCrawler.nctLinkInfo.format(songkey)
-        print(downloadlink)
         crawler.reload_page(downloadlink)
         page_source = crawler.driver.page_source
         soup = BeautifulSoup(page_source, 'html.parser').text
