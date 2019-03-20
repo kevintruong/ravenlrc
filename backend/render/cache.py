@@ -5,8 +5,8 @@ from enum import Enum
 from backend.utility.Utility import FileInfo
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
-contentDir = os.path.join(CurDir, '../content')
-cachedcontentdir = os.path.join(CurDir, '../content')
+contentDir = os.path.join(CurDir, '..\content')
+cachedcontentdir = os.path.join(CurDir, '..\content')
 
 
 class ContentDir(Enum):
@@ -15,8 +15,8 @@ class ContentDir(Enum):
     TITLE_DIR = os.path.join(contentDir, 'Title')
     MVCONF_DIR = os.path.join(contentDir, 'MvConfig')
     BGIMG_DIR = os.path.join(contentDir, 'BgImage')
-    MVRELEASE_DIR = os.path.join(contentDir, 'Mv/Release')
-    MVPREV_DIR = os.path.join(contentDir, 'Mv/Preview')
+    MVRELEASE_DIR = os.path.join(contentDir, 'Mv\Release')
+    MVPREV_DIR = os.path.join(contentDir, 'Mv\Preview')
     FONTFILES_DIR = os.path.join(contentDir, 'Font')
     BUILDCMD_DIR = os.path.join(contentDir, 'BuildCmd')
     CHANNELINFO_DIR = os.path.join(contentDir, 'ChannelInfo')
