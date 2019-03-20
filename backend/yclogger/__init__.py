@@ -40,7 +40,7 @@ DEFAULT_CONFIGURE = {
             'class': 'telegram_handler.TelegramHandler',
             'formatter': 'telegram',
             'token': '714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8',
-            'chat_id': '338086459'
+            'chat_id': '-366235120'
         }
     },
     'loggers': {
