@@ -39,6 +39,8 @@ class Lyric:
 class Title(PyJSON):
     def __init__(self, d):
         super().__init__(d)
+        if 'file' in self.__dict__:
+            self.file = ContentDir.get_file_path(ContentDir.TITLE_DIR.value, self.file)
 
 
 class Resolution(Size):
@@ -80,6 +82,8 @@ class Spectrum(PyJSON):
         self.templatecode = None
         self.custom = None
         super().__init__(d)
+        if 'file' in self.__dict__:
+            self.file = ContentDir.get_file_path(ContentDir.SPECTRUM_DIR.value, self.file)
 
 
 class BgSpectrum:
@@ -123,6 +127,8 @@ class BgWaterMask(BgLyric):
 class WaterMask(PyJSON):
     def __init__(self, d):
         super().__init__(d)
+        if 'file' in self.__dict__:
+            self.file = ContentDir.get_file_path(ContentDir.WATERMASK_DIR.value, self.file)
 
 
 class MusicVideoKind(IntEnum):

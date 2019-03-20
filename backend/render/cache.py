@@ -20,6 +20,8 @@ class ContentDir(Enum):
     FONTFILES_DIR = os.path.join(contentDir, 'Font')
     BUILDCMD_DIR = os.path.join(contentDir, 'BuildCmd')
     CHANNELINFO_DIR = os.path.join(contentDir, 'ChannelInfo')
+    WATERMASK_DIR = os.path.join(contentDir, 'Watermask')
+    SPECTRUM_DIR = os.path.join(contentDir, 'Spectrum')
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):

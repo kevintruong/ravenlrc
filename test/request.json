@@ -182,19 +182,19 @@
   },
   "spectrum": {
     "templatecode": "circle light",
-    "file": "D:\\Project\\ytcreatorservice\\backend\\content\\Spectrum\\anhdechcangingoaiem.mov",
+    "file": "anhdechcangingoaiem.mov",
     "custom": {
       "option1": "option1_value",
       "option2": "option1_value"
     }
   },
   "watermask": {
-    "file": "D:\\Project\\ytcreatorservice\\backend\\content\\Watermask\\timshel_logo.png",
+    "file": "timshel_logo.png",
     "text": "#timshel",
     "option": "option_value"
   },
   "title": {
-    "file": "D:\\Project\\ytcreatorservice\\backend\\content\\Titile\\ThuongEmLaDieuAnhKhongTheNgo.png",
+    "file": "ThuongEmLaDieuAnhKhongTheNgo.png",
     "text": "Vì em vẫn - Hariwon",
     "option": "option_value"
   },
