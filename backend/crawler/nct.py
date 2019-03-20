@@ -5,7 +5,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-from backend.crawler.Crawler import SeleniumCrawler
+from backend.crawler.crawler import SeleniumCrawler
 from backend.crawler.rc4_py3 import decrypt
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import FileInfo

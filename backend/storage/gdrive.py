@@ -3,13 +3,15 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+from backend.utility.Utility import FileInfo
+
 CurDir = os.path.dirname(os.path.realpath(__file__))
 ClientSecretfile = os.path.join(CurDir, 'client_secrets.json')
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
 
-class GDriveFileStorage:
+class GDriveMnger:
 
     def __init__(self):
         self.login()
@@ -29,7 +31,8 @@ class GDriveFileStorage:
     def list_file(self):
         return
 
-    def get_share_link(self, filename: str):
+    def get_share_link(self, filepath: str):
+        filename = FileInfo(filepath)
         fileinfo = self.viewFile(filename)
         if 'webContentLink' in fileinfo:
             return fileinfo['webContentLink']
@@ -89,7 +92,7 @@ class GDriveFileStorage:
 
 
 def generate_html_file(output: str):
-    gdriver = GDriveFileStorage()
+    gdriver = GDriveMnger()
     previewfile = gdriver.generate_html_preview_file(output)
     return previewfile
 
@@ -99,7 +102,7 @@ import unittest
 
 class Test_GoogleFiles(unittest.TestCase):
     def setUp(self):
-        self.gdriver = GDriveFileStorage()
+        self.gdriver = GDriveMnger()
 
     def test_get_share_link(self):
         self.gdriver.login()

@@ -1,6 +1,5 @@
 import shutil
 import unittest
-from click.testing import CliRunner
 
 from backend.utility.TempFileMnger import *
 
@@ -32,7 +31,6 @@ from backendcli import *
 
 class My(unittest.TestCase):
     def setUp(self):
-        self.runner = CliRunner()
         self.url = 'https://www.nhaccuatui.com/bai-hat/nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html'
         pass
 

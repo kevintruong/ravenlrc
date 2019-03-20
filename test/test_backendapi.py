@@ -4,7 +4,7 @@ import unittest
 
 import requests
 
-from backend.BackendCmder import RenderCmder
+from backend.render.parser import SongApi
 from backend.utility.TempFileMnger import *
 
 curDir = os.path.dirname(__file__)
@@ -282,8 +282,8 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_load_render_api(self):
-        # from backend.BackendCmder import RenderCmder
-        self.renderconf = RenderCmder(self.data)
+        # from backend.BackendCmder import SongApi
+        self.renderconf = SongApi(self.data)
         output = self.renderconf.run()
         print(self.renderconf.toJSON())
         print(output)
