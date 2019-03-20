@@ -6,7 +6,9 @@ from backend.utility.Utility import FileInfo
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 contentDir = os.path.join(CurDir, '..\content')
-cachedcontentdir = os.path.join(CurDir, '..\content')
+
+contentDir = os.path.abspath(contentDir)
+cachedcontentdir = contentDir
 
 
 class ContentDir(Enum):
