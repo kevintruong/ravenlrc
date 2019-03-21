@@ -1,13 +1,17 @@
 import abc
 import codecs
 import json
+import os
 
 import requests
 from bs4 import BeautifulSoup
 
 from backend.crawler.crawler import SeleniumCrawler
 from backend.crawler.rc4_py3 import decrypt
-from backend.utility.TempFileMnger import *
+
+
+# from backend.utility.TempFileMnger import *
+# from backend.utility.Utility import FileInfo
 from backend.utility.Utility import FileInfo
 
 
@@ -117,30 +121,53 @@ class NctCrawler(Crawler):
         matchlist = express.findall(htmlbody)
         if len(matchlist):
             return matchlist[0]
-        raise Exception("not found song key encrypt")
+        raise Exception("{}".format(htmlbody))
 
     def reformat_lyric(self, lyric_text: str):
         format_lyric = ""
         for line in lyric_text.splitlines():
             format_lyric = format_lyric + " ".join(line.split()) + '\n'
-        return format_lyric
+        return format_lyric.replace('  ', '').replace('\n\n', '\n')
 
         pass
 
+    def get_song_xml_file(self, html_txt: str):
+        for line in html_txt.split('\n'):
+            if 'player.peConfig.xmlURL' in line:
+                return line.split('=', 1)[1].replace('"', '').replace(';', '')
+
+    def song_info_xml_parser(self, xml_text):
+        fields = ['title', 'creator', 'location', 'info', 'lyric', 'key']
+        doc_el = BeautifulSoup(xml_text, 'xml')
+        songinfo = SongInfo()
+        for each_fields in fields:
+            var = [el.text for el in doc_el.findAll(each_fields)]
+            if len(var):
+                value: str = var[0].replace('\n', '').replace('  ', '')
+                print(value)
+                if each_fields == 'title':
+                    songinfo.title = value
+                if each_fields == 'creator':
+                    songinfo.singer = value
+                if each_fields == 'location':
+                    songinfo.songfile = value
+                if each_fields == 'lyric':
+                    songinfo.lyric = value
+                if each_fields == 'key':
+                    songinfo.id = value
+                if each_fields == 'info':
+                    songinfo.info = value
+        return songinfo
+
     def parser(self):
-        crawler = SeleniumCrawler(self.mobileNctWmUrl)
-        page_source = crawler.get_page_source()
-        soup = BeautifulSoup(page_source, 'html.parser')
+        crawler = requests.get(self.mobileNctWmUrl)
+        song_xml = self.get_song_xml_file(crawler.text)
+        song_info = requests.get(song_xml)
+        soup = BeautifulSoup(crawler.text, 'html')
         lyric_text = soup.find(attrs={'class': 'lyric'}).text
         formatlyric = self.reformat_lyric(lyric_text)
-        songkey = self.get_songkey(page_source)
-        downloadlink = NctCrawler.nctLinkInfo.format(songkey)
-        crawler.reload_page(downloadlink)
-        page_source = crawler.driver.page_source
-        soup = BeautifulSoup(page_source, 'html.parser').text
-        songinfodata: dict = json.loads(soup)
-        songinfodata['data']['lyric_text'] = formatlyric
-        songinf: SongInfo = NctSongInfo(songinfodata['data'])
+        songinf = self.song_info_xml_parser(song_info.text)
+        songinf.lyrictext = formatlyric
         return songinf
 
     def get_songinfo(self):
