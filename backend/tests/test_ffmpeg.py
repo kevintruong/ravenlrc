@@ -69,6 +69,12 @@ class TestFFmpegCli(unittest.TestCase):
         leng_out = self.ffmpeg.get_media_time_length(bg_output)
         self.assertEqual(leng_out, length_media)
 
+    def test_create_scale_video(self):
+        bg_output = os.path.join(test_data_dir, "bg_out.mp4")
+        from backend.render.type import Size
+        self.ffmpeg.scale_effect_vid(input_mp4_file, Size(), bg_output)
+        leng_out = self.ffmpeg.get_media_time_length(bg_output)
+
     def test_mux_audio_to_video(self):
         output = os.path.join(test_data_dir, "audio_output.mp4")
         self.ffmpeg.mux_audio_to_video(input_mp4_file, audio00, output)
@@ -81,10 +87,21 @@ class TestFFmpegCli(unittest.TestCase):
         media_output = os.path.join(sample_data_dir, "media_out.mp4")
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
-        subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
-                                   'fontname': 'UTM Centur',
-                                   'fontcolor': 0x018CA7,
-                                   'fontsize': 20})
+        from backend.render.type import BgLyric
+        subinfo = BgLyric({
+            "position": {
+                "x": "221",
+                "y": "900"
+            },
+            "size": {
+                "width": "691",
+                "height": "43"
+            },
+            "font": {
+                "name": "SVN-Futura Light",
+                "color": "0x345678",
+                "size": "30"
+            }})
         create_ass_from_url(full_test, ass_out, subinfo)
         self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
         length_in = self.ffmpeg.get_media_time_length(media_output)
@@ -93,7 +110,7 @@ class TestFFmpegCli(unittest.TestCase):
         pass
 
     def test_add_affect_to_video(self):
-        output = os.path.join(test_data_dir, "affect_bg.mp4")
+        output = os.path.join(test_data_dir, ".mp4")
         self.ffmpeg.add_affect_to_video(sub_media, bg_effect, output)
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
@@ -102,7 +119,10 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_add_nontransparent_affect_to_video(self):
         output = os.path.join(sample_data_dir, "affect_bg.mp4")
-        self.ffmpeg.add_nontransparent_effect_to_video(sub_media, nontran_effect, output, 30)
+        nontrans_effect = os.path.join(sample_data_dir, "nontrans_effect.mov")
+        bg_vid = os.path.join(sample_data_dir, "bg_vid.mp4")
+
+        self.ffmpeg.add_nontransparent_effect_to_video(bg_vid, nontrans_effect, output, 30)
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(outputLeng, inputLeng)
@@ -117,7 +137,6 @@ class TestFFmpegCli(unittest.TestCase):
         final_mv = os.path.join(test_data_dir, "final_mv.mov")
 
         # download mp3 file
-        self.ffmpeg.set_resolution(FFmpegProfile.PROFILE_FULLHD)
         audiofile = NctCrawler(url).getdownload(test_data_dir)
         audiofile = json.loads(audiofile)
         audiofile = audiofile['localtion']
@@ -143,9 +162,12 @@ class TestFFmpegCli(unittest.TestCase):
         self.create_mv_from_url(full_test)
         # self.create_mv_from_url(test_url00)
 
-    def test_create_rgba_effect_from_list_png(self):
-        self.ffmpeg.create_rgba_background_effect_from_list_png(background_effect_dir, 'test_data/test.mov')
-        pass
+    def test_check_alphachannel(self):
+        # import ffmpeg
+        ffmpeg = FfmpegCli()
+        # ffmpeg.probe(r'/mnt/Data/Project/ytcreatorservice/test/sample_data/affect_file.mp4')
+        not_alpha = ffmpeg.check_alpha_channel(r'/mnt/Data/Project/ytcreatorservice/test/sample_data/affect_file.mp4')
+        self.assertFalse(not_alpha)
 
 
 if __name__ == '__main__':

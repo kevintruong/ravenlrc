@@ -5,9 +5,13 @@ from backend.utility.Utility import check_file_existed, PyJSON
 
 
 class Size:
-    def __init__(self, info: dict):
-        self.width = int(info['width'])
-        self.height = int(info['height'])
+    def __init__(self, info=None):
+        if info:
+            self.width = int(info['width'])
+            self.height = int(info['height'])
+        else:
+            self.width = 1920
+            self.height = 1080
 
 
 class Position:

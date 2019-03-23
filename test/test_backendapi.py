@@ -4,6 +4,7 @@ import unittest
 
 import requests
 
+from backend.render.engine import BackgroundsRender
 from backend.render.parser import SongApi
 from backend.utility.TempFileMnger import *
 
@@ -284,8 +285,8 @@ class Test_RenderCmder(unittest.TestCase):
     def test_load_render_api(self):
         # from backend.BackendCmder import SongApi
         self.renderconf = SongApi(self.data)
-        output = self.renderconf.run()
-        print(self.renderconf.toJSON())
+        bgsRender = BackgroundsRender(self.renderconf)
+        output = bgsRender.run()
         print(output)
         pass
 
@@ -301,6 +302,11 @@ class Test_RenderCmder(unittest.TestCase):
         response = requests.post(rest_api,
                                  json=self.data)
         print(response.content)
+
+    def test_crawl_nct_url(self):
+        rest_api = 'http://35.237.140.210:8000/api/song'
+        response = requests.post(rest_api,
+                                 json=self.data)
 
 
 if __name__ == '__main__':

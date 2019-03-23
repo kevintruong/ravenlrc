@@ -8,6 +8,8 @@ from pathlib import Path
 import platform
 import logging
 
+import ffmpeg
+
 # from backend.render.type import Size, Position
 
 logger = logging.getLogger('backend')
@@ -73,13 +75,9 @@ class FfmpegCli(object):
         self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
         self.__add_system_prefix()
 
-    def set_resolution(self, resolution: FFmpegProfile):
-        self.default_resolution = resolution
-
     def __init__(self):
         # TODO print(os.cpu_count()) find cpu count
         self.ffmpeg_cli = []
-        self.default_resolution = '1920x1080'
         self.default_bitrate = 8000000
         self.youtube_options = ["-movflags", "+faststart"]
         self.youtube_codec = ["-vcodec", "libx264", "-pix_fmt", "yuv420p"]
@@ -202,13 +200,11 @@ class FfmpegCli(object):
         :param time_length:
         :return:
         '''
-        FfmpegCli.check_file_exist(input_img)
-        self._ffmpeg_input_fill_cmd('-loop')
-        self._ffmpeg_input_fill_cmd('1')
-        self._ffmpeg_input(input_img)
-        self._ffmpeg_input_fill_cmd('-t')
-        self._ffmpeg_input_fill_cmd("{}".format(time_length))
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_video)
+        (
+            ffmpeg.input(input_img, loop=1)
+                .output(output_video, t=time_length, framerate=25)
+                .run(overwrite_output=True)
+        )
 
     def create_background_affect_with_length(self, input_bg, time_length: int, output_bg):
         '''
@@ -219,25 +215,29 @@ class FfmpegCli(object):
         :param output_bg:
         :return:
         '''
-        bg_timeleng = self.get_media_time_length(input_bg)
         # loopcount = int(time_length / bg_timeleng) + 1
         FfmpegCli.check_file_exist(input_bg)
+        (
+            ffmpeg.input(input_bg, stream_loop=-1)
+                .output(output_bg, t=time_length, framerate=25, c='copy')
+                .run(overwrite_output=True)
+        )
         # self._ffmpeg_input_fill_cmd('-re')
-        self._ffmpeg_input_fill_cmd('-stream_loop')
-        self._ffmpeg_input_fill_cmd('{}'.format(-1))
-        self._ffmpeg_input(input_bg)
-        self._ffmpeg_input_fill_cmd('-t')
-        self._ffmpeg_input_fill_cmd('{}'.format(time_length))
-        self._ffmpeg_input_fill_cmd('-c')
-        self._ffmpeg_input_fill_cmd('copy')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
+        # self._ffmpeg_input_fill_cmd('-stream_loop')
+        # self._ffmpeg_input_fill_cmd('{}'.format(-1))
+        # self._ffmpeg_input(input_bg)
+        # self._ffmpeg_input_fill_cmd('-t')
+        # self._ffmpeg_input_fill_cmd('{}'.format(time_length))
+        # self._ffmpeg_input_fill_cmd('-c')
+        # self._ffmpeg_input_fill_cmd('copy')
+        # self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
         # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
         #               "{}".format(time_length)]
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)l l l l
 
-    def scale_effect_vid(self, input_effect, resolution: str, output_effect):
+    def scale_effect_vid(self, input_effect, resolution, output_effect):
         """
         ffmpeg -i <INPUT_FILE> -vf scale=720:540 -c:v <Video_Codec> <OUTPUT_FILE>
         :param input_effect:
@@ -245,14 +245,22 @@ class FfmpegCli(object):
         :param output_effect:
         :return:
         """
+        from backend.render.type import Size
+        resolution: Size
         FfmpegCli.check_file_exist(input_effect)
-        self._ffmpeg_input(input_effect)
-        self._ffmpeg_input_filter_complex_prefix()
-        cmd = 'scale={}'.format(resolution)
-        self._ffmpeg_input_fill_cmd(cmd)
-        self._ffmpeg_input_fill_cmd('-c:v')
-        self._ffmpeg_input_fill_cmd('png')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_effect)
+        (
+            ffmpeg.input(input_effect)
+                .filter('scale', resolution.width, resolution.height)
+                .output(output_effect, framerate=25, vcodec='png')
+                .run(overwrite_output=True)
+        )
+        # self._ffmpeg_input(input_effect)
+        # self._ffmpeg_input_filter_complex_prefix()
+        # cmd = 'scale={}'.format(resolution)
+        # self._ffmpeg_input_fill_cmd(cmd)
+        # self._ffmpeg_input_fill_cmd('-c:v')
+        # self._ffmpeg_input_fill_cmd('png')
+        # self.ffmpeg_cli_run(self.ffmpeg_cli, output_effect)
         pass
 
     def scale_background_img(self, input_bg, resolution: str, output_bg):
@@ -284,13 +292,21 @@ class FfmpegCli(object):
         from backend.render.type import Size
         resolution: Size
         FfmpegCli.check_file_exist(input_bg)
-        self._ffmpeg_input(input_bg)
-        self._ffmpeg_input_filter_complex_prefix()
-        cmd = 'scale={}:-1'.format(resolution.width, resolution.height)
-        self._ffmpeg_input_fill_cmd(cmd)
-        self._ffmpeg_input_fill_cmd('-c:v')
-        self._ffmpeg_input_fill_cmd('png')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
+        (
+            ffmpeg.input(input_bg)
+                .filter('scale', resolution.width, resolution.height)
+                .output(output_bg, framerate=25, vcodec='png')
+                .run(overwrite_output=True)
+        )
+
+        # FfmpegCli.check_file_exist(input_bg)
+        # self._ffmpeg_input(input_bg)
+        # self._ffmpeg_input_filter_complex_prefix()
+        # cmd = 'scale={}:-1'.format(resolution.width, resolution.height)
+        # self._ffmpeg_input_fill_cmd(cmd)
+        # self._ffmpeg_input_fill_cmd('-c:v')
+        # self._ffmpeg_input_fill_cmd('png')
+        # self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
         # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
         #               "{}".format(time_length)]
@@ -314,15 +330,23 @@ class FfmpegCli(object):
 
         FfmpegCli.check_file_exist(input_sub)
         FfmpegCli.check_file_exist(input_video)
-        self._ffmpeg_input(input_video)
-        self._ffmpeg_input_filter_complex_prefix()
+        input = ffmpeg.input(input_video)
+        subvid_stream = input['v'].filter('subtitles', input_sub)
+        ((
+            ffmpeg
+                .output(subvid_stream, input['a'], output_vid)
+                .run(overwrite_output=True)
+            # .run(overwrite_output=True)
+        ))
+        # self._ffmpeg_input(input_video)
+        # self._ffmpeg_input_filter_complex_prefix()
         # Replace back slash -> forward slash
-        input_sub = input_sub.replace(os.sep, '/')
-        newass = input_sub[:1] + "\\" + input_sub[1:]
-        cmd = "subtitles=\\'{}\\'".format(newass)
-        self._ffmpeg_input_fill_cmd(cmd)
-        self._ffmpeg_input_fill_cmd('-shortest')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
+        # input_sub = input_sub.replace(os.sep, '/')
+        # newass = input_sub[:1] + "\\" + input_sub[1:]
+        # cmd = "subtitles=\\'{}\\'".format(newass)
+        # self._ffmpeg_input_fill_cmd(cmd)
+        # self._ffmpeg_input_fill_cmd('-shortest')
+        # self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
         pass
 
     def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
@@ -344,12 +368,20 @@ class FfmpegCli(object):
         if has_alpha:
             FfmpegCli.check_file_exist(affect_vid)
             FfmpegCli.check_file_exist(video)
-            self._ffmpeg_input(video)
-            self._ffmpeg_input(affect_vid)
-            self._ffmpeg_input_filter_complex_prefix()
-            self._ffmpeg_input_fill_cmd('overlay ')
-            self._ffmpeg_input_fill_cmd('-shortest')
-            self.ffmpeg_cli_run(self.ffmpeg_cli, output)
+            bgvideo_stream = ffmpeg.input(video)
+            effect_stream = ffmpeg.input(affect_vid)
+            streams_list = [bgvideo_stream, effect_stream]
+            (
+                ffmpeg.filter(streams_list, 'overlay')
+                    .output(output, framerate=25)
+                    .run(overwrite_output=True)
+            )
+            # self._ffmpeg_input(video)
+            # self._ffmpeg_input(affect_vid)
+            # self._ffmpeg_input_filter_complex_prefix()
+            # self._ffmpeg_input_fill_cmd('overlay ')
+            # self._ffmpeg_input_fill_cmd('-shortest')
+            # self.ffmpeg_cli_run(self.ffmpeg_cli, output)
         else:
             self.add_nontransparent_effect_to_video(video, affect_vid, output, opacity_val)
         pass
@@ -357,17 +389,36 @@ class FfmpegCli(object):
     def add_nontransparent_effect_to_video(self, effect_vid: str, video: str, output: str, opacity_val: int):
         FfmpegCli.check_file_exist(effect_vid)
         FfmpegCli.check_file_exist(video)
-        self._ffmpeg_input(video)
-        self._ffmpeg_input(effect_vid)
-        self._ffmpeg_input_filter_complex_prefix()
-        opacity = float(opacity_val / 100)
-        filter_args = "[1:0]setdar=dar=0,format=rgba[a]; \
-                       [0:0]setdar=dar=0,format=rgba[b]; \
-                       [a][b]blend=all_mode='overlay':all_opacity={}".format(opacity)
-        self._ffmpeg_input_fill_cmd(filter_args)
-        self._ffmpeg_input_fill_cmd('-shortest')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output)
 
+        bg_video_alpha = self.check_alpha_channel(video)
+        effect_video_alpha = self.check_alpha_channel(effect_vid)
+
+        video_stream = ffmpeg.input(video)['v'].filter('format', 'argb')
+        effect_stream = ffmpeg.input(effect_vid)['v'].filter('format', 'argb')
+
+        # format_video_stream = video_stream.filter('format', 'argb')
+        # format_effect_strean = effect_stream.filter('format', 'argb')
+        opacity = opacity_val / 100
+        (
+            ffmpeg.filter([effect_stream, video_stream],
+                          'blend', all_mode='overlay',
+                          all_opacity="{}".format(opacity))
+                .output(output)
+                .run(overwrite_output=True)
+        )
+        # if bg_video_alpha:
+        #     pass
+        # if effect_video_alpha:
+        #     pass
+
+        # self._ffmpeg_input_filter_complex_prefix()
+        # opacity = float(opacity_val / 100)
+        # filter_args = "[1:0]format=rgba[a]; \
+        #                [0:0]format=rgba[b]; \
+        #                [a][b]blend=all_mode='overlay':all_opacity={}".format(opacity)
+        # self._ffmpeg_input_fill_cmd(filter_args)
+        # self._ffmpeg_input_fill_cmd('-shortest')
+        # self.ffmpeg_cli_run(self.ffmpeg_cli, output)
         pass
 
     def clean_up_mp3_meta_data(self, mp3file, mp3out):
@@ -376,18 +427,21 @@ class FfmpegCli(object):
         :param mp3file:
         :return:
         """
-        FfmpegCli.check_file_exist(mp3file)
-        self._ffmpeg_input(mp3file)
-        self._ffmpeg_input_fill_cmd('-map')
-        self._ffmpeg_input_fill_cmd('0:a')
-        self._ffmpeg_input_fill_cmd('-codec:a')
-        self._ffmpeg_input_fill_cmd('copy')
-        self._ffmpeg_input_fill_cmd('-map_metadata')
-        self._ffmpeg_input_fill_cmd('-1')
-        self.ffmpeg_cli_run(self.ffmpeg_cli, mp3out)
 
-        #
-
+        (
+            ffmpeg.input(mp3file)['a']
+                .output(mp3out, acodec='copy', map_metadata=-1)
+                .run(overwrite_output=True)
+        )
+        # FfmpegCli.check_file_exist(mp3file)
+        # self._ffmpeg_input(mp3file)
+        # self._ffmpeg_input_fill_cmd('-map')
+        # self._ffmpeg_input_fill_cmd('0:a')
+        # self._ffmpeg_input_fill_cmd('-codec:a')
+        # self._ffmpeg_input_fill_cmd('copy')
+        # self._ffmpeg_input_fill_cmd('-map_metadata')
+        # self._ffmpeg_input_fill_cmd('-1')
+        # self.ffmpeg_cli_run(self.ffmpeg_cli, mp3out)
         pass
 
     def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str, timeleng=10):
@@ -403,16 +457,22 @@ class FfmpegCli(object):
         from backend.utility.TempFileMnger import Mp3TempFile
         tempaudiofile = Mp3TempFile().getfullpath()
         self.clean_up_mp3_meta_data(input_audio, tempaudiofile)
-        ffmpeg_cmd = ["ffmpeg", "-y",
-                      "-i", "{}".format(input_vid),
-                      "-i", "{}".format(tempaudiofile),
-                      "-map", "0:v", "-map", "1:a", "-map", "0:v", "-shortest"]
-        self._ffmpeg_input_fill_cmd('-t')
-        self._ffmpeg_input_fill_cmd("{}".format(timeleng))
+        (
+            ffmpeg.output(ffmpeg.input(input_vid)['v'], ffmpeg.input(input_audio)['a']
+                          , output_vid, t=timeleng)
+                .run(overwrite_output=True)
+        )
+
+        # ffmpeg_cmd = ["ffmpeg", "-y",
+        #               "-i", "{}".format(input_vid),
+        #               "-i", "{}".format(tempaudiofile),
+        #               "-map", "0:v", "-map", "1:a", "-map", "0:v", "-shortest"]
+        # self._ffmpeg_input_fill_cmd('-t')
+        # self._ffmpeg_input_fill_cmd("{}".format(timeleng))
 
         # self._ffmpeg_input_fill_cmd('-c')
         # self._ffmpeg_input_fill_cmd('copy')
-        self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
+        # self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
 
     def add_logo_to_bg_img(self, input_bg: str,
                            input_logo: str,
@@ -430,19 +490,27 @@ class FfmpegCli(object):
         :param coordinate:
         :return:
         """
+
         from backend.render.type import Position
         coordinate: Position
         FfmpegCli.check_file_exist(input_bg)
         FfmpegCli.check_file_exist(input_logo)
-        self._ffmpeg_input(input_bg)
-        self._ffmpeg_input(input_logo)
-        self._ffmpeg_input_filter_complex_prefix()
-        filter = "[0:v][1:v]overlay={}:{}" \
-            .format(coordinate.x, coordinate.y)
-        self._ffmpeg_input_fill_cmd(filter)
-        logger.debug('{}'.format(self.ffmpeg_cli))
-        self.run(self.ffmpeg_cli, output)
-        self.reset_ffmpeg_cmd()
+        streams_list = [ffmpeg.input(input_bg), ffmpeg.input(input_logo)]
+
+        (
+            ffmpeg.filter(streams_list, 'overlay', coordinate.x, coordinate.y)
+                .output(output)
+                .run(overwrite_output=True)
+        )
+        # self._ffmpeg_input(input_bg)
+        # self._ffmpeg_input(input_logo)
+        # self._ffmpeg_input_filter_complex_prefix()
+        # filter = "[0:v][1:v]overlay={}:{}" \
+        #     .format(coordinate.x, coordinate.y)
+        # self._ffmpeg_input_fill_cmd(filter)
+        # logger.debug('{}'.format(self.ffmpeg_cli))
+        # self.run(self.ffmpeg_cli, output)
+        # self.reset_ffmpeg_cmd()
 
     def add_affect_overlay_in_sub(self, input_src: str, affect: str, subframe: Coordinate,
                                   outdir=os.path.dirname(__file__)):
@@ -476,31 +544,9 @@ class FfmpegCli(object):
         self.run(self.ffmpeg_cli, outdir)
         pass
 
-    def create_rgba_background_effect_from_list_png(self, inputdir: str, output: str):
-        """
-        ffmpeg -pattern_type glob -i 'angle/*.png' -r 30 -pix_fmt rgba -vcodec png z.mov
-
-        :param inputdir:
-        :param output:
-        :return:
-        """
-        self._ffmpeg_input_fill_cmd('-pattern_type')
-        self._ffmpeg_input_fill_cmd('glob')
-        self._ffmpeg_input_fill_cmd('-i')
-        self._ffmpeg_input_fill_cmd('{}/*.png'.format(inputdir))
-        self._ffmpeg_input_fill_cmd('-r')
-        self._ffmpeg_input_fill_cmd('30')
-        self._ffmpeg_input_fill_cmd('-pix_fmt')
-        self._ffmpeg_input_fill_cmd('rgba')
-        self._ffmpeg_input_fill_cmd('-vcodec')
-        self._ffmpeg_input_fill_cmd('png')
-        self.run(self.ffmpeg_cli, output)
-
     def check_alpha_channel(self, affect_vid):
-        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', "-i",
-                        "{}".format(affect_vid)]
-        output, err = self.run_cmd(ffproble_cmd)
-        data = json.loads(output)
+        data = ffmpeg.probe(affect_vid)
+        print(data)
         streams = data['streams']
         if len(streams):
             pix_format = streams[0]['pix_fmt']
@@ -510,69 +556,3 @@ class FfmpegCli(object):
             return False
         return False
         pass
-
-
-import unittest
-
-
-class TestFfmpeg(unittest.TestCase):
-    def test_check_alphachannel(self):
-        ffmpeg = FfmpegCli()
-        not_alpha = ffmpeg.check_alpha_channel(
-            r'D:\Project\ytcreatorservice\backend\content\Effect\floating-particles-in-blue_W1Yh5u-ZH.mov')
-        self.assertFalse(not_alpha)
-        has_alpha = ffmpeg.check_alpha_channel(
-            r'D:\Project\ytcreatorservice\backend\content\Effect\Green_Bubble.mov')
-        self.assertTrue(has_alpha)
-
-# parser = argparse.ArgumentParser(description='Get video information')
-# parser.add_argument('in_filename', help='Input filename')
-#
-# if __name__ == '__main__':
-#     args = parser.parse_args()
-# ffmpeg_cli = FffmpegCli()
-#     time_length = ffmpeg_cli.get_media_time_length(args.in_filename)
-#     logger.debug("time length " + str(time_length))
-# ffmpeg_cli.add_logo_to_bg_img(
-#     '/mnt/775AD44933621551/Project/MMO/youtube/Content/CoverImage/NhamMatThayMuaHe_Background.png',
-#     '/mnt/775AD44933621551/Project/MMO/youtube/Content/Titile/Xinloi.png', Coordinate(100, 100))
-# ffmpeg_cli.add_affect_overlay_in_sub("/tmp/xin_loi_img.mp4",
-#                                      "/mnt/775AD44933621551/Project/MMO/youtube/Content/bg_affect/test.gif",
-#                                      subframe=Coordinate(000, 000, 1920, 1080))
-#
-# ffmpeg_cli.create_media_file_from_img(
-#     "/mnt/775AD44933621551/Project/MMO/youtube/Content/CoverImage/NhamMatThayMuaHe_Background.png",
-#     time_length, "/tmp/xin_loi_img.mp4")
-# # ffmpeg_cli.create_background_affect_with_length(
-# #     "/mnt/775AD44933621551/Project/MMO/youtube/Content/bg_affect/y73ofoao",
-# #     time_length, "temp/xin_loi_bg.mp4")
-# ffmpeg_cli.adding_sub_to_video("/mnt/775AD44933621551/Project/MMO/youtube/output_file.ass",
-#                                "temp/xin_loi_img.mp4",
-#                                "temp/xin_loi_sub.mp4"
-#                                )
-#
-# ffmpeg_cli.mux_audio_to_video("temp/xin_loi_sub.mp4",
-#                               "/mnt/775AD44933621551/Project/MMO/youtube/Content/Music/Nham_mat_thay_mua_he.mp3",
-#                               "temp/xin_loi.mp4")
-#
-# ffmpeg_cli.add_affect_to_video(
-#     "temp/xin_loi_bg.mp4",
-#     "temp/xin_loi.mp4",
-#     "xin_loi_final.mp4")
-# try:
-#     probe = render.probe(args.in_filename)
-# except render.Error as e:
-#     logger.debug(e.stderr, file=sys.stderr)
-#     sys.exit(1)
-
-# video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
-# if video_stream is None:
-#     logger.debug('No video stream found', file=sys.stderr)
-#     sys.exit(1)
-#
-# width = int(video_stream['width'])
-# height = int(video_stream['height'])
-# # num_frames = int(video_stream['nb_frames'])
-# logger.debug('width: {}'.format(width))
-# logger.debug('height: {}'.format(height))
-# logger.debug('num_frames: {}'.format(num_frames))

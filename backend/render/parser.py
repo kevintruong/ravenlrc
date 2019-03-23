@@ -25,7 +25,6 @@ class CrawlCmder(Cmder):
                 self.output = crawlcmd['output']
             else:
                 self.output = ContentDir.SONG_DIR.value
-        print(self.url + self.output)
 
     def crawl_parser(self):
         if 'nhaccuatui' in self.url:

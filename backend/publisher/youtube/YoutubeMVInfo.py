@@ -1,6 +1,5 @@
-import json5
+import json
 import os
-
 from backend.render.cache import ContentDir
 from backend.crawler.nct import SongInfo
 from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict, non_accent_convert, \
@@ -45,7 +44,7 @@ class ChannelInfoManger:
         try:
             infofile = self.get_channel_info_config(channelname)
             with open(infofile, 'r', encoding='utf-8') as finfo:
-                channelinfo = json5.load(finfo)
+                channelinfo = json.load(finfo)
             return channelinfo
         except Exception as exp:
             raise exp
@@ -60,7 +59,7 @@ class ChannelInfoManger:
         pass
 
     def toJSON(self):
-        return json5.dumps(self, default=lambda o: o.__dict__,
+        return json.dumps(self, default=lambda o: o.__dict__,
                            sort_keys=True, indent=4)
 
 
@@ -79,7 +78,7 @@ class YoutubeMVInfo:
         self.description = self.description_formatter()
 
     def toJSON(self):
-        return json5.dumps(self, default=lambda o: o.__dict__,
+        return json.dumps(self, default=lambda o: o.__dict__,
                            sort_keys=True, indent=4)
 
     @staticmethod
@@ -96,7 +95,7 @@ class YoutubeMVInfo:
     def get_songinfo(self, buildmv):
         mvconfig_file = self.get_mv_build_config(buildmv)
         with open(mvconfig_file, 'r') as fileconfig:
-            mvconfig = json5.load(fileconfig)
+            mvconfig = json.load(fileconfig)
             if 'songinfo' in mvconfig:
                 return SongInfo()
 

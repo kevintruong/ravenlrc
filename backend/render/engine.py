@@ -1,14 +1,12 @@
 from abc import *
+from backend.render.cache import *
+from backend.render.type import *
+from backend.utility.TempFileMnger import *
 
 from backend.render.parser import SongApi
 from backend.crawler.nct import SongInfo
-from backend.render.cache import ContentDir, EffectCachedFile, SecondBgImgCachedFile, MuxAudioVidCachedFile, \
-    BgEffectCachedFile, BgImgCachedFile, BgVidCachedFile
 from backend.render.ffmpegcli import FfmpegCli, FFmpegProfile
-from backend.render.type import Lyric, Spectrum, BgSpectrum, BgEffect, BgWaterMask, BgLyric, Title, RenderType, \
-    RenderTypeCode, BgTitle, WaterMask
 from backend.subeffect.asseditor import create_ass_from_lrc
-from backend.utility.TempFileMnger import AssTempFile, PngTempFile, SpectrumMvTemplateFile
 from backend.utility.Utility import generate_mv_filename
 from backend.yclogger import telelog
 
@@ -25,8 +23,8 @@ class RenderEngine(ABC):
 class RenderSong(RenderEngine):
 
     def run(self, src: str, profile, timelength, **kwargs):
-        cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
-        effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
+        cached_filename, effectmv_cachedfile = self.get_cached_file(src)
+
         if effectmv_cachedfile is None:
             ffmpegcli = FfmpegCli()
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
@@ -39,6 +37,11 @@ class RenderSong(RenderEngine):
             preview_affectmv = effectmv_cachedfile
         return preview_affectmv
         pass
+
+    def get_cached_file(self, src):
+        cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
+        effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
+        return cached_filename, effectmv_cachedfile
 
     def __init__(self, songinfo: SongInfo):
         super().__init__()
@@ -67,9 +70,6 @@ class RenderSpectrum(RenderEngine):
             ffmpegcli = FfmpegCli()
             ffmpegcli.add_logo_to_bg_img(src, formatted_watermask, renderfile, self.spectrumconf.position)
         return renderfile
-
-        return src
-        pass
 
 
 class RenderWaterMask(RenderEngine):
@@ -120,20 +120,25 @@ class RenderTitle(RenderEngine):
 
 
 class RenderBgEffect(RenderEngine):
-    def run(self, src: str, profile, timelength, **kwargs):
-        self.bgeffectfile = self.init_bgeffect_by_profile(profile)
-        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile, timelength)
-        ffmpegcli = FfmpegCli()
 
-        cached_filename = BgEffectCachedFile.get_cached_file_name(src, effect_file,
-                                                                  self.bgEffect.opacity)
-        effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+    def run(self, src: str, profile, timelength, **kwargs):
+        cached_filename, effect_cachedfile, effect_file = self.get_effect_cached_file(profile, src, timelength)
+
         if effect_cachedfile is None:
+            ffmpegcli = FfmpegCli()
             effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
 
             ffmpegcli.add_affect_to_video(effect_file, src, effect_cachedfile,
                                           self.bgEffect.opacity)
         return effect_cachedfile
+
+    def get_effect_cached_file(self, profile, src, timelength):
+        self.bgeffectfile = self.init_bgeffect_by_profile(profile)
+        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile, timelength)
+        cached_filename = BgEffectCachedFile.get_cached_file_name(src, effect_file,
+                                                                  self.bgEffect.opacity)
+        effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+        return cached_filename, effect_cachedfile, effect_file
 
     def __init__(self, bgeffect: BgEffect):
         super().__init__()
@@ -147,7 +152,6 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         ffmpegcli = FfmpegCli()
-        ffmpegcli.set_resolution(profile)
         cached_filename = EffectCachedFile.get_cached_profile_filename(self.bgEffect.file,
                                                                        profile)
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
@@ -205,7 +209,6 @@ class RenderLyric(RenderEngine):
         if 'output' in kwargs:
             output = kwargs['output']
         ffmpegcli = FfmpegCli()
-        ffmpegcli.set_resolution(profile)
         assfile = self.generate_lyric_effect_file(profile)
         ffmpegcli.adding_sub_to_video(assfile,
                                       src,
@@ -370,7 +373,7 @@ import json
 
 class Test_Render_Engine(unittest.TestCase):
     def setUp(self):
-        jsonfile = r'D:\Project\ytcreatorservice\test\request.json'
+        jsonfile = r'/mnt/Data/Project/ytcreatorservice/test/request.json'
         with open(jsonfile, 'r', encoding='UTF-8') as json5file:
             self.data = json.load(json5file)
         jsondata = json.dumps(self.data, indent=1)
