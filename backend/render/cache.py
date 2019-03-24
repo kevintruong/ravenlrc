@@ -5,12 +5,18 @@ from enum import Enum
 
 # from backend.render.type import Size
 from backend.utility.Utility import FileInfo
+from config.configure import BackendConfigure
 
-CurDir = os.path.dirname(os.path.realpath(__file__))
-contentDir = os.path.join(CurDir, '../content')
+config: BackendConfigure = BackendConfigure.get_config()
+if config is None:
+    CurDir = os.path.dirname(os.path.realpath(__file__))
+    contentDir = os.path.join(CurDir, '../content')
 
-contentDir = os.path.abspath(contentDir)
-cachedcontentdir = contentDir
+    contentDir = os.path.abspath(contentDir)
+    cachedcontentdir = contentDir
+else:
+    contentDir = config.StorageMountPoint
+    cachedcontentdir = config.CacheStorageMountPoint
 
 
 class ContentDir(Enum):
