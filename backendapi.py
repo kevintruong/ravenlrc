@@ -4,6 +4,10 @@ import hug
 
 from backend.render.engine import BackgroundsRender
 from backend.render.parser import *
+from hug_middleware_cors import CORSMiddleware
+
+api = hug.API(__name__)
+api.http.add_middleware(CORSMiddleware(api))
 
 # sys.path.append("pycharm-debug-py3k.egg")
 # import pydevd
