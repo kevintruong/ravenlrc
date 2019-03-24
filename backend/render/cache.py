@@ -1,4 +1,6 @@
+import hashlib
 import os
+import uuid
 from enum import Enum
 
 # from backend.render.type import Size
@@ -55,6 +57,13 @@ class CachedContentDir(Enum):
 
 
 class CachedFile:
+
+    @classmethod
+    def generate_hash_from_filename(cls, fname: str):
+        name, ext = fname.split('.')
+        hashfile = hashlib.md5(str(name + ext).encode('utf-8')).hexdigest()
+        return hashfile + ".{}".format(ext)
+
     @classmethod
     def get_cached_profile_filename(cls, filepath: str, profile=None, extension=None):
         filename = os.path.basename(filepath)
@@ -66,8 +75,7 @@ class CachedFile:
             cachedfilename = cachedfilename + extension
         else:
             cachedfilename = cachedfilename + ext
-        return cachedfilename
-        # return name + '_' + profile + ext
+        return cls.generate_hash_from_filename(cachedfilename)
 
 
 class SongFile:
@@ -108,7 +116,8 @@ class SecondBgImgCachedFile(CachedFile):
         bgimg_name = FileInfo(bgimg).name
         ext = FileInfo(bgimg).ext
         watermask_name = FileInfo(watermask).name
-        return bgimg_name + "_" + watermask_name + "_" + "{}".format(size.width) + "." + ext
+        filename = bgimg_name + "_" + watermask_name + "_" + "{}".format(size.width) + "." + ext
+        return cls.generate_hash_from_filename(filename)
 
         pass
 
@@ -145,7 +154,7 @@ class MuxAudioVidCachedFile(CachedFile):
         videofilename = FileInfo(video).name
         audiofilename = FileInfo(audio).name
         bgeff_cachedfilename = videofilename + '_' + audiofilename + '.mp4'
-        return bgeff_cachedfilename
+        return cls.generate_hash_from_filename(bgeff_cachedfilename)
 
 
 class BgEffectCachedFile(CachedFile):
@@ -169,7 +178,7 @@ class BgEffectCachedFile(CachedFile):
         bgmv_fileinfo = FileInfo(previewbgmv)
         effmv_fileinfo = FileInfo(previeweffectmv)
         bgeff_cachedfilename = bgmv_fileinfo.name + '_' + effmv_fileinfo.name + str(opacity_val) + '.mp4'
-        return bgeff_cachedfilename
+        return cls.generate_hash_from_filename(bgeff_cachedfilename)
 
 
 class BgImgCachedFile(CachedFile):

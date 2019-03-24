@@ -245,12 +245,13 @@ class FfmpegCli(object):
         :param output_effect:
         :return:
         """
+        res_x, res_y = resolution.split('x')
         from backend.render.type import Size
         resolution: Size
         FfmpegCli.check_file_exist(input_effect)
         (
             ffmpeg.input(input_effect)
-                .filter('scale', resolution.width, resolution.height)
+                .filter('scale', res_x, res_y)
                 .output(output_effect, framerate=25, vcodec='png')
                 .run(overwrite_output=True)
         )
@@ -294,7 +295,7 @@ class FfmpegCli(object):
         FfmpegCli.check_file_exist(input_bg)
         (
             ffmpeg.input(input_bg)
-                .filter('scale', resolution.width, resolution.height)
+                .filter('scale', resolution.width, -1)
                 .output(output_bg, framerate=25, vcodec='png')
                 .run(overwrite_output=True)
         )
@@ -334,7 +335,7 @@ class FfmpegCli(object):
         subvid_stream = input['v'].filter('subtitles', input_sub)
         ((
             ffmpeg
-                .output(subvid_stream, input['a'], output_vid)
+                .output(subvid_stream, input['a'], output_vid).global_args('-shortest')
                 .run(overwrite_output=True)
             # .run(overwrite_output=True)
         ))
@@ -373,7 +374,7 @@ class FfmpegCli(object):
             streams_list = [bgvideo_stream, effect_stream]
             (
                 ffmpeg.filter(streams_list, 'overlay')
-                    .output(output, framerate=25)
+                    .output(output, framerate=25).global_args('-shortest')
                     .run(overwrite_output=True)
             )
             # self._ffmpeg_input(video)
@@ -403,7 +404,7 @@ class FfmpegCli(object):
             ffmpeg.filter([effect_stream, video_stream],
                           'blend', all_mode='overlay',
                           all_opacity="{}".format(opacity))
-                .output(output)
+                .output(output, ).global_args('-shortest')
                 .run(overwrite_output=True)
         )
         # if bg_video_alpha:
@@ -458,8 +459,9 @@ class FfmpegCli(object):
         tempaudiofile = Mp3TempFile().getfullpath()
         self.clean_up_mp3_meta_data(input_audio, tempaudiofile)
         (
-            ffmpeg.output(ffmpeg.input(input_vid)['v'], ffmpeg.input(input_audio)['a']
-                          , output_vid, t=timeleng)
+            ffmpeg.output(ffmpeg.input(input_vid)['v'],
+                          ffmpeg.input(input_audio)['a']
+                          , output_vid, t=timeleng).global_args('-shortest')
                 .run(overwrite_output=True)
         )
 
