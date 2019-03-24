@@ -6,8 +6,8 @@ from backend.render.engine import BackgroundsRender
 from backend.render.parser import *
 from hug_middleware_cors import CORSMiddleware
 
-api = hug.API(__name__)
-api.http.add_middleware(CORSMiddleware(api))
+# api = hug.API(__name__)
+# api.http.add_middleware(CORSMiddleware(api))
 
 # sys.path.append("pycharm-debug-py3k.egg")
 # import pydevd
@@ -26,6 +26,29 @@ def error_msg_handle(exp):
             'message': "{}".format(exp),
             'traceback': "{}".format(tracebackmsg)
             }
+
+
+@hug.response_middleware()
+def CORS(request, response, resource):
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.set_header(
+        'Access-Control-Allow-Headers',
+        'Authorization,Keep-Alive,User-Agent,'
+        'If-Modified-Since,Cache-Control,Content-Type'
+    )
+    response.set_header(
+        'Access-Control-Expose-Headers',
+        'Authorization,Keep-Alive,User-Agent,'
+        'If-Modified-Since,Cache-Control,Content-Type'
+    )
+
+
+def cors_support(response, *args, **kwargs):
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+    response.set_header('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+    response.setHeader('Access-Control-Allow-Credentials', True)
 
 
 @hug.get('/api/song')
