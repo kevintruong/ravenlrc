@@ -28,20 +28,20 @@ def error_msg_handle(exp):
             }
 
 
-@hug.response_middleware()
-def CORS(request, response, resource):
-    response.set_header('Access-Control-Allow-Origin', '*')
-    response.set_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    response.set_header(
-        'Access-Control-Allow-Headers',
-        'Authorization,Keep-Alive,User-Agent,'
-        'If-Modified-Since,Cache-Control,Content-Type'
-    )
-    response.set_header(
-        'Access-Control-Expose-Headers',
-        'Authorization,Keep-Alive,User-Agent,'
-        'If-Modified-Since,Cache-Control,Content-Type'
-    )
+# @hug.response_middleware()
+# def CORS(request, response, resource):
+#     response.set_header('Access-Control-Allow-Origin', '*')
+#     response.set_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+#     response.set_header(
+#         'Access-Control-Allow-Headers',
+#         'Authorization,Keep-Alive,User-Agent,'
+#         'If-Modified-Since,Cache-Control,Content-Type'
+#     )
+#     response.set_header(
+#         'Access-Control-Expose-Headers',
+#         'Authorization,Keep-Alive,User-Agent,'
+#         'If-Modified-Since,Cache-Control,Content-Type'
+#     )
 
 
 def cors_support(response, *args, **kwargs):
@@ -51,7 +51,7 @@ def cors_support(response, *args, **kwargs):
     response.setHeader('Access-Control-Allow-Credentials', True)
 
 
-@hug.get('/api/song')
+@hug.get('/api/song', require=cors_support)
 def song(url):
     print(url)
     try:
@@ -62,7 +62,7 @@ def song(url):
         return error_msg_handle(exp)
 
 
-@hug.post('/api/video/render')
+@hug.post('/api/video/render', require=cors_support)
 def render(body):
     try:
         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
