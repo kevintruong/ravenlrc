@@ -3,44 +3,11 @@
   "backgrounds": [
     {
       "id": "backgroundid",
-      "file": "CoSaoGioLaiChiaXa.png",
+      "file": "GanNgayTruocMat.png",
       "timming": [
         {
           "start": "0",
           "end": "50000"
-        }
-      ],
-      "assest": [
-        {
-          "type": "text",
-          "format": {
-            "position": {
-              "x": "221",
-              "y": "900"
-            },
-            "size": {
-              "width": "691",
-              "height": "43"
-            },
-            "font": {
-              "name": "SVN-Futura Light",
-              "color": "0xAABBCC",
-              "size": "30"
-            }
-          }
-        },
-        {
-          "type": "graphic",
-          "format": {
-            "position": {
-              "x": "221",
-              "y": "900"
-            },
-            "size": {
-              "width": "691",
-              "height": "43"
-            }
-          }
         }
       ],
       "effect": {
