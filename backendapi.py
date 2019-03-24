@@ -51,7 +51,11 @@ def cors_support(response, *args, **kwargs):
     response.setHeader('Access-Control-Allow-Credentials', True)
 
 
-@hug.get('/api/song', require=cors_support)
+api = hug.API(__name__)
+api.http.add_middleware(hug.middleware.CORSMiddleware(api, max_age=10))
+
+
+@hug.get('/api/song')
 def song(url):
     print(url)
     try:
@@ -62,7 +66,7 @@ def song(url):
         return error_msg_handle(exp)
 
 
-@hug.post('/api/video/render', require=cors_support)
+@hug.post('/api/video/render')
 def render(body):
     try:
         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
