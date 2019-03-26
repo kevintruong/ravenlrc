@@ -11,9 +11,10 @@ import logging
 import ffmpeg
 
 # from backend.render.type import Size, Position
+import psutil as psutil
 
 logger = logging.getLogger('backend')
-
+cpucount = psutil.cpu_count()
 
 class Coordinate(object):
     """
@@ -333,9 +334,11 @@ class FfmpegCli(object):
         FfmpegCli.check_file_exist(input_video)
         input = ffmpeg.input(input_video)
         subvid_stream = input['v'].filter('subtitles', input_sub)
-        ((
+        print((
             ffmpeg
                 .output(subvid_stream, input['a'], output_vid).global_args('-shortest')
+                .global_args('-threads','{}'.format(cpucount))
+                # .compile()
                 .run(overwrite_output=True)
             # .run(overwrite_output=True)
         ))

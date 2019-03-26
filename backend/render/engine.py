@@ -128,7 +128,9 @@ class RenderBgEffect(RenderEngine):
             ffmpegcli = FfmpegCli()
             effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
 
-            ffmpegcli.add_affect_to_video(effect_file, src, effect_cachedfile,
+            ffmpegcli.add_affect_to_video(effect_file,
+                                          src,
+                                          effect_cachedfile,
                                           self.bgEffect.opacity)
         return effect_cachedfile
 
