@@ -16,6 +16,7 @@ import psutil as psutil
 logger = logging.getLogger('backend')
 cpucount = psutil.cpu_count()
 
+
 class Coordinate(object):
     """
 
@@ -334,24 +335,15 @@ class FfmpegCli(object):
         FfmpegCli.check_file_exist(input_video)
         input = ffmpeg.input(input_video)
         subvid_stream = input['v'].filter('subtitles', input_sub)
-        print((
+        (
             ffmpeg
-                .output(subvid_stream, input['a'], output_vid).global_args('-shortest')
-                .global_args('-threads','{}'.format(cpucount))
-                # .compile()
+                .output(subvid_stream, input['a'],
+                        output_vid, acodec='copy')
+                .global_args('-shortest')
+                .global_args('-threads', '{}'.format(cpucount))
+                .global_args("-preset", "ultrafast")
                 .run(overwrite_output=True)
-            # .run(overwrite_output=True)
-        ))
-        # self._ffmpeg_input(input_video)
-        # self._ffmpeg_input_filter_complex_prefix()
-        # Replace back slash -> forward slash
-        # input_sub = input_sub.replace(os.sep, '/')
-        # newass = input_sub[:1] + "\\" + input_sub[1:]
-        # cmd = "subtitles=\\'{}\\'".format(newass)
-        # self._ffmpeg_input_fill_cmd(cmd)
-        # self._ffmpeg_input_fill_cmd('-shortest')
-        # self.ffmpeg_cli_run(self.ffmpeg_cli, output_vid)
-        pass
+        )
 
     def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
         """
@@ -377,7 +369,10 @@ class FfmpegCli(object):
             streams_list = [bgvideo_stream, effect_stream]
             (
                 ffmpeg.filter(streams_list, 'overlay')
-                    .output(output, framerate=25).global_args('-shortest')
+                    .output(output, framerate=25)
+                    .global_args('-shortest')
+                    .global_args('-threads', '{}'.format(cpucount))
+                    .global_args("-preset", "ultrafast")
                     .run(overwrite_output=True)
             )
             # self._ffmpeg_input(video)
@@ -408,6 +403,8 @@ class FfmpegCli(object):
                           'blend', all_mode='overlay',
                           all_opacity="{}".format(opacity))
                 .output(output, ).global_args('-shortest')
+                .global_args('-threads', '{}'.format(cpucount))
+                .global_args("-preset", "ultrafast")
                 .run(overwrite_output=True)
         )
         # if bg_video_alpha:
@@ -435,6 +432,7 @@ class FfmpegCli(object):
         (
             ffmpeg.input(mp3file)['a']
                 .output(mp3out, acodec='copy', map_metadata=-1)
+                .global_args('-threads', '{}'.format(cpucount))
                 .run(overwrite_output=True)
         )
         # FfmpegCli.check_file_exist(mp3file)
@@ -464,7 +462,10 @@ class FfmpegCli(object):
         (
             ffmpeg.output(ffmpeg.input(input_vid)['v'],
                           ffmpeg.input(input_audio)['a']
-                          , output_vid, t=timeleng).global_args('-shortest')
+                          , output_vid, t=timeleng, acodec='copy', vcodec='copy')
+                .global_args('-shortest')
+                .global_args('-threads', '{}'.format(cpucount))
+                .global_args("-preset", "ultrafast")
                 .run(overwrite_output=True)
         )
 
@@ -505,6 +506,7 @@ class FfmpegCli(object):
         (
             ffmpeg.filter(streams_list, 'overlay', coordinate.x, coordinate.y)
                 .output(output)
+                .global_args("-preset", "ultrafast")
                 .run(overwrite_output=True)
         )
         # self._ffmpeg_input(input_bg)

@@ -1,3 +1,4 @@
+psutil
 ffmpeg-python
 selenium
 flashtext
