@@ -12,27 +12,29 @@ from backend.yclogger import telelog
 
 
 class RenderEngine(ABC):
-    def __init__(self):
+    def __init__(self, rendertype=None):
+        if rendertype is None:
+            self.rendertype = rendertype
+        else:
+            self.rendertype = RenderType()
         pass
 
     @abstractmethod
-    def run(self, src: str, profile, timelength, **kwargs):
+    def run(self, src: str, **kwargs):
         pass
 
 
 class RenderSong(RenderEngine):
 
-    def run(self, src: str, profile, timelength, **kwargs):
+    def run(self, src: str, **kwargs):
         cached_filename, effectmv_cachedfile = self.get_cached_file(src)
-
         if effectmv_cachedfile is None:
             ffmpegcli = FfmpegCli()
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
             preview_affectmv = effectmv_cachedfile
             ffmpegcli.mux_audio_to_video(src,
                                          self.songinfo.songfile,
-                                         preview_affectmv,
-                                         timelength)
+                                         preview_affectmv)
         else:
             preview_affectmv = effectmv_cachedfile
         return preview_affectmv
@@ -49,20 +51,23 @@ class RenderSong(RenderEngine):
 
 
 class RenderSpectrum(RenderEngine):
-    def __init__(self, spectrumconf: BgSpectrum, spectrum: Spectrum):
-        super().__init__()
+    def __init__(self, spectrumconf: BgSpectrum, spectrum: Spectrum, rendertype: RenderType):
+        super().__init__(rendertype)
         self.spectrumconf = spectrumconf
         self.spectrum = spectrum
 
     def format(self):
-        formatted_watermask = SpectrumMvTemplateFile().getfullpath()
+        formatted_spectrum = SpectrumMvTemplateFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_media_by_width_ratio(self.spectrum.file, self.spectrumconf.size, formatted_watermask)
-        return formatted_watermask
-        pass
+        ffmpegcli.scale_video_by_width_height(self.spectrum.file,
+                                              self.spectrumconf.size,
+                                              formatted_spectrum)
+        return formatted_spectrum
 
-    def run(self, src: str, profile, timelength, **kwargs):
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.spectrum.file, self.spectrumconf.size)
+    def run(self, src: str, **kwargs):
+        renderfile_name = SecondBgImgCachedFile.get_file_name(src,
+                                                              self.spectrum.file,
+                                                              self.spectrumconf.size)
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not renderfile:
             renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
@@ -73,19 +78,20 @@ class RenderSpectrum(RenderEngine):
 
 
 class RenderWaterMask(RenderEngine):
-    def __init__(self, watermaskconf: BgWaterMask, watermask: WaterMask):
-        super().__init__()
+    def __init__(self, watermaskconf: BgWaterMask,
+                 watermask: WaterMask, rendertype=None):
+        super().__init__(rendertype)
         self.watermaskconf = watermaskconf
         self.watermask = watermask
 
     def format(self):
         formatted_watermask = PngTempFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_media_by_width_ratio(self.watermask.file, self.watermaskconf.size, formatted_watermask)
+        ffmpegcli.scale_video_by_width_height(self.watermask.file, self.watermaskconf.size, formatted_watermask)
         return formatted_watermask
         pass
 
-    def run(self, src: str, profile, timelength, **kwargs):
+    def run(self, src: str, **kwargs):
         renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.watermask.file, self.watermaskconf.size)
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not renderfile:
@@ -97,18 +103,18 @@ class RenderWaterMask(RenderEngine):
 
 
 class RenderTitle(RenderEngine):
-    def __init__(self, titleconf: BgTitle, title: Title):
-        super().__init__()
+    def __init__(self, titleconf: BgTitle, title: Title, rendertype=None):
+        super().__init__(rendertype)
         self.titleconf = titleconf
         self.title = title
 
     def format(self):
         formatted_watermask = PngTempFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_media_by_width_ratio(self.title.file, self.titleconf.size, formatted_watermask)
+        ffmpegcli.scale_video_by_width_height(self.title.file, self.titleconf.size, formatted_watermask)
         return formatted_watermask
 
-    def run(self, src: str, profile, timelength, **kwargs):
+    def run(self, src: str, **kwargs):
         renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.title.file, self.titleconf.size)
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not renderfile:
@@ -121,8 +127,12 @@ class RenderTitle(RenderEngine):
 
 class RenderBgEffect(RenderEngine):
 
-    def run(self, src: str, profile, timelength, **kwargs):
-        cached_filename, effect_cachedfile, effect_file = self.get_effect_cached_file(profile, src, timelength)
+    def run(self, src: str, **kwargs):
+        profile = self.rendertype.configure.get_resolution_str()
+        timelength = self.rendertype.configure.duration
+        cached_filename, effect_cachedfile, effect_file = self.get_effect_cached_file(profile,
+                                                                                      src,
+                                                                                      timelength)
 
         if effect_cachedfile is None:
             ffmpegcli = FfmpegCli()
@@ -142,8 +152,8 @@ class RenderBgEffect(RenderEngine):
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
         return cached_filename, effect_cachedfile, effect_file
 
-    def __init__(self, bgeffect: BgEffect):
-        super().__init__()
+    def __init__(self, bgeffect: BgEffect, rendertype=None):
+        super().__init__(rendertype)
         self.bgEffect = bgeffect
         self.bgeffectfile = None
 
@@ -154,13 +164,14 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         ffmpegcli = FfmpegCli()
-        cached_filename = EffectCachedFile.get_cached_profile_filename(self.bgEffect.file,
-                                                                       profile)
+        cached_filename = EffectCachedFile.get_cached_profile_filename(self.
+                                                                       bgEffect.file,
+                                                                       profile=profile)
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
             effect_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.scale_effect_vid(self.bgEffect.file,
-                                       profile,
+                                       self.rendertype.configure.resolution,
                                        effect_cachedfile)
         return effect_cachedfile
 
@@ -188,30 +199,42 @@ class RenderBgEffect(RenderEngine):
 
 
 class RenderLyric(RenderEngine):
+    reference_resolution_width = 1920
+    reference_resolution_height = 1080
 
-    def __init__(self, lrcconf: BgLyric, lyric: Lyric, lyricfile=None):
-        super().__init__()
+    def __init__(self,
+                 lrcconf: BgLyric,
+                 lyric: Lyric,
+                 lyricfile=None,
+                 rendertype=None):
+        super().__init__(rendertype)
         self.lyric = lyric
         self.lrcconf = lrcconf
+
         if self.lyric is None:
             self.lyricfile = lyricfile
         else:
-            self.lyricfile = lyricfile
+            if self.lyric.file:
+                self.lyricfile = self.lyric.file
+            else:
+                self.lyricfile = lyricfile
 
-    def generate_lyric_effect_file(self, preview_profile):
+    def generate_lyric_effect_file(self, resolution):
+        scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
+        self.lrcconf.scale_font_size_by_factor(scale_factor)
         preview_asstempfile = AssTempFile().getfullpath()
         create_ass_from_lrc(self.lyricfile,
                             preview_asstempfile,
                             self.lrcconf,
-                            preview_profile)
+                            resolution)
         preview_asstempfile = self.create_effect_lyric_file(preview_asstempfile)
         return preview_asstempfile
 
-    def run(self, src: str, profile, timelength, **kwargs):
+    def run(self, src: str, **kwargs):
         if 'output' in kwargs:
             output = kwargs['output']
         ffmpegcli = FfmpegCli()
-        assfile = self.generate_lyric_effect_file(profile)
+        assfile = self.generate_lyric_effect_file(self.rendertype.configure.resolution)
         ffmpegcli.adding_sub_to_video(assfile,
                                       src,
                                       output)
@@ -230,7 +253,7 @@ class RenderLyric(RenderEngine):
         return ass_file
 
 
-class BackgroundRender:
+class BackgroundRender(RenderEngine):
 
     def get_cached_backgroundimg(self, preview_profile):
         ffmpegcli = FfmpegCli()
@@ -238,9 +261,9 @@ class BackgroundRender:
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
-            ffmpegcli.scale_background_img(self.input,
-                                           preview_profile,
-                                           bg_cachedfile)
+            ffmpegcli.scale_img_by_width_height(self.input,
+                                                self.rendertype.configure.resolution,
+                                                bg_cachedfile)
         return bg_cachedfile
 
     def get_cached_bgvid(self, bgfile, time_length):
@@ -261,40 +284,41 @@ class BackgroundRender:
 
     def render_background_full_time_length(self):
         timeleng = self.rendertype.configure.duration
-        self.input = self.file
+        self.input = self.file  # initial input by background file
         if self.watermask:
-            self.output = self.watermask.run(self.input, self.profile, timeleng)
+            self.output = self.watermask.run(self.input)
             self.input = self.output
         if self.title:
-            self.output = self.title.run(self.input, self.profile, timeleng)
+            self.output = self.title.run(self.input)
             self.input = self.output
-        self.get_cached_backgroundimg(self.profile)
-        self.output = self.get_cached_bgvid(self.input, timeleng)
-        self.input = self.output
+        if self.file:
+            self.input = self.get_cached_backgroundimg(self.profile)
+            self.output = self.get_cached_bgvid(self.input, timeleng)
+            self.input = self.output
         if self.effect:
-            self.output = self.effect.run(self.input, self.profile, timeleng)
+            self.output = self.effect.run(self.input)
             self.input = self.output
         if self.spectrum:
-            self.output = self.spectrum.run(self.input, self.profile, timeleng)
+            self.output = self.spectrum.run(self.input)
             self.input = self.output
         if self.song:
-            self.output = self.song.run(self.input, self.profile, timeleng)
+            self.output = self.song.run(self.input)
             self.input = self.output
         if self.lyric:
-            self.output = self.lyric.run(self.input, self.profile, timeleng, output=self.finalfile)
+            self.output = self.lyric.run(self.input, output=self.finalfile)
         return self.output
 
     def init_background_render(self):
         return self.get_cached_backgroundimg(self.profile)
 
-    def run(self):
+    def run(self, src: str, **kwargs):
         self.detect_rendertype()
-        if self.timming:
-            # TODO need to implement for the new feature
-            pass
-        else:
-            return self.render_background_full_time_length()
-            pass
+        # if self.timming:
+        #     TODO need to implement for the new feature
+        # pass
+        # else:
+        return self.render_background_full_time_length()
+        pass
 
     def __init__(self):
         super().__init__()
@@ -330,34 +354,43 @@ class BackgroundsRender:
         bgrender_engine: BackgroundRender
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
-            return bgrender_engine.run()
+            return bgrender_engine.run(bgrender_engine.input)
             pass
         pass
 
     def generate_render_engine(self):
         for index, background_item in enumerate(self.songapi.backgrounds):
             bgRender = BackgroundRender()
+            if self.songapi.rendertype:
+                bgRender.rendertype = self.songapi.rendertype
             if background_item.file:
                 bgRender.file = background_item.file
             if background_item.effect:
-                bgRender.effect = RenderBgEffect(background_item.effect)
+                bgRender.effect = RenderBgEffect(background_item.effect,
+                                                 bgRender.rendertype)
             if background_item.title and self.songapi.title:
-                bgRender.title = RenderTitle(background_item.title, self.songapi.title)
+                bgRender.title = RenderTitle(background_item.title,
+                                             self.songapi.title,
+                                             bgRender.rendertype)
             if background_item.lyric:
                 lyricfile = self.songapi.song.lyric
-                bgRender.lyric = RenderLyric(background_item.lyric, self.songapi.lyric, lyricfile)
+                bgRender.lyric = RenderLyric(background_item.lyric,
+                                             self.songapi.lyric,
+                                             lyricfile,
+                                             bgRender.rendertype)
             if background_item.spectrum and self.songapi.spectrum:
                 bgRender.spectrum = RenderSpectrum(background_item.spectrum,
-                                                   self.songapi.spectrum)
+                                                   self.songapi.spectrum,
+                                                   bgRender.rendertype)
             if background_item.watermask and self.songapi.watermask:
                 bgRender.watermask = RenderWaterMask(background_item.watermask,
-                                                     self.songapi.watermask)
+                                                     self.songapi.watermask,
+                                                     bgRender.rendertype)
             if self.songapi.song:
                 bgRender.song = RenderSong(self.songapi.song)
             if background_item.timing:
                 print('not support yet')
-            if self.songapi.rendertype:
-                bgRender.rendertype = self.songapi.rendertype
+
             self.bgrenderengine.append(bgRender)
             pass
 

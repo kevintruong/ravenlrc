@@ -241,14 +241,8 @@ def create_ass_subtitle(lrccontent: str,
                         output: str,
                         subinfo,
                         resolution=None):
-    if resolution is None:
-        res = [1920, 1080]
-    elif resolution == FFmpegProfile.PROFILE_LOW:
-        res = [640, 480]
-    elif resolution == FFmpegProfile.PROFILE_FULLHD:
-        res = [1920, 1080]
-    else:
-        res = [1920, 1080]
+    from backend.render.type import Resolution
+    resolution: Resolution
 
     subcorlor = subinfo.font.color
     font_name = subinfo.font.name
@@ -259,7 +253,7 @@ def create_ass_subtitle(lrccontent: str,
     outputfile = lrf_to_srt(lrccontent, srttempfile)
 
     subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
-    sub_customizer = AssCustomizor(subs, res[0], res[1])
+    sub_customizer = AssCustomizor(subs, resolution.width, resolution.height)
     sub_customizer.setting_fonts(font_name, font_size)
 
     sub_customizer.setting_margin_val(subinfo.position.x,

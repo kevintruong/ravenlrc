@@ -30,7 +30,6 @@ class Font:
 class Lyric:
     def __init__(self, info: dict):
         self.file = None
-        # self.effect = None
         self.words = []
         if 'file' in info:
             self.file = info['file']
@@ -60,6 +59,9 @@ class RenderConfigure:
             if keyvalue == 'resolution':
                 self.resolution = Resolution(info[keyvalue])
 
+    def get_resolution_str(self):
+        return '_'.join(str(attr) for attr in self.resolution.__dict__.values())
+
 
 class RenderType:
     def __init__(self, info=None):
@@ -71,9 +73,15 @@ class RenderType:
                     self.configure = RenderConfigure(info[keyvalue])
         else:
             self.type = 'preview'
-            self.configure = RenderConfigure({'duration': 90,
-                                              'resolution': {'width': 1280, 'height': 720}
-                                              })
+            self.configure = RenderConfigure(
+                {
+                    'duration': 90,
+                    'resolution': {
+                        'width': 1280,
+                        'height': 720
+                    }
+                }
+            )
 
 
 class RenderTypeCode(Enum):
@@ -116,6 +124,13 @@ class BgLyric:
             self.size = Size(info['size'])
         if 'font' in info:
             self.font = Font(info['font'])
+
+    def scale_font_size_by_factor(self, factor: float):
+        self.font.size = int(self.font.size * factor)
+        self.size.height = int(self.size.height * factor)
+        self.size.width = int(self.size.width * factor)
+        self.position.x = int(self.position.x * factor)
+        self.position.y = int(self.position.y * factor)
 
 
 class BgTitle(BgLyric):

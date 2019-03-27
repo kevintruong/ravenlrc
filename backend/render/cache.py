@@ -71,7 +71,9 @@ class CachedFile:
         return hashfile + ".{}".format(ext)
 
     @classmethod
-    def get_cached_profile_filename(cls, filepath: str, profile=None, extension=None):
+    def get_cached_profile_filename(cls, filepath: str,
+                                    profile=None,
+                                    extension=None):
         filename = os.path.basename(filepath)
         name, ext = os.path.splitext(filename)
         cachedfilename = name

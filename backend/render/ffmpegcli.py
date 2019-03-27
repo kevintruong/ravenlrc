@@ -247,13 +247,12 @@ class FfmpegCli(object):
         :param output_effect:
         :return:
         """
-        res_x, res_y = resolution.split('x')
         from backend.render.type import Size
         resolution: Size
         FfmpegCli.check_file_exist(input_effect)
         (
             ffmpeg.input(input_effect)
-                .filter('scale', res_x, res_y)
+                .filter('scale', resolution.width, resolution.height)
                 .output(output_effect, framerate=25, vcodec='png')
                 .run(overwrite_output=True)
         )
@@ -266,7 +265,7 @@ class FfmpegCli(object):
         # self.ffmpeg_cli_run(self.ffmpeg_cli, output_effect)
         pass
 
-    def scale_background_img(self, input_bg, resolution: str, output_bg):
+    def scale_img_by_width_height(self, input_bg, resolution, output_bg):
         '''
         the function will create an output backgound vid from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
@@ -275,15 +274,16 @@ class FfmpegCli(object):
         :param output_bg:
         :return:
         '''
-        res = Resolution(resolution)
+        from backend.render.type import Size
+        resolution: Size
         FfmpegCli.check_file_exist(input_bg)
         self._ffmpeg_input(input_bg)
         self._ffmpeg_input_filter_complex_prefix()
-        cmd = 'scale={}:{}'.format(res.res_x, res.res_y)
+        cmd = 'scale={}:{}'.format(resolution.width, resolution.height)
         self._ffmpeg_input_fill_cmd(cmd)
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
-    def scale_media_by_width_ratio(self, input_bg, resolution, output_bg):
+    def scale_video_by_width_height(self, input_bg, resolution, output_bg):
         '''
         the function will create an output backgound vid from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
@@ -446,7 +446,7 @@ class FfmpegCli(object):
         # self.ffmpeg_cli_run(self.ffmpeg_cli, mp3out)
         pass
 
-    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str, timeleng=10):
+    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str):
         '''
         render -i ${input_vid} -i $input_aud -map 0:v -map 1:a -c copy -shortest ${output_mv}
         :param input_vid:
@@ -462,7 +462,7 @@ class FfmpegCli(object):
         (
             ffmpeg.output(ffmpeg.input(input_vid)['v'],
                           ffmpeg.input(input_audio)['a']
-                          , output_vid, t=timeleng, acodec='copy', vcodec='copy')
+                          , output_vid, acodec='copy', vcodec='copy')
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
