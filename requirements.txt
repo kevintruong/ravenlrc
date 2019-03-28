@@ -1,3 +1,4 @@
+pandas
 psutil
 ffmpeg-python
 selenium

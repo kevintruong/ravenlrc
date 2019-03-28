@@ -84,7 +84,7 @@ class TestFFmpegCli(unittest.TestCase):
         pass
 
     def test_add_sub_to_video(self):
-        media_output = os.path.join(sample_data_dir, "media_out.mp4")
+        input_vid = os.path.join(sample_data_dir, "media_out.mp4")
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
         from backend.render.type import BgLyric
@@ -102,9 +102,12 @@ class TestFFmpegCli(unittest.TestCase):
                 "color": "0x345678",
                 "size": "30"
             }})
+        input_vid_url = r"https://drive.google.com/uc?id=1CUAQ2vSzwQFmdIHj7wgG5FNkx2xfdZJA&export=download"
         create_ass_from_url(full_test, ass_out, subinfo)
-        self.ffmpeg.adding_sub_to_video(ass_out, media_output, output)
-        length_in = self.ffmpeg.get_media_time_length(media_output)
+        compiler = self.ffmpeg.adding_sub_to_video(ass_out, input_vid_url, output).compile()
+        print(compiler)
+
+        length_in = self.ffmpeg.get_media_time_length(input_vid)
         length_out = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(length_out, length_in)
         pass

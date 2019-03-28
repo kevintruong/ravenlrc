@@ -8,7 +8,7 @@ import unidecode
 def get_filepath_info(filepath: str):
     filename = os.path.basename(filepath)
     dirname = os.path.dirname(filepath)
-    name, ext = filename.split('.')
+    name, ext = filename.split(os.extsep, 1)
     return [dirname, filename, name, ext]
 
 

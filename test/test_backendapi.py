@@ -291,7 +291,7 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_server_send_render_api(self):
-        rest_api = 'http://35.237.140.210:8000/api/video/render'
+        rest_api = 'https://embeddednews.xyz/api/video/render'
         response = requests.post(rest_api,
                                  json=self.data)
         print(response.headers)
@@ -304,9 +304,10 @@ class Test_RenderCmder(unittest.TestCase):
         print(response.content)
 
     def test_crawl_nct_url(self):
-        rest_api = 'http://35.237.140.210:8000/api/song'
-        response = requests.post(rest_api,
-                                 json=self.data)
+        url = r'https://www.nhaccuatui.com/bai-hat/chi-can-anh-noi-mei.AjyxRsfbKTld.html'
+        rest_api = 'http://localhost:8000/api/song?url='
+        response = requests.get(rest_api + url)
+        print(response.text)
 
 
 if __name__ == '__main__':

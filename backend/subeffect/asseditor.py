@@ -183,29 +183,13 @@ class SubRectangle:
 
 
 class LyricConfigInfo:
-    @classmethod
-    def get_font_file(cls, fontname):
-        from backend.render.cache import ContentDir
-        fontdir = ContentDir.FONTFILES_DIR.value
-        try:
-            fontfile = ContentDir.get_file_path(fontdir, fontname)
-            if fontfile is None:
-                print('Not found font {} in {}'.format(fontname, fontdir))
-                return fontname
-            else:
-                pass
-                return fontname
-            # from fontTools.ttLib import TTFont
-            # if
-        except Exception as exp:
-            return fontname
-
+   
     def __init__(self, subinfo: dict):
         self.rectangle: SubRectangle = SubRectangle(subinfo['rectangle'])
         self.fontname = subinfo['fontname']
         self.fontcolor = subinfo['fontcolor']
         self.fontsize = subinfo['fontsize']
-        self.fontname = LyricConfigInfo.get_font_file(subinfo['fontname'])
+        self.fontname = subinfo['fontname']
 
     def scale(self, resolution: FFmpegProfile):
         if resolution == FFmpegProfile.PROFILE_LOW:
@@ -277,7 +261,7 @@ def get_url(url: str):
 
 
 def create_ass_from_url(url: str, output: str, subinfo,
-                        resolution=[1920, 1080]):
+                        resolution=None):
     """
     create ass subtitle for
     :param subinfo:
@@ -286,6 +270,9 @@ def create_ass_from_url(url: str, output: str, subinfo,
     :param output:
     :return:
     """
+    if resolution is None:
+        from backend.render.type import Size
+        resolution = Size()
     from backend.crawler.nct import NctCrawler
     tmpdir = YtTempDir().get_fullpath()
     lyricfile = NctCrawler(url).get_lyric(tmpdir)

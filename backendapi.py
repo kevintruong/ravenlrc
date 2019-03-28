@@ -1,10 +1,6 @@
 import hug
 import traceback
 
-# from backend.render.parser import *
-# from backend.storage.gdrive import GDriveMnger
-# from backend.yclogger import telelog
-
 api = hug.API(__name__)
 api.http.add_middleware(hug.middleware.CORSMiddleware(api, max_age=10))
 
@@ -36,6 +32,32 @@ def song(url):
 #
 @hug.post('/api/video/render')
 def render(body):
+    try:
+        from backend.render.engine import BackgroundsRender
+        import json
+        from backend.yclogger import telelog
+        from backend.render.parser import SongApi
+        telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
+        songapi = SongApi(body)
+        song_render = BackgroundsRender(songapi)
+        ret = song_render.run()
+        from backend.storage.gdrive import GDriveMnger
+        sharelink = GDriveMnger().get_share_link(ret)
+        if sharelink:
+            ret = sharelink
+    except Exception as exp:
+        return error_msg_handle(exp)
+    return {'url': ret}
+
+
+@hug.post('api/video/publish')
+def publish(body):
+    return {'msg': 'not support yet'}
+    pass
+
+
+@hug.post('/api/layer/render')
+def render_layer(body):
     try:
         from backend.render.engine import BackgroundsRender
         import json

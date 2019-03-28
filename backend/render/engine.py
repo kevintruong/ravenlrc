@@ -235,9 +235,10 @@ class RenderLyric(RenderEngine):
             output = kwargs['output']
         ffmpegcli = FfmpegCli()
         assfile = self.generate_lyric_effect_file(self.rendertype.configure.resolution)
-        ffmpegcli.adding_sub_to_video(assfile,
-                                      src,
-                                      output)
+        compiler = ffmpegcli.adding_sub_to_video(assfile,
+                                                 src,
+                                                 output)
+        print(compiler)
         return output
 
     def create_effect_lyric_file(self, ass_file):
@@ -340,11 +341,11 @@ class BackgroundRender(RenderEngine):
         filename = generate_mv_filename(self.song.songinfo.title)
         if self.rendertype:
             if self.rendertype.type == RenderTypeCode.BUILD_PREVIEW.value:
-                self.finalfile = os.path.join(ContentDir.MVPREV_DIR.value, filename)
+                self.finalfile = os.path.join(ContentDir.MVPREV_DIR, filename)
                 self.profile = FFmpegProfile.PROFILE_MEDIUM.value
             else:
-                self.profile = FFmpegProfile.PROFILE_FULLHD.value
-                self.output = os.path.join(ContentDir.MVRELEASE_DIR.value, filename)
+                self.profile = FFmpegProfile.PROFILE_FULLHD
+                self.output = os.path.join(ContentDir.MVRELEASE_DIR, filename)
         else:
             self.profile = FFmpegProfile.PROFILE_MEDIUM.value
 

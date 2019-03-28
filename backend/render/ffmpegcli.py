@@ -283,7 +283,7 @@ class FfmpegCli(object):
         self._ffmpeg_input_fill_cmd(cmd)
         self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
 
-    def scale_video_by_width_height(self, input_bg, resolution, output_bg):
+    def scale_video_by_width_height(self, input_bg, resolution, output_bg, timelength=90):
         '''
         the function will create an output backgound vid from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
@@ -299,6 +299,7 @@ class FfmpegCli(object):
             ffmpeg.input(input_bg)
                 .filter('scale', resolution.width, -1)
                 .output(output_bg, framerate=25, vcodec='png')
+                .global_args('-shortest')
                 .run(overwrite_output=True)
         )
 
@@ -335,14 +336,13 @@ class FfmpegCli(object):
         FfmpegCli.check_file_exist(input_video)
         input = ffmpeg.input(input_video)
         subvid_stream = input['v'].filter('subtitles', input_sub)
-        (
+        return (
             ffmpeg
-                .output(subvid_stream, input['a'],
-                        output_vid, acodec='copy')
+                .output(subvid_stream, input['a'], output_vid, acodec='copy')
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
-                .run(overwrite_output=True)
+            .run(overwrite_output=True)
         )
 
     def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
@@ -402,7 +402,8 @@ class FfmpegCli(object):
             ffmpeg.filter([effect_stream, video_stream],
                           'blend', all_mode='overlay',
                           all_opacity="{}".format(opacity))
-                .output(output, ).global_args('-shortest')
+                .output(output)
+                .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
                 .run(overwrite_output=True)
@@ -506,6 +507,7 @@ class FfmpegCli(object):
         (
             ffmpeg.filter(streams_list, 'overlay', coordinate.x, coordinate.y)
                 .output(output)
+                .global_args('-shortest')
                 .global_args("-preset", "ultrafast")
                 .run(overwrite_output=True)
         )

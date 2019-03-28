@@ -43,7 +43,7 @@ class Title(PyJSON):
     def __init__(self, d):
         super().__init__(d)
         if 'file' in self.__dict__:
-            self.file = ContentDir.get_file_path(ContentDir.TITLE_DIR.value, self.file)
+            self.file = ContentDir.get_file_path(ContentDir.TITLE_DIR, self.file)
 
 
 class Resolution(Size):
@@ -95,7 +95,7 @@ class Spectrum(PyJSON):
         self.custom = None
         super().__init__(d)
         if 'file' in self.__dict__:
-            self.file = ContentDir.get_file_path(ContentDir.SPECTRUM_DIR.value, self.file)
+            self.file = ContentDir.get_file_path(ContentDir.SPECTRUM_DIR, self.file)
 
 
 class BgSpectrum:
@@ -110,7 +110,7 @@ class BgSpectrum:
 class BgEffect:
     def __init__(self, info: dict):
         from backend.render.cache import ContentDir
-        self.file = ContentDir.get_file_path(ContentDir.EFFECT_DIR.value, info['file'])
+        self.file = ContentDir.get_file_path(ContentDir.EFFECT_DIR, info['file'])
         check_file_existed(self.file)
         self.opacity = int(info['opacity'])
         pass
@@ -147,7 +147,7 @@ class WaterMask(PyJSON):
     def __init__(self, d):
         super().__init__(d)
         if 'file' in self.__dict__:
-            self.file = ContentDir.get_file_path(ContentDir.WATERMASK_DIR.value, self.file)
+            self.file = ContentDir.get_file_path(ContentDir.WATERMASK_DIR, self.file)
 
 
 class MusicVideoKind(IntEnum):
@@ -168,7 +168,7 @@ class Background:
         self.timing = None
         for field in info.keys():
             if field == 'file':
-                self.file = ContentDir.get_file_path(ContentDir.BGIMG_DIR.value, info[field])
+                self.file = ContentDir.get_file_path(ContentDir.BGIMG_DIR, info[field])
                 check_file_existed(self.file)
             elif field == 'effect':
                 self.effect = BgEffect(info[field])

@@ -24,7 +24,7 @@ class CrawlCmder(Cmder):
             if 'output' == key:
                 self.output = crawlcmd['output']
             else:
-                self.output = ContentDir.SONG_DIR.value
+                self.output = ContentDir.SONG_DIR
 
     def crawl_parser(self):
         if 'nhaccuatui' in self.url:
@@ -85,3 +85,8 @@ class SongApi:
             background = Background(background_info)
             backgrounds.append(background)
         return backgrounds
+
+
+class layer:
+    def __init__(self):
+        pass
