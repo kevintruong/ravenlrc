@@ -8,6 +8,7 @@ from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+from backend.storage.db.helper import  GdriveStorageDb
 from backend.storage.utils import MIMETYPES
 from backend.utility.Utility import FileInfo
 
@@ -22,8 +23,10 @@ class GDriveMnger:
     def __init__(self, cachestorage=False):
         if cachestorage:
             token = os.path.join(CurDir, 'cachestorage.json')
+            self.localdb = GdriveStorageDb('.cachedstoragedb.db')
         else:
             token = os.path.join(CurDir, 'storage.json')
+            self.localdb = GdriveStorageDb('.storagedb.db')
         store = file.Storage(token)
         self.creds = store.get()
         if not self.creds or self.creds.invalid:
@@ -86,8 +89,9 @@ class GDriveMnger:
             fid = inp
         return fid
 
-    def get_file(self, fid):
-        files = self.service.files().get(fileId=fid).execute()
+    def get_item_info(self, fid):
+        files = self.service.files().get(fileId=fid,
+                                         fields='id,name,webContentLink,modifiedTime,mimeType').execute()
         return files
 
     def get_request(self, service, fid):
@@ -95,7 +99,7 @@ class GDriveMnger:
         return request, ""
 
     def download_file(self, fid, output):
-        clone = self.get_file(fid)
+        clone = self.get_item_info(fid)
         fname = clone['name']
         fh = io.BytesIO()
         request = self.service.files().get_media(fileId=fid)
@@ -106,6 +110,7 @@ class GDriveMnger:
             status, done = downloader.next_chunk()
         with open(file_path, 'wb') as f:  # add dynamic name
             f.write(fh.getvalue())
+        self.localdb.insert_file(clone)
         return file_path
 
     @classmethod
@@ -126,22 +131,26 @@ class GDriveMnger:
         return new_file
 
     def upload_file(self, path, pid):
-        fileinfo = FileInfo(filepath=path)
-        file = self.viewFile(fileinfo.filename, pid)
-        if file and self.push_needed(file, item_path=path):
-            self.update_file(path, file['id'])
-        else:
-            file_mimeType = self.identify_mimetype(fileinfo.filename)
-            file_metadata = {
-                'name': fileinfo.filename,
-                'parents': [pid],
-                'mimeType': file_mimeType
-            }
-            media = MediaFileUpload(path, mimetype=file_mimeType)
-            new_file = self.service.files().create(body=file_metadata,
-                                                   media_body=media,
-                                                   fields='id').execute()
-            return new_file
+        try:
+            fileinfo = FileInfo(filepath=path)
+            file = self.viewFile(fileinfo.filename, pid)
+            if file and self.push_needed(file, item_path=path):
+                self.update_file(path, file['id'])
+            else:
+                file_mimeType = self.identify_mimetype(fileinfo.filename)
+                file_metadata = {
+                    'name': fileinfo.filename,
+                    'parents': [pid],
+                    'mimeType': file_mimeType
+                }
+                media = MediaFileUpload(path, mimetype=file_mimeType)
+                new_file = self.service.files().create(body=file_metadata,
+                                                       media_body=media,
+                                                       fields='id').execute()
+
+                return new_file
+        except Exception as exp:
+            print('error on upload file to drive {}'.format(exp))
 
     def list_out(self, dirname=None, fid=None):
         if fid is None:
@@ -202,6 +211,12 @@ class GDriveMnger:
                         cid = iteminfo['id']
                         self.update_file(item_path, cid)
 
+    def is_file_exists_at_local(self, filename):
+        items = self.localdb.search_info_by_key_value('name', filename)
+        if len(items):
+            return True
+        return False
+
 
 class GdriveDbSchemma:
 
@@ -214,14 +229,14 @@ import unittest
 
 class Test_GoogleFiles(unittest.TestCase):
     def setUp(self):
-        self.gdriver = GDriveMnger(cachestorage=True)
+        self.gdriver = GDriveMnger(cachestorage=False)
         # self.gdriver = GDriveMnger()
 
     def test_get_share_link(self):
-        files = self.gdriver.viewFile('Song')
+        files = self.gdriver.viewFile('timshel_logo.png')
         print(files)
         fid = self.gdriver.get_fid(files['id'])
-        fileinfo = self.gdriver.get_file(fid)
+        fileinfo = self.gdriver.get_item_info(fid)
         print(fileinfo)
         filepath = self.gdriver.download_file(fid, '/tmp/')
         print(filepath)

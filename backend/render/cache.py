@@ -92,13 +92,17 @@ class ContentDir:
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
-        # listfiles = os.listdir(storeinfo.path)
-        # if filename in listfiles:
-        #     return os.path.join(storeinfo.path, filename)
-        parent_id = storeinfo.id
-        fileinfo = GDriveStorage.viewFile(filename, parent_id)
-        file_path = GDriveStorage.download_file(fileinfo['id'], output)
-        return file_path
+        output = os.path.join(storeinfo.path, filename)
+        is_exists = GDriveStorage.is_file_exists_at_local(filename)
+        if is_exists:
+            listfiles = os.listdir(storeinfo.path)
+            if filename in listfiles:
+                return os.path.join(storeinfo.path, filename)
+        else:
+            parent_id = storeinfo.id
+            fileinfo = GDriveStorage.viewFile(filename, parent_id)
+            file_path = GDriveStorage.download_file(fileinfo['id'], storeinfo.path)
+            return file_path
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):

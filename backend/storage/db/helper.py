@@ -1,124 +1,156 @@
 """
 Helper methods for database
 """
-
+import datetime
 import sqlite3
 import os
+import uuid
+
+curdir = os.path.abspath(os.path.dirname(__file__))
+import abc
 
 
-def connect():
-    dbpath = os.getenv("HOME") + os.path.sep + ".gdrive-cli.db"
-    return sqlite3.connect(dbpath)
+class LocalStorageDb(abc.ABC):
+    def __init__(self, dbname):
+        self.conn = self.connect(dbname)
+
+    def connect(self, dbname):
+        dbpath = os.path.join(curdir, dbname)
+        return sqlite3.connect(dbpath)
+
+    @abc.abstractmethod
+    def insert_file(self, metadata: dict):
+        pass
+
+    @abc.abstractmethod
+    def create_schema(self):
+        pass
 
 
-"""
-Inserts file metadata returned by gdrive.insert_file into the
-tbl_files table and tables related to it.
+class GdriveStorageDb(LocalStorageDb):
+    FILES_TABLE = "tbl_files"
 
-Returns:
-    id of the inserted data
-"""
+    def __init__(self, dbname):
+        super().__init__(dbname)
+        self.create_schema()
 
+    def is_item_existed(self, metadata):
+        items = self.get_info_by_id(metadata['id'])
+        if len(items):
+            return True
+        else:
+            return False
 
-def insert_file(metadata):
-    conn = connect()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO tbl_files (
-            createdDate,
-            description,
-            downloadUrl,
-            etag,
-            fileExtension,
-            fileSize,
-            id,
-            kind,
-            lastViewedDate,
-            md5Checksum,
-            mimeType,
-            modifiedByMeDate,
-            modifiedDate,
-            title
-        ) VALUES (
-           ?,?,?,?,?,?,?,?,?,?,?,?,?,?
-        );
-        """, (
-        metadata["downloadUrl"],
-        metadata["id"],
-        metadata["kind"],
-        metadata["mimeType"],
-        metadata["modifiedDate"],
-    )
-                   );
-
-    cursor.execute("""
-        INSERT INTO tbl_labels (
-            files_id,
-            hidden,
-            starred,
-            trashed
-        ) VALUES (
-            ?,?,?,?
-        );
-        """, (
-        metadata["id"],
-        metadata["labels"]["hidden"],
-        metadata["labels"]["starred"],
-        metadata["labels"]["trashed"],
-    )
-                   );
-
-    for parent in metadata["parentsCollection"]:
-        cursor.execute("""
-            INSERT INTO tbl_parentsCollection (
-                id,
-                files_id,
-                parentLink
-            ) VALUES (
-                ?,?,?
-            );
-            """, (
-            parent["id"],
+    def insert_file(self, metadata: dict):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+                INSERT or replace INTO tbl_files (
+                    id,
+                    name,
+                    webContentLink,
+                    mimeType,
+                    modifiedTime
+                ) VALUES (
+                   ?,?,?,?,?
+                );
+                ''', (
             metadata["id"],
-            parent["parentLink"],
+            metadata["name"],
+            metadata["webContentLink"],
+            metadata["mimeType"],
+            metadata['modifiedTime']
         )
-                       );
+                       )
+        self.conn.commit()
+        cursor.close()
+        return metadata["id"]
 
-    cursor.execute("""
-        INSERT INTO tbl_userPermission (
-            files_id,
-            etag,
-            kind,
-            role,
-            type
-        ) VALUES (
-            ?,?,?,?,?
-        )
-        """, (
-        metadata["id"],
-        metadata["userPermission"]["etag"],
-        metadata["userPermission"]["kind"],
-        metadata["userPermission"]["role"],
-        metadata["userPermission"]["type"],
-    )
-                   );
+    def create_schema(self):
+        cursor = self.conn.cursor()
+        """
+        tbl_files
+            -> tbl_labels
+            -> tbl_parentsCollection
+            -> tbl_userPermission
+        """
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS tbl_files(
+                id TEXT  PRIMARY KEY,
+                name TEXT,
+                webContentLink TEXT,
+                mimeType TEXT,
+                modifiedTime TEXT
+            );
+            ''')
+        self.conn.commit()
+        cursor.close()
+        pass
 
-    conn.commit()
-    cursor.close()
+    def select_all_files(self):
+        """
+        Generates a basic listing of files in tbl_files
+        """
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT title, id FROM tbl_files")
+        files = cursor.fetchall()
+        cursor.close()
+        self.conn.commit()
+        return files
 
-    return metadata["id"]
+    def destroy(self):
+        cursor = self.conn.cursor()
+        cursor.execute("delete from tbl_files")
+        cursor.close()
+        self.conn.commit()
+
+    def get_info_by_id(self, id):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM tbl_files WHERE id='{}'"
+                       .format(id))
+        iteminfo = cursor.fetchall()
+        return iteminfo
+        pass
+
+    def search_info_by_key_value(self, key, value):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM tbl_files WHERE {}='{}'"
+                       .format(key, value))
+        iteminfo = cursor.fetchall()
+        return iteminfo
+
+    def list_all(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM tbl_files")
+        iteminfo = cursor.fetchall()
+        return iteminfo
 
 
-def select_all_files():
-    """
-    Generates a basic listing of files in tbl_files
-    """
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("SELECT title, id FROM tbl_files")
-    files = cursor.fetchall()
-    cursor.close()
-    conn.commit()
+import unittest
 
-    return files
+
+class Test_GdriveLocalDb(unittest.TestCase):
+    def setUp(self) -> None:
+        self.db = GdriveStorageDb('testdb.sqlite3')
+
+    def test_insert_metadata(self):
+        print('start')
+        print('must None' + str(self.db.list_all()))
+        id = str(uuid.uuid1())
+        metadata = {
+            'id': id,
+            'name': 'this is the test',
+            'webContentLink': 'http://helloworld',
+            'mimeType': 'application/octet-stream',
+            'modifiedTime': datetime.datetime.now().isoformat()
+        }
+        self.db.insert_file(metadata)
+        print('has 1' + str(self.db.list_all()))
+        metadata['modifiedTime'] = datetime.datetime.now().isoformat()
+        self.db.insert_file(metadata)
+        print('has 2' + str(self.db.list_all()))
+        self.db.destroy()
+        print('must None' + str(self.db.list_all()))
+
+    def test_seach_by_key_value(self):
+        info_items = self.db.search_info_by_key_value('name', 'this is the test')
+        print(info_items)
