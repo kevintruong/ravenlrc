@@ -4,7 +4,7 @@ import json
 #
 import os
 
-from backend.publisher.fb_publish import FbPageAPI
+from backend.publisher.facebook.fb_publish import FbPageAPI
 
 
 class TelePublishCmder:

@@ -23,7 +23,7 @@ class GDriveMnger:
         if cachestorage:
             token = os.path.join(CurDir, 'cachestorage.json')
         else:
-            token = os.path.join(CurDir, 'auth.json')
+            token = os.path.join(CurDir, 'storage.json')
         store = file.Storage(token)
         self.creds = store.get()
         if not self.creds or self.creds.invalid:

@@ -67,7 +67,7 @@ import unittest
 
 class Test_FoldersGenerator(unittest.TestCase):
     def setUp(self) -> None:
-        self.generator = SchemmaGenerator('Storage.json', '/tmp')
+        self.generator = SchemmaGenerator('StorageSchemmaDir.json', '/tmp')
 
     def test_generator_folder(self):
         self.generator.generate()

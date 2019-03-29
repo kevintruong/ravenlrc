@@ -1,1 +1,25 @@
-{"access_token": "ya29.GlzZBt0suAMa1d45B4kB_KpDVJNFBJPqIkBQQ6HlreNwYDmjz8Mw-wbR7wLOlJ4MAenpqfs-9tBniFJRT_8mFlKCl1ZKNu6pv-pg7mD6SybwISyb3Sd-DWOmoh15dg", "client_id": "1043711447687-b80tqrl1otq6g60i3olp5ok3erl6tmn2.apps.googleusercontent.com", "client_secret": "gXx0lYNDZ65JLg127GgfOitp", "refresh_token": "1/HHi3i1u6KxgX_gkt8j6wTa143CwmMeI28MVIB2LjNQw", "token_expiry": "2019-03-28T15:28:16Z", "token_uri": "https://oauth2.googleapis.com/token", "user_agent": null, "revoke_uri": "https://oauth2.googleapis.com/revoke", "id_token": null, "id_token_jwt": null, "token_response": {"access_token": "ya29.GlzZBt0suAMa1d45B4kB_KpDVJNFBJPqIkBQQ6HlreNwYDmjz8Mw-wbR7wLOlJ4MAenpqfs-9tBniFJRT_8mFlKCl1ZKNu6pv-pg7mD6SybwISyb3Sd-DWOmoh15dg", "expires_in": 3600, "scope": "https://www.googleapis.com/auth/drive", "token_type": "Bearer"}, "scopes": ["https://www.googleapis.com/auth/drive"], "token_info_uri": "https://oauth2.googleapis.com/tokeninfo", "invalid": false, "_class": "OAuth2Credentials", "_module": "oauth2client.client"}
+{
+  "access_token": "ya29.GlzZBt0suAMa1d45B4kB_KpDVJNFBJPqIkBQQ6HlreNwYDmjz8Mw-wbR7wLOlJ4MAenpqfs-9tBniFJRT_8mFlKCl1ZKNu6pv-pg7mD6SybwISyb3Sd-DWOmoh15dg",
+  "client_id": "1043711447687-b80tqrl1otq6g60i3olp5ok3erl6tmn2.apps.googleusercontent.com",
+  "client_secret": "gXx0lYNDZ65JLg127GgfOitp",
+  "refresh_token": "1/HHi3i1u6KxgX_gkt8j6wTa143CwmMeI28MVIB2LjNQw",
+  "token_expiry": "2019-03-28T15:28:16Z",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "user_agent": null,
+  "revoke_uri": "https://oauth2.googleapis.com/revoke",
+  "id_token": null,
+  "id_token_jwt": null,
+  "token_response": {
+    "access_token": "ya29.GlzZBt0suAMa1d45B4kB_KpDVJNFBJPqIkBQQ6HlreNwYDmjz8Mw-wbR7wLOlJ4MAenpqfs-9tBniFJRT_8mFlKCl1ZKNu6pv-pg7mD6SybwISyb3Sd-DWOmoh15dg",
+    "expires_in": 3600,
+    "scope": "https://www.googleapis.com/auth/drive",
+    "token_type": "Bearer"
+  },
+  "scopes": [
+    "https://www.googleapis.com/auth/drive"
+  ],
+  "token_info_uri": "https://oauth2.googleapis.com/tokeninfo",
+  "invalid": false,
+  "_class": "OAuth2Credentials",
+  "_module": "oauth2client.client"
+}

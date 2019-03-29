@@ -159,7 +159,6 @@ class PyJSON(object):
     def __init__(self, d):
         if type(d) is str:
             d = json.loads(d)
-
         self.from_dict(d)
 
     def from_dict(self, d):

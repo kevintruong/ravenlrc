@@ -2,7 +2,7 @@ import json
 import os
 import unittest
 
-from backend.publisher.fb_publish import FbPageAPI
+from backend.publisher.facebook.fb_publish import FbPageAPI
 from backend.publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
 from backend.publisher.youtube.youtube_uploader import YoutubeUploader, YtMvConfigStatus
 
