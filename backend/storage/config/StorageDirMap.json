@@ -18,11 +18,23 @@
             "type": "folder"
           },
           {
-            "name": "WaterMask",
+            "name": "Watermask",
             "type": "folder"
           },
           {
             "name": "Spectrum",
+            "type": "folder"
+          },
+          {
+            "name": "ChannelInfo",
+            "type": "folder"
+          },
+          {
+            "name": "Title",
+            "type": "folder"
+          },
+          {
+            "name": "LyricEffect",
             "type": "folder"
           },
           {

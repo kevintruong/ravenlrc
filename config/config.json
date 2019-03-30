@@ -1,5 +1,5 @@
 {
-  "StorageMountPoint": "/mnt/Data/Gdrive/content",
-  "CacheStorageMountPoint": "/mnt/Data/Gdrive/content",
-  "TmpDir": "/tmp/raven"
+  "StorageMountPoint": "/tmp/raven/",
+  "CacheStorageMountPoint": "/tmp/raven/",
+ "TmpDir": "/tmp/raven"
 }

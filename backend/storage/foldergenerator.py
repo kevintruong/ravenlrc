@@ -8,7 +8,7 @@ class SchemmaGenerator:
         self.file = jsonfile
         self.path = cwdpath
         if not os.path.exists(cwdpath):
-            raise NotADirectoryError
+            os.makedirs(cwdpath)
 
     def get_json(self, path):
         """Returns the json data as data frame"""
@@ -67,7 +67,7 @@ import unittest
 
 class Test_FoldersGenerator(unittest.TestCase):
     def setUp(self) -> None:
-        self.generator = SchemmaGenerator('StorageSchemmaDir.json', '/tmp')
+        self.generator = SchemmaGenerator('config/StorageDirMap.json', '/tmp/raven/cache')
 
     def test_generator_folder(self):
         self.generator.generate()

@@ -8,25 +8,41 @@ from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
 from oauth2client import file, client, tools
 
-from backend.storage.db.helper import  GdriveStorageDb
+from backend.storage.db.helper import GdriveStorageDb
+from backend.storage.foldergenerator import SchemmaGenerator
 from backend.storage.utils import MIMETYPES
 from backend.utility.Utility import FileInfo
+from config.configure import BackendConfigure
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 ClientSecretfile = os.path.join(CurDir, 'client_secrets.json')
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
+config: BackendConfigure = BackendConfigure.get_config()
+if config is None:
+    CurDir = os.path.dirname(os.path.realpath(__file__))
+    contentDir = os.path.join(CurDir, '../content')
+    contentDir = os.path.abspath(contentDir)
+    cachedcontentdir = contentDir
+else:
+    contentDir = config.StorageMountPoint
+    cachedcontentdir = config.CacheStorageMountPoint
+
 
 class GDriveMnger:
+    GdriveCacheStorage = None
+    GDriveStorage = None
 
     def __init__(self, cachestorage=False):
         if cachestorage:
             token = os.path.join(CurDir, 'cachestorage.json')
             self.localdb = GdriveStorageDb('.cachedstoragedb.db')
+            SchemmaGenerator(os.path.join(CurDir, 'config/CacheStorageDirMap.json'), cachedcontentdir).generate()
         else:
             token = os.path.join(CurDir, 'storage.json')
             self.localdb = GdriveStorageDb('.storagedb.db')
+            SchemmaGenerator(os.path.join(CurDir, 'config/StorageDirMap.json'), contentDir).generate()
         store = file.Storage(token)
         self.creds = store.get()
         if not self.creds or self.creds.invalid:
@@ -37,6 +53,17 @@ class GDriveMnger:
             self.creds = tools.run_flow(flow, store, flags)
         creds = self.creds
         self.service = build('drive', 'v3', http=creds.authorize(Http()))
+
+    @classmethod
+    def get_instance(cls, type: str):
+        if type == 'cache':
+            if GDriveMnger.GDriveStorage is None:
+                GDriveMnger.GdriveCacheStorage = GDriveMnger(cachestorage=True)
+                return GDriveStorage.GdriveCacheStorage
+            else:
+                GDriveMnger.GdriveStorage = GDriveMnger(cachestorage=False)
+                return GDriveStorage.GDriveStorage
+
 
     def list_file(self):
         return
@@ -127,7 +154,8 @@ class GDriveMnger:
         media = MediaFileUpload(path, mimetype=file_mimeType)
         new_file = self.service.files().update(fileId=fid,
                                                media_body=media,
-                                               fields='id').execute()
+                                               fields='id,name,webContentLink,modifiedTime,mimeType').execute()
+        self.localdb.insert_file(new_file)
         return new_file
 
     def upload_file(self, path, pid):

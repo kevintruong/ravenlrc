@@ -57,11 +57,13 @@ class RenderSpectrum(RenderEngine):
         self.spectrum = spectrum
 
     def format(self):
+        timelength = self.rendertype.configure.duration
         formatted_spectrum = SpectrumMvTemplateFile().getfullpath()
         ffmpegcli = FfmpegCli()
         ffmpegcli.scale_video_by_width_height(self.spectrum.file,
                                               self.spectrumconf.size,
-                                              formatted_spectrum)
+                                              formatted_spectrum,
+                                              timelength=timelength)
         return formatted_spectrum
 
     def run(self, src: str, **kwargs):
@@ -164,9 +166,8 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         ffmpegcli = FfmpegCli()
-        cached_filename = EffectCachedFile.get_cached_profile_filename(self.
-                                                                       bgEffect.file,
-                                                                       profile=profile)
+        cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file,
+                                                               profile=profile)
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
             effect_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
@@ -183,8 +184,8 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         ffmpegcli = FfmpegCli()
-        cached_filename = EffectCachedFile.get_cached_profile_filename(effectprofilefile,
-                                                                       extension='.mp4')
+        cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile,
+                                                               extention='.mp4')
         effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
             effectmv_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
@@ -258,7 +259,7 @@ class BackgroundRender(RenderEngine):
 
     def get_cached_backgroundimg(self, preview_profile):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgImgCachedFile.get_cached_profile_filename(self.input, preview_profile)
+        cached_filename = BgImgCachedFile.get_cached_filename(self.input, profile=preview_profile)
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
@@ -269,13 +270,14 @@ class BackgroundRender(RenderEngine):
 
     def get_cached_bgvid(self, bgfile, time_length):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgVidCachedFile.get_cached_profile_filename(bgfile,
-                                                                      extension='.mp4')
+        cached_filename = BgVidCachedFile.get_cached_filename(bgfile, extension='.mp4')
         bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         if bgvid_cachedfile is None:
             bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
             preview_bgmv = bgvid_cachedfile
-            ffmpegcli.create_media_file_from_img(bgfile, time_length, preview_bgmv)
+            ffmpegcli.create_media_file_from_img(input_img=bgfile,
+                                                 time_length=time_length,
+                                                 output_video=preview_bgmv)
         else:
             preview_bgmv = bgvid_cachedfile
         return preview_bgmv

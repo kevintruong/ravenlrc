@@ -202,28 +202,36 @@ class FfmpegCli(object):
         :param time_length:
         :return:
         '''
-        (
-            ffmpeg.input(input_img, loop=1)
-                .output(output_video, t=time_length, framerate=25)
-                .run(overwrite_output=True)
-        )
+        try:
+            (
+                ffmpeg.input(input_img, loop=1)
+                    .output(output_video, t=time_length, framerate=25)
+                    .run(overwrite_output=True)
+            )
+        except Exception as exp:
+            os.remove(output_video)
+            raise exp
 
-    def create_background_affect_with_length(self, input_bg, time_length: int, output_bg):
+    def create_background_affect_with_length(self, input_bg, time_length: int, output):
         '''
         the function will create an output backgound effect from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
         :param time_length:
         :param input_bg:
-        :param output_bg:
+        :param output:
         :return:
         '''
         # loopcount = int(time_length / bg_timeleng) + 1
-        FfmpegCli.check_file_exist(input_bg)
-        (
-            ffmpeg.input(input_bg, stream_loop=-1)
-                .output(output_bg, t=time_length, framerate=25, c='copy')
-                .run(overwrite_output=True)
-        )
+        try:
+            FfmpegCli.check_file_exist(input_bg)
+            (
+                ffmpeg.input(input_bg, stream_loop=-1)
+                    .output(output, t=time_length, framerate=25, c='copy')
+                    .run(overwrite_output=True)
+            )
+        except Exception as exp:
+            os.remove(output)
+            raise exp
         # self._ffmpeg_input_fill_cmd('-re')
         # self._ffmpeg_input_fill_cmd('-stream_loop')
         # self._ffmpeg_input_fill_cmd('{}'.format(-1))
@@ -239,23 +247,27 @@ class FfmpegCli(object):
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)l l l l
 
-    def scale_effect_vid(self, input_effect, resolution, output_effect):
+    def scale_effect_vid(self, input_effect, resolution, output):
         """
         ffmpeg -i <INPUT_FILE> -vf scale=720:540 -c:v <Video_Codec> <OUTPUT_FILE>
         :param input_effect:
         :param resolution:
-        :param output_effect:
+        :param output:
         :return:
         """
         from backend.render.type import Size
         resolution: Size
-        FfmpegCli.check_file_exist(input_effect)
-        (
-            ffmpeg.input(input_effect)
-                .filter('scale', resolution.width, resolution.height)
-                .output(output_effect, framerate=25, vcodec='png')
-                .run(overwrite_output=True)
-        )
+        try:
+            FfmpegCli.check_file_exist(input_effect)
+            (
+                ffmpeg.input(input_effect)
+                    .filter('scale', resolution.width, resolution.height)
+                    .output(output, framerate=25, vcodec='png')
+                    .run(overwrite_output=True)
+            )
+        except Exception as exp:
+            os.remove(output)
+            raise exp
         # self._ffmpeg_input(input_effect)
         # self._ffmpeg_input_filter_complex_prefix()
         # cmd = 'scale={}'.format(resolution)
@@ -265,23 +277,27 @@ class FfmpegCli(object):
         # self.ffmpeg_cli_run(self.ffmpeg_cli, output_effect)
         pass
 
-    def scale_img_by_width_height(self, input_bg, resolution, output_bg):
+    def scale_img_by_width_height(self, input_bg, resolution, output):
         '''
         the function will create an output backgound vid from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
         :param time_length:
         :param input_bg:
-        :param output_bg:
+        :param output:
         :return:
         '''
         from backend.render.type import Size
         resolution: Size
-        FfmpegCli.check_file_exist(input_bg)
-        self._ffmpeg_input(input_bg)
-        self._ffmpeg_input_filter_complex_prefix()
-        cmd = 'scale={}:{}'.format(resolution.width, resolution.height)
-        self._ffmpeg_input_fill_cmd(cmd)
-        self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
+        try:
+            FfmpegCli.check_file_exist(input_bg)
+            self._ffmpeg_input(input_bg)
+            self._ffmpeg_input_filter_complex_prefix()
+            cmd = 'scale={}:{}'.format(resolution.width, resolution.height)
+            self._ffmpeg_input_fill_cmd(cmd)
+            self.ffmpeg_cli_run(self.ffmpeg_cli, output)
+        except Exception as exp:
+            os.remove(output)
+            raise exp
 
     def scale_video_by_width_height(self, input_bg, resolution, output_bg, timelength=90):
         '''
@@ -294,14 +310,18 @@ class FfmpegCli(object):
         '''
         from backend.render.type import Size
         resolution: Size
-        FfmpegCli.check_file_exist(input_bg)
-        (
-            ffmpeg.input(input_bg)
-                .filter('scale', resolution.width, -1)
-                .output(output_bg, framerate=25, vcodec='png')
-                .global_args('-shortest')
-                .run(overwrite_output=True)
-        )
+        try:
+            FfmpegCli.check_file_exist(input_bg)
+            (
+                ffmpeg.input(input_bg)
+                    .filter('scale', resolution.width, -1)
+                    .output(output_bg, framerate=25, vcodec='png', t=timelength)
+                    .global_args('-shortest')
+                    .run(overwrite_output=True)
+            )
+        except Exception as exp:
+            os.remove(output_bg)
+            raise exp
 
         # FfmpegCli.check_file_exist(input_bg)
         # self._ffmpeg_input(input_bg)
@@ -317,7 +337,7 @@ class FfmpegCli(object):
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)
 
-    def adding_sub_to_video(self, input_sub: str, input_video: str, output_vid: str):
+    def adding_sub_to_video(self, input_sub: str, input_video: str, output_vid: str, timelength=90):
         """
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
@@ -326,6 +346,7 @@ class FfmpegCli(object):
 
         render -y -i input.mp4 -vf subtitles="f=/mnt/775AD44933621551/Project/MMO/youtube/test.ass:force_style='FontName=UTM Bustamalaka,FontSi
         ze=10,OutlineColour=&H66000000,BorderStyle=3'":original_size=1920x1080 002.mp4
+        :param timelength:
         :param input_sub:
         :param input_video:
         :param output_vid:
@@ -338,11 +359,12 @@ class FfmpegCli(object):
         subvid_stream = input['v'].filter('subtitles', input_sub)
         return (
             ffmpeg
-                .output(subvid_stream, input['a'], output_vid, acodec='copy')
+                .output(subvid_stream, input['a'],
+                        output_vid, acodec='copy', t=timelength)
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
-            .run(overwrite_output=True)
+                .run(overwrite_output=True)
         )
 
     def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
@@ -555,7 +577,6 @@ class FfmpegCli(object):
 
     def check_alpha_channel(self, affect_vid):
         data = ffmpeg.probe(affect_vid)
-        print(data)
         streams = data['streams']
         if len(streams):
             pix_format = streams[0]['pix_fmt']
