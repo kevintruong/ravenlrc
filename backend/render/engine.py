@@ -309,7 +309,8 @@ class BackgroundRender(RenderEngine):
             self.input = self.output
         if self.lyric:
             self.output = self.lyric.run(self.input, output=self.finalfile)
-        return self.output
+        output_url = ContentDir.gdrive_file_upload(self.output)
+        return output_url
 
     def init_background_render(self):
         return self.get_cached_backgroundimg(self.profile)

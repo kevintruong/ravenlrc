@@ -36,10 +36,13 @@ class GDriveMnger:
 
     def __init__(self, cachestorage=False):
         if cachestorage:
+            rootdirname = 'cache'
             token = os.path.join(CurDir, 'cachestorage.json')
             self.localdb = GdriveStorageDb('.cachedstoragedb.db')
             SchemmaGenerator(os.path.join(CurDir, 'config/CacheStorageDirMap.json'), cachedcontentdir).generate()
         else:
+            rootdirname = 'content'
+            rootdir = contentDir
             token = os.path.join(CurDir, 'storage.json')
             self.localdb = GdriveStorageDb('.storagedb.db')
             SchemmaGenerator(os.path.join(CurDir, 'config/StorageDirMap.json'), contentDir).generate()
@@ -51,8 +54,8 @@ class GDriveMnger:
             flags = tools.argparser.parse_args(args=[])
             flags.noauth_local_webserver = True
             self.creds = tools.run_flow(flow, store, flags)
-        creds = self.creds
-        self.service = build('drive', 'v3', http=creds.authorize(Http()))
+        self.service = build('drive', 'v3', http=self.creds.authorize(Http()))
+        self.rootdir_id = self.viewFile(rootdirname)['id']
 
     @classmethod
     def get_instance(cls, type: str):
@@ -63,7 +66,6 @@ class GDriveMnger:
             else:
                 GDriveMnger.GdriveStorage = GDriveMnger(cachestorage=False)
                 return GDriveStorage.GDriveStorage
-
 
     def list_file(self):
         return
@@ -148,6 +150,7 @@ class GDriveMnger:
         else:
             return 'application/octet-stream'
 
+    #
     def update_file(self, path, fid):
         fileinfo = FileInfo(filepath=path)
         file_mimeType = self.identify_mimetype(fileinfo.filename)
@@ -155,7 +158,6 @@ class GDriveMnger:
         new_file = self.service.files().update(fileId=fid,
                                                media_body=media,
                                                fields='id,name,webContentLink,modifiedTime,mimeType').execute()
-        self.localdb.insert_file(new_file)
         return new_file
 
     def upload_file(self, path, pid):
@@ -163,7 +165,7 @@ class GDriveMnger:
             fileinfo = FileInfo(filepath=path)
             file = self.viewFile(fileinfo.filename, pid)
             if file and self.push_needed(file, item_path=path):
-                self.update_file(path, file['id'])
+                new_file = self.update_file(path, file['id'])
             else:
                 file_mimeType = self.identify_mimetype(fileinfo.filename)
                 file_metadata = {
@@ -174,9 +176,10 @@ class GDriveMnger:
                 media = MediaFileUpload(path, mimetype=file_mimeType)
                 new_file = self.service.files().create(body=file_metadata,
                                                        media_body=media,
-                                                       fields='id').execute()
+                                                       fields='id,name,webContentLink,modifiedTime,mimeType').execute()
 
-                return new_file
+            self.localdb.insert_file(new_file)
+            return new_file
         except Exception as exp:
             print('error on upload file to drive {}'.format(exp))
 
