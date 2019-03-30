@@ -144,7 +144,6 @@ class NctCrawler(Crawler):
             var = [el.text for el in doc_el.findAll(each_fields)]
             if len(var):
                 value: str = var[0].replace('\n', '').replace('  ', '')
-                print(value)
                 if each_fields == 'title':
                     songinfo.title = value
                 if each_fields == 'creator':

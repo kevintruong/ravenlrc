@@ -5,6 +5,24 @@ api = hug.API(__name__)
 api.http.add_middleware(hug.middleware.CORSMiddleware(api, max_age=10))
 
 
+@hug.response_middleware()
+def CORS(request, response, resource):
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers',
+                        'Authorization,Keep-Alive,User-Agent,'
+                        'If-Modified-Since,Cache-Control,Content-Type')
+    response.set_header('Access-Control-Expose-Headers',
+                        'Authorization,Keep-Alive,User-Agent,'
+                        'If-Modified-Since,Cache-Control,Content-Type'
+                        )
+    if request.method == 'OPTIONS':
+        response.set_header('Access-Control-Max-Age', 1728000)
+        response.set_header('Content-Type', 'text/plain charset=UTF-8')
+        response.set_header('Content-Length', 0)
+        response.status_code = hug.HTTP_204
+
+
 def error_msg_handle(exp):
     from backend.yclogger import telelog
     tracebackmsg = traceback.format_exc()
@@ -41,36 +59,32 @@ def render(body):
         songapi = SongApi(body)
         song_render = BackgroundsRender(songapi)
         ret = song_render.run()
-        from backend.storage.gdrive import GDriveMnger
-        sharelink = GDriveMnger().get_share_link(ret)
-        if sharelink:
-            ret = sharelink
     except Exception as exp:
         return error_msg_handle(exp)
     return {'url': ret}
-
-
-@hug.post('api/video/publish')
-def publish(body):
-    return {'msg': 'not support yet'}
-    pass
-
-
-@hug.post('/api/layer/render')
-def render_layer(body):
-    try:
-        from backend.render.engine import BackgroundsRender
-        import json
-        from backend.yclogger import telelog
-        from backend.render.parser import SongApi
-        telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
-        songapi = SongApi(body)
-        song_render = BackgroundsRender(songapi)
-        ret = song_render.run()
-        from backend.storage.gdrive import GDriveMnger
-        sharelink = GDriveMnger().get_share_link(ret)
-        if sharelink:
-            ret = sharelink
-    except Exception as exp:
-        return error_msg_handle(exp)
-    return {'url': ret}
+#
+#
+# @hug.post('api/video/publish')
+# def publish(body):
+#     return {'msg': 'not support yet'}
+#     pass
+#
+#
+# @hug.post('/api/layer/render')
+# def render_layer(body):
+#     try:
+#         from backend.render.engine import BackgroundsRender
+#         import json
+#         from backend.yclogger import telelog
+#         from backend.render.parser import SongApi
+#         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
+#         songapi = SongApi(body)
+#         song_render = BackgroundsRender(songapi)
+#         ret = song_render.run()
+#         from backend.storage.gdrive import GDriveMnger
+#         sharelink = GDriveMnger().get_share_link(ret)
+#         if sharelink:
+#             ret = sharelink
+#     except Exception as exp:
+#         return error_msg_handle(exp)
+#     return {'url': ret}
