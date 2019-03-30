@@ -1,3 +1,5 @@
+import calendar
+import datetime
 import io
 import os
 import re
@@ -13,6 +15,8 @@ from backend.storage.foldergenerator import SchemmaGenerator
 from backend.storage.utils import MIMETYPES
 from backend.utility.Utility import FileInfo
 from config.configure import BackendConfigure
+from datetime import datetime
+import calendar
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 ClientSecretfile = os.path.join(CurDir, 'client_secrets.json')
@@ -164,9 +168,15 @@ class GDriveMnger:
         try:
             fileinfo = FileInfo(filepath=path)
             file = self.viewFile(fileinfo.filename, pid)
-            if file and self.push_needed(file, item_path=path):
-                new_file = self.update_file(path, file['id'])
+            if file:
+                if self.push_needed(file, item_path=path):
+                    print('update exist file')
+                    new_file = self.update_file(path, file['id'])
+                else:
+                    print('file not change => reuse the exist remote file')
+                    new_file = file
             else:
+                print('upload new file')
                 file_mimeType = self.identify_mimetype(fileinfo.filename)
                 file_metadata = {
                     'name': fileinfo.filename,
@@ -215,8 +225,12 @@ class GDriveMnger:
         return full_path, fid['id']
 
     def push_needed(self, drive, item_path):
-        drive_time = time.mktime(time.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')) + float(19800.00)
-        local_time = os.path.getmtime(item_path) - float(19801.00)
+
+        # drive_time = time.mktime(time.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ'))
+        drive_time = calendar.timegm(datetime.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ').timetuple())
+        # drive_time = time.mktime(time.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')) + float(19800.00)
+        local_time = os.path.getmtime(item_path)
+        print('elapse time between local and drive ' + str(local_time - drive_time))
         if drive_time < local_time:
             return True
         return False

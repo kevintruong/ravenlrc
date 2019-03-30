@@ -216,6 +216,15 @@ class CachedContentDir:
         return None
 
     @classmethod
+    def gdrive_file_upload(cls,filepath):
+        if cls.CacheGDriveMappingDictCls is None:
+            cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
+        dirname = os.path.basename(os.path.dirname(filepath))
+        storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
+        fileinfo = GdriveCacheStorage.upload_file(filepath, storeinfo.id)
+        # return fileinfo['webContentLink']
+
+    @classmethod
     def get_file_path(cls, dir: str, filename: str):
         dir = os.path.basename(dir)
         try:

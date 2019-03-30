@@ -95,13 +95,14 @@ class RenderWaterMask(RenderEngine):
 
     def run(self, src: str, **kwargs):
         renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.watermask.file, self.watermaskconf.size)
-        renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
-        if not renderfile:
-            renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
+        output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
+        if not output:
+            output = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
             formatted_watermask = self.format()
             ffmpegcli = FfmpegCli()
-            ffmpegcli.add_logo_to_bg_img(src, formatted_watermask, renderfile, self.watermaskconf.position)
-        return renderfile
+            ffmpegcli.add_logo_to_bg_img(src, formatted_watermask, output, self.watermaskconf.position)
+            CachedContentDir.gdrive_file_upload(output)
+        return output
 
 
 class RenderTitle(RenderEngine):
@@ -118,13 +119,14 @@ class RenderTitle(RenderEngine):
 
     def run(self, src: str, **kwargs):
         renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.title.file, self.titleconf.size)
-        renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
-        if not renderfile:
-            renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
+        output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
+        if not output:
+            output = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
             formattedtitle_img = self.format()
             ffmpegcli = FfmpegCli()
-            ffmpegcli.add_logo_to_bg_img(src, formattedtitle_img, renderfile, self.titleconf.position)
-        return renderfile
+            ffmpegcli.add_logo_to_bg_img(src, formattedtitle_img, output, self.titleconf.position)
+            CachedContentDir.gdrive_file_upload(output)
+        return output
 
 
 class RenderBgEffect(RenderEngine):
@@ -132,19 +134,20 @@ class RenderBgEffect(RenderEngine):
     def run(self, src: str, **kwargs):
         profile = self.rendertype.configure.get_resolution_str()
         timelength = self.rendertype.configure.duration
-        cached_filename, effect_cachedfile, effect_file = self.get_effect_cached_file(profile,
-                                                                                      src,
-                                                                                      timelength)
+        cached_filename, output, effect_file = self.get_effect_cached_file(profile,
+                                                                           src,
+                                                                           timelength)
 
-        if effect_cachedfile is None:
+        if output is None:
             ffmpegcli = FfmpegCli()
-            effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
+            output = BgEffectCachedFile.create_cachedfile(cached_filename)
 
             ffmpegcli.add_affect_to_video(effect_file,
                                           src,
-                                          effect_cachedfile,
+                                          output,
                                           self.bgEffect.opacity)
-        return effect_cachedfile
+            CachedContentDir.gdrive_file_upload(output)
+        return output
 
     def get_effect_cached_file(self, profile, src, timelength):
         self.bgeffectfile = self.init_bgeffect_by_profile(profile)
