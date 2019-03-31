@@ -291,7 +291,7 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_server_send_render_api(self):
-        rest_api = 'https://embeddednews.xyz/api/video/render'
+        rest_api = 'https://raven-songcrawler-test.herokuapp.com/api/video/render'
         response = requests.post(rest_api,
                                  json=self.data)
         print(response.headers)

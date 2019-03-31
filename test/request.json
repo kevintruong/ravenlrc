@@ -1,9 +1,9 @@
 {
-  "song_url": "https://www.nhaccuatui.com/bai-hat/chi-can-anh-noi-mei.AjyxRsfbKTld.html",
+  "song_url": "https://www.nhaccuatui.com/bai-hat/ve-phia-mua-the-bao.SxV6JNd5MjbB.html",
   "backgrounds": [
     {
       "id": "backgroundid",
-      "file": "VePhiaMua.png",
+      "file": "NhungKeMongMo.png",
       "timming": [
         {
           "start": "0",
@@ -74,6 +74,14 @@
   "song_effect": {
     "type": "SONG",
     "code": "EFFECT_CODE"
+  },
+  "spectrum": {
+    "templatecode": "circle light",
+    "file": "anhdechcangingoaiem.mov",
+    "custom": {
+      "option1": "option1_value",
+      "option2": "option1_value"
+    }
   },
   "watermask": {
     "file": "timshel_logo.png",
