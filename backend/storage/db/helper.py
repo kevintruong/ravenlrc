@@ -16,7 +16,7 @@ class LocalStorageDb(abc.ABC):
 
     def connect(self, dbname):
         dbpath = os.path.join(curdir, dbname)
-        return sqlite3.connect(dbpath)
+        return sqlite3.connect(dbpath,check_same_thread=False)
 
     @abc.abstractmethod
     def insert_file(self, metadata: dict):
