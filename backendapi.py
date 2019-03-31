@@ -52,16 +52,16 @@ def song(url):
 def render(body):
     try:
         from backend.render.engine import BackgroundsRender
-        from backend.render.parser import RenderThread
         import json
         from backend.yclogger import telelog
         from backend.render.parser import SongApi
         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
-        renderthread = RenderThread(body)
-        renderthread.start()
+        songapi = SongApi(body)
+        song_render = BackgroundsRender(songapi)
+        ret = song_render.run()
     except Exception as exp:
         return error_msg_handle(exp)
-    return {'url': 'render started'}
+    return {'url': ret}
 #
 #
 # @hug.post('api/video/publish')

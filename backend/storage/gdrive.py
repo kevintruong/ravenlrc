@@ -97,7 +97,7 @@ class GDriveMnger:
 
         response = self.service.files().list(q=query,
                                              spaces='drive',
-                                             fields='nextPageToken, files(id, name,webContentLink,modifiedTime)',
+                                             fields='nextPageToken, files(id,name,webContentLink,modifiedTime,mimeType)',
                                              pageToken=page_token).execute()
         templist = [response.get('files', [])[i:i + 25] for i in
                     range(0, len(response.get('files', [])), 25)]  # breakdown list to 25 entries at a time
@@ -144,6 +144,7 @@ class GDriveMnger:
         with open(file_path, 'wb') as f:  # add dynamic name
             f.write(fh.getvalue())
         self.localdb.insert_file(clone)
+        print('download file filepath {}'.format(file_path))
         return file_path
 
     @classmethod

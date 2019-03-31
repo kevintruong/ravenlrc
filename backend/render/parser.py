@@ -1,3 +1,5 @@
+from threading import Thread
+
 from backend.crawler.nct import *
 from backend.render.type import *
 from backend.render.type import Background
@@ -34,6 +36,18 @@ class CrawlCmder(Cmder):
         crawler: Crawler = self.crawl_parser()
         return crawler.getdownload(self.output)
         pass
+
+
+class RenderThread(Thread):
+    def __init__(self, postdata):
+        super().__init__()
+        self.postdata = postdata
+
+    def run(self) -> None:
+        from backend.render.engine import BackgroundsRender
+        songapi = SongApi(self.postdata)
+        song_render = BackgroundsRender(songapi)
+        ret = song_render.run()
 
 
 class SongApi:

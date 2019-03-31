@@ -1,9 +1,10 @@
 import hashlib
+import json
 import os
 from enum import Enum
 
 from backend.storage.gdrive import GDriveStorage, GdriveCacheStorage
-from backend.utility.Utility import FileInfo
+from backend.utility.Utility import FileInfo, only_latin_string
 from config.configure import BackendConfigure
 
 config: BackendConfigure = BackendConfigure.get_config()
@@ -108,14 +109,13 @@ class ContentDir:
             return file_path
 
     @classmethod
-    def gdrive_file_upload(cls,filepath):
+    def gdrive_file_upload(cls, filepath):
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
         fileinfo = GDriveStorage.upload_file(filepath, storeinfo.id)
         return fileinfo['webContentLink']
-
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):
@@ -184,9 +184,6 @@ class CachedContentDir:
             CachedContentDir.CacheGDriveMappingDictCls = self.CacheGDriveMappingDict
         pass
 
-
-
-
     @classmethod
     def gdrive_file_pull(cls, dir, filename, output='/tmp'):
         if cls.CacheGDriveMappingDictCls is None:
@@ -216,7 +213,7 @@ class CachedContentDir:
         return None
 
     @classmethod
-    def gdrive_file_upload(cls,filepath):
+    def gdrive_file_upload(cls, filepath):
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
         dirname = os.path.basename(os.path.dirname(filepath))
@@ -263,7 +260,7 @@ class CachedFile:
 
     @classmethod
     def generate_hash_from_filename(cls, fname: str):
-        name, ext = fname.split('.')
+        name, ext = fname.split('.', -1)
         hashfile = hashlib.md5(str(name + ext).encode('utf-8')).hexdigest()
         return hashfile + ".{}".format(ext)
 
@@ -280,6 +277,11 @@ class CachedFile:
             if 'extension' == key:
                 cachedfilename = cachedfilename + value
                 added_ext = True
+            if 'attribute' == key:
+                attribute = value
+                str_attributes = json.dumps(attribute, default=lambda o: o.__dict__, sort_keys=True)
+                str_attributes = only_latin_string(str_attributes)
+                cachedfilename = cachedfilename + str_attributes
         if not added_ext:
             cachedfilename = cachedfilename + ext
         return cls.generate_hash_from_filename(cachedfilename)
@@ -297,16 +299,51 @@ class SongFile:
         return None
 
 
+class LyricMvCachedFile(CachedFile):
+    CachedEffectDir = os.path.join(CachedContentDir.SONG_DIR)
+
+    @classmethod
+    def get_cachedfile(cls, filename):
+        return CachedContentDir.get_file_path(cls.CachedEffectDir, filename)
+        # listfiles = os.listdir(cls.CachedEffectDir)
+        # for file in listfiles:
+        #     if filename in file:
+        #         return os.path.join(cls.CachedEffectDir, file)
+        # return None
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.CachedEffectDir, filename)
+
+
+class LyricCachedFile(CachedFile):
+    CachedEffectDir = os.path.join(CachedContentDir.SONG_DIR)
+
+    @classmethod
+    def get_cachedfile(cls, filename):
+        return CachedContentDir.get_file_path(cls.CachedEffectDir, filename)
+        # listfiles = os.listdir(cls.CachedEffectDir)
+        # for file in listfiles:
+        #     if filename in file:
+        #         return os.path.join(cls.CachedEffectDir, file)
+        # return None
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.CachedEffectDir, filename)
+
+
 class EffectCachedFile(CachedFile):
     CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
-        listfiles = os.listdir(cls.CachedEffectDir)
-        for file in listfiles:
-            if filename in file:
-                return os.path.join(cls.CachedEffectDir, file)
-        return None
+        return CachedContentDir.get_file_path(cls.CachedEffectDir, filename)
+        # listfiles = os.listdir(cls.CachedEffectDir)
+        # for file in listfiles:
+        #     if filename in file:
+        #         return os.path.join(cls.CachedEffectDir, file)
+        # return None
 
     @classmethod
     def create_cachedfile(cls, filename):
@@ -325,8 +362,6 @@ class SecondBgImgCachedFile(CachedFile):
         watermask_name = FileInfo(watermask).name
         filename = bgimg_name + "_" + watermask_name + "_" + "{}".format(size.width) + "." + ext
         return cls.generate_hash_from_filename(filename)
-
-        pass
 
     @classmethod
     def get_cachedfile(cls, filename):

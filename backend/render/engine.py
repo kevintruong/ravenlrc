@@ -1,4 +1,6 @@
 from abc import *
+from threading import Thread
+
 from backend.render.cache import *
 from backend.render.type import *
 from backend.utility.TempFileMnger import *
@@ -31,14 +33,11 @@ class RenderSong(RenderEngine):
         if effectmv_cachedfile is None:
             ffmpegcli = FfmpegCli()
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
-            preview_affectmv = effectmv_cachedfile
             ffmpegcli.mux_audio_to_video(src,
                                          self.songinfo.songfile,
-                                         preview_affectmv)
-        else:
-            preview_affectmv = effectmv_cachedfile
-        return preview_affectmv
-        pass
+                                         effectmv_cachedfile)
+            CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+        return effectmv_cachedfile
 
     def get_cached_file(self, src):
         cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
@@ -58,13 +57,21 @@ class RenderSpectrum(RenderEngine):
 
     def format(self):
         timelength = self.rendertype.configure.duration
-        formatted_spectrum = SpectrumMvTemplateFile().getfullpath()
-        ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_video_by_width_height(self.spectrum.file,
-                                              self.spectrumconf.size,
-                                              formatted_spectrum,
-                                              timelength=timelength)
-        return formatted_spectrum
+        src = self.spectrum.file
+        renderfile_name = CachedFile.get_cached_filename(src,
+                                                         attribute=self.spectrumconf)
+
+        renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
+        if renderfile is None:
+            renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
+            # formatted_spectrum = SpectrumMvTemplateFile().getfullpath()
+            ffmpegcli = FfmpegCli()
+            ffmpegcli.scale_video_by_width_height(self.spectrum.file,
+                                                  self.spectrumconf.size,
+                                                  renderfile,
+                                                  timelength=timelength)
+            CachedContentDir.gdrive_file_upload(renderfile)
+        return renderfile
 
     def run(self, src: str, **kwargs):
         renderfile_name = SecondBgImgCachedFile.get_file_name(src,
@@ -76,6 +83,7 @@ class RenderSpectrum(RenderEngine):
             formatted_watermask = self.format()
             ffmpegcli = FfmpegCli()
             ffmpegcli.add_logo_to_bg_img(src, formatted_watermask, renderfile, self.spectrumconf.position)
+            CachedContentDir.gdrive_file_upload(renderfile)
         return renderfile
 
 
@@ -132,7 +140,7 @@ class RenderTitle(RenderEngine):
 class RenderBgEffect(RenderEngine):
 
     def run(self, src: str, **kwargs):
-        profile = self.rendertype.configure.get_resolution_str()
+        profile = self.rendertype.configure.resolution
         timelength = self.rendertype.configure.duration
         cached_filename, output, effect_file = self.get_effect_cached_file(profile,
                                                                            src,
@@ -170,13 +178,14 @@ class RenderBgEffect(RenderEngine):
         '''
         ffmpegcli = FfmpegCli()
         cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file,
-                                                               profile=profile)
+                                                               attribute=profile)
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
             effect_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.scale_effect_vid(self.bgEffect.file,
                                        self.rendertype.configure.resolution,
                                        effect_cachedfile)
+            CachedContentDir.gdrive_file_upload(effect_cachedfile)
         return effect_cachedfile
 
     def init_bgeffect_video_with_length(self, effectprofilefile, length):
@@ -222,28 +231,38 @@ class RenderLyric(RenderEngine):
                 self.lyricfile = self.lyric.file
             else:
                 self.lyricfile = lyricfile
+        self.assfile = self.generate_lyric_effect_file()
 
-    def generate_lyric_effect_file(self, resolution):
+    def generate_lyric_effect_file(self):
+        resolution = self.rendertype.configure.resolution
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
         self.lrcconf.scale_font_size_by_factor(scale_factor)
-        preview_asstempfile = AssTempFile().getfullpath()
-        create_ass_from_lrc(self.lyricfile,
-                            preview_asstempfile,
-                            self.lrcconf,
-                            resolution)
-        preview_asstempfile = self.create_effect_lyric_file(preview_asstempfile)
-        return preview_asstempfile
+        cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile, attribute=self, extension='.ass')
+        cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
+        if cachedfilepath is None:
+            cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
+            create_ass_from_lrc(self.lyricfile,
+                                cachedfilepath,
+                                self.lrcconf,
+                                resolution)
+            cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
+            CachedContentDir.gdrive_file_upload(cachedfilepath)
+        return cachedfilepath
 
     def run(self, src: str, **kwargs):
         if 'output' in kwargs:
             output = kwargs['output']
-        ffmpegcli = FfmpegCli()
-        assfile = self.generate_lyric_effect_file(self.rendertype.configure.resolution)
-        compiler = ffmpegcli.adding_sub_to_video(assfile,
-                                                 src,
-                                                 output)
-        print(compiler)
-        return output
+
+        cached_filename = LyricCachedFile.get_cached_filename(src, attribute=self.assfile)
+        cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
+        if cachedfilepath is None:
+            cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli = FfmpegCli()
+            compiler = ffmpegcli.adding_sub_to_video(self.assfile,
+                                                     src,
+                                                     cachedfilepath)
+            CachedContentDir.gdrive_file_upload(cachedfilepath)
+        return cachedfilepath
 
     def create_effect_lyric_file(self, ass_file):
         try:
@@ -260,9 +279,10 @@ class RenderLyric(RenderEngine):
 
 class BackgroundRender(RenderEngine):
 
-    def get_cached_backgroundimg(self, preview_profile):
+    def get_cached_backgroundimg(self):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgImgCachedFile.get_cached_filename(self.input, profile=preview_profile)
+        cached_filename = BgImgCachedFile.get_cached_filename(self.input,
+                                                              attribute=self.rendertype.configure.resolution)
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
@@ -273,7 +293,9 @@ class BackgroundRender(RenderEngine):
 
     def get_cached_bgvid(self, bgfile, time_length):
         ffmpegcli = FfmpegCli()
-        cached_filename = BgVidCachedFile.get_cached_filename(bgfile, extension='.mp4')
+        cached_filename = BgVidCachedFile.get_cached_filename(bgfile,
+                                                              attribute=self.rendertype.configure,
+                                                              extension='.mp4')
         bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         if bgvid_cachedfile is None:
             bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
@@ -292,31 +314,38 @@ class BackgroundRender(RenderEngine):
         timeleng = self.rendertype.configure.duration
         self.input = self.file  # initial input by background file
         if self.watermask:
+            telelog.debug("render watermask")
             self.output = self.watermask.run(self.input)
             self.input = self.output
         if self.title:
+            telelog.debug("render title")
             self.output = self.title.run(self.input)
             self.input = self.output
         if self.file:
-            self.input = self.get_cached_backgroundimg(self.profile)
+            telelog.debug("render background file")
+            self.input = self.get_cached_backgroundimg()
             self.output = self.get_cached_bgvid(self.input, timeleng)
             self.input = self.output
         if self.effect:
+            telelog.debug("render effect file")
             self.output = self.effect.run(self.input)
             self.input = self.output
         if self.spectrum:
+            telelog.debug("render spectrum file")
             self.output = self.spectrum.run(self.input)
             self.input = self.output
         if self.song:
+            telelog.debug("render song file")
             self.output = self.song.run(self.input)
             self.input = self.output
         if self.lyric:
+            telelog.debug("render lyric file")
             self.output = self.lyric.run(self.input, output=self.finalfile)
         output_url = ContentDir.gdrive_file_upload(self.output)
         return output_url
 
     def init_background_render(self):
-        return self.get_cached_backgroundimg(self.profile)
+        return self.get_cached_backgroundimg()
 
     def run(self, src: str, **kwargs):
         self.detect_rendertype()
@@ -357,11 +386,15 @@ class BackgroundRender(RenderEngine):
 
 
 class BackgroundsRender:
+
     def run(self):
         bgrender_engine: BackgroundRender
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
-            return bgrender_engine.run(bgrender_engine.input)
+            url_ret = bgrender_engine.run(bgrender_engine.input)
+            from backend.yclogger import telelog
+            telelog.debug("url return {}".format(url_ret))
+
             pass
         pass
 
