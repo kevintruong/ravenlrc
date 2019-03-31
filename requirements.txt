@@ -1,4 +1,3 @@
-gunicorn
 pandas
 psutil
 ffmpeg-python
