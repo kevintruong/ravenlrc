@@ -183,7 +183,7 @@ class NctCrawler(Crawler):
     def get_mp3file(self, outputdir: str):
         try:
             songinfo: SongInfo = self.songinfo
-            mp3file = requests.get(songinfo.songfile, allow_redirects=True)
+            mp3file = requests.get(songinfo.songfile, allow_redirects=True,timeout=30)
             localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singer)).encode('utf-8')
             with open(localmp3file, 'wb') as mp3filefd:
                 mp3filefd.write(mp3file.content)

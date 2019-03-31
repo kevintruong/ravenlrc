@@ -258,9 +258,9 @@ class RenderLyric(RenderEngine):
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
             ffmpegcli = FfmpegCli()
-            compiler = ffmpegcli.adding_sub_to_video(self.assfile,
-                                                     src,
-                                                     cachedfilepath)
+            ffmpegcli.adding_sub_to_video(self.assfile,
+                                          src,
+                                          cachedfilepath)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
         return cachedfilepath
 
@@ -335,11 +335,11 @@ class BackgroundRender(RenderEngine):
             self.output = self.spectrum.run(self.input)
             self.input = self.output
         if self.song:
-            telelog.debug("render song file")
+            telelog.debug("render song file {}".format("hello world"))
             self.output = self.song.run(self.input)
             self.input = self.output
         if self.lyric:
-            telelog.debug("render lyric file")
+            telelog.critical("render lyric file")
             self.output = self.lyric.run(self.input, output=self.finalfile)
         output_url = ContentDir.gdrive_file_upload(self.output)
         return output_url
@@ -392,9 +392,7 @@ class BackgroundsRender:
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)
-            from backend.yclogger import telelog
-            telelog.debug("url return {}".format(url_ret))
-
+            telelog.critical("url return {}".format(url_ret))
             pass
         pass
 

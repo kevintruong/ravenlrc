@@ -219,7 +219,7 @@ class CachedContentDir:
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
         fileinfo = GdriveCacheStorage.upload_file(filepath, storeinfo.id)
-        # return fileinfo['webContentLink']
+        return fileinfo['webContentLink']
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):
@@ -267,8 +267,8 @@ class CachedFile:
     @classmethod
     def get_cached_filename(cls, filepath: str,
                             **kwargs):
-        filename = os.path.basename(filepath)
-        name, ext = os.path.splitext(filename)
+        fileinfo = FileInfo(filepath)
+        name, ext = fileinfo.name, fileinfo.ext
         cachedfilename = name
         added_ext = False
         for key, value in kwargs.items():
@@ -360,7 +360,7 @@ class SecondBgImgCachedFile(CachedFile):
         bgimg_name = FileInfo(bgimg).name
         ext = FileInfo(bgimg).ext
         watermask_name = FileInfo(watermask).name
-        filename = bgimg_name + "_" + watermask_name + "_" + "{}".format(size.width) + "." + ext
+        filename = bgimg_name + "_" + watermask_name + "_" + "{}".format(size.width) + ext
         return cls.generate_hash_from_filename(filename)
 
     @classmethod
