@@ -3,6 +3,7 @@ import datetime
 import io
 import os
 import re
+import shutil
 import time
 
 from googleapiclient.discovery import build
@@ -17,6 +18,9 @@ from backend.utility.Utility import FileInfo
 from config.configure import BackendConfigure
 from datetime import datetime
 import calendar
+
+config: BackendConfigure = BackendConfigure.get_config()
+TmpCurDir = config.get_config().TmpDir
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 ClientSecretfile = os.path.join(CurDir, 'client_secrets.json')
@@ -40,14 +44,17 @@ class GDriveMnger:
 
     def __init__(self, cachestorage=False):
         if cachestorage:
+            shutil.copy2(os.path.join(CurDir, 'cachestorage.json'),
+                         TmpCurDir)
             rootdirname = 'cache'
-            token = os.path.join(CurDir, 'cachestorage.json')
+            token = os.path.join(TmpCurDir, 'cachestorage.json')
             self.localdb = GdriveStorageDb('.cachedstoragedb.db')
             SchemmaGenerator(os.path.join(CurDir, 'config/CacheStorageDirMap.json'), cachedcontentdir).generate()
         else:
             rootdirname = 'content'
-            rootdir = contentDir
-            token = os.path.join(CurDir, 'storage.json')
+            shutil.copy2(os.path.join(CurDir, 'storage.json'),
+                         TmpCurDir)
+            token = os.path.join(TmpCurDir, 'storage.json')
             self.localdb = GdriveStorageDb('.storagedb.db')
             SchemmaGenerator(os.path.join(CurDir, 'config/StorageDirMap.json'), contentDir).generate()
         store = file.Storage(token)

@@ -1,6 +1,7 @@
 gunicorn
 pandas
 psutil
+ffmpegbin
 ffmpeg-python
 selenium
 flashtext

@@ -17,7 +17,24 @@ class BackendConfigure(PyJSON):
             self.TmpDir = None
             super().__init__(d)
             self.configfile = self
+            self.create_config_dir()
 
+    def create_dir(self, path):
+        try:
+            if not os.path.exists(path):
+                os.makedirs(path)
+                return True
+        except OSError:
+            print('Error: Creating directory. ' + path)
+            return False
+
+    def create_config_dir(self):
+        if self.StorageMountPoint:
+            self.create_dir(self.StorageMountPoint)
+        if self.CacheStorageMountPoint:
+            self.create_dir(self.CacheStorageMountPoint)
+        if self.TmpDir:
+            self.create_dir(self.TmpDir)
 
     @classmethod
     def get_config(cls):

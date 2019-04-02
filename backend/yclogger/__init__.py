@@ -1,14 +1,7 @@
 import logging.config
+
 from pythonjsonlogger import jsonlogger
 from structlog import configure, processors, stdlib, threadlocal
-import os
-
-CurDir = os.path.dirname(__file__)
-DebugLogDir = os.path.join(CurDir, "..//..//log")
-if not os.path.isdir(DebugLogDir):
-    os.mkdir(DebugLogDir)
-ytDebugFile = os.path.join(DebugLogDir, "ytdebugfile.log")
-debugfile = str(ytDebugFile)
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):

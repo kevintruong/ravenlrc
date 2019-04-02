@@ -6,7 +6,10 @@ import sqlite3
 import os
 import uuid
 
-curdir = os.path.abspath(os.path.dirname(__file__))
+from config.configure import BackendConfigure
+
+config: BackendConfigure = BackendConfigure.get_config()
+curdir = config.get_config().TmpDir
 import abc
 
 
@@ -16,7 +19,7 @@ class LocalStorageDb(abc.ABC):
 
     def connect(self, dbname):
         dbpath = os.path.join(curdir, dbname)
-        return sqlite3.connect(dbpath,check_same_thread=False)
+        return sqlite3.connect(dbpath, check_same_thread=False)
 
     @abc.abstractmethod
     def insert_file(self, metadata: dict):

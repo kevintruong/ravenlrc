@@ -9,7 +9,10 @@ import platform
 import logging
 
 import ffmpeg
+import ffmpegbin.ffmpegbin
 
+ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
+ffprobepath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffprobe')
 # from backend.render.type import Size, Position
 import psutil as psutil
 
@@ -74,7 +77,7 @@ class FfmpegCli(object):
         # self.ffmpeg_cli = ['render', '-hide_banner', '-loglevel', 'panic', '-y']
 
         # self.ffmpeg_cli = ['ffmpeg', '-y']
-        self.ffmpeg_cli = ['ffmpeg', '-hide_banner', '-y']
+        self.ffmpeg_cli = ['{}'.format(ffmpegpath), '-hide_banner', '-y']
         self.__add_system_prefix()
 
     def __init__(self):
@@ -89,6 +92,7 @@ class FfmpegCli(object):
         self.copy_encode = ["-c", "copy"]
         self.reset_ffmpeg_cmd()
         self.__add_system_prefix()
+        self.ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
         pass
 
     def _ffprobe_file_format(self, input: str):
@@ -98,7 +102,8 @@ class FfmpegCli(object):
         :return:
         """
         # ffprobe - v quiet - print_format json - show_format
-        ffproble_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', "-i",
+        ffproble_cmd = ['{}'.format(ffprobepath), '-v', 'quiet', '-print_format', 'json', '-show_format',
+                        '-show_streams', "-i",
                         "{}".format(input)]
         output, err = self.run_cmd(ffproble_cmd)
         data = json.loads(output)
@@ -206,7 +211,7 @@ class FfmpegCli(object):
             (
                 ffmpeg.input(input_img, loop=1)
                     .output(output_video, t=time_length, framerate=25)
-                    .run(overwrite_output=True)
+                    .run(cmd=ffmpegpath, overwrite_output=True)
             )
         except Exception as exp:
             os.remove(output_video)
@@ -227,7 +232,7 @@ class FfmpegCli(object):
             (
                 ffmpeg.input(input_bg, stream_loop=-1)
                     .output(output, t=time_length, framerate=25, c='copy')
-                    .run(overwrite_output=True)
+                    .run(cmd=ffmpegpath, overwrite_output=True)
             )
         except Exception as exp:
             os.remove(output)
@@ -263,7 +268,7 @@ class FfmpegCli(object):
                 ffmpeg.input(input_effect)
                     .filter('scale', resolution.width, resolution.height)
                     .output(output, framerate=25, vcodec='png')
-                    .run(overwrite_output=True)
+                    .run(cmd=ffmpegpath, overwrite_output=True)
             )
         except Exception as exp:
             os.remove(output)
@@ -317,7 +322,7 @@ class FfmpegCli(object):
                     .filter('scale', resolution.width, -1)
                     .output(output_bg, framerate=25, vcodec='png', t=timelength)
                     .global_args('-shortest')
-                    .run(overwrite_output=True)
+                    .run(cmd=ffmpegpath, overwrite_output=True)
             )
         except Exception as exp:
             os.remove(output_bg)
@@ -364,7 +369,7 @@ class FfmpegCli(object):
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
-                .run(overwrite_output=True)
+                .run(cmd=ffmpegpath, overwrite_output=True)
         )
 
     def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
@@ -395,7 +400,7 @@ class FfmpegCli(object):
                     .global_args('-shortest')
                     .global_args('-threads', '{}'.format(cpucount))
                     .global_args("-preset", "ultrafast")
-                    .run(overwrite_output=True)
+                    .run(cmd=ffmpegpath, overwrite_output=True)
             )
             # self._ffmpeg_input(video)
             # self._ffmpeg_input(affect_vid)
@@ -428,7 +433,7 @@ class FfmpegCli(object):
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
-                .run(overwrite_output=True)
+                .run(cmd=ffmpegpath, overwrite_output=True)
         )
         # if bg_video_alpha:
         #     pass
@@ -456,7 +461,7 @@ class FfmpegCli(object):
             ffmpeg.input(mp3file)['a']
                 .output(mp3out, acodec='copy', map_metadata=-1)
                 .global_args('-threads', '{}'.format(cpucount))
-                .run(overwrite_output=True)
+                .run(cmd=ffmpegpath, overwrite_output=True)
         )
         # FfmpegCli.check_file_exist(mp3file)
         # self._ffmpeg_input(mp3file)
@@ -489,7 +494,7 @@ class FfmpegCli(object):
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")
-                .run(overwrite_output=True)
+                .run(cmd=ffmpegpath, overwrite_output=True)
         )
 
         # ffmpeg_cmd = ["ffmpeg", "-y",
@@ -531,7 +536,7 @@ class FfmpegCli(object):
                 .output(output)
                 .global_args('-shortest')
                 .global_args("-preset", "ultrafast")
-                .run(overwrite_output=True)
+                .run(cmd=ffmpegpath, overwrite_output=True)
         )
         # self._ffmpeg_input(input_bg)
         # self._ffmpeg_input(input_logo)
@@ -576,7 +581,7 @@ class FfmpegCli(object):
         pass
 
     def check_alpha_channel(self, affect_vid):
-        data = ffmpeg.probe(affect_vid)
+        data = ffmpeg.probe(affect_vid, cmd=ffprobepath)
         streams = data['streams']
         if len(streams):
             pix_format = streams[0]['pix_fmt']
