@@ -1,11 +1,16 @@
 import os
 import shutil
+
+from backend.storage.gdrive import GDriveMnger
 from config.configure import BackendConfigure
 
 curdir = os.path.abspath(os.path.dirname(__file__))
 config: BackendConfigure = BackendConfigure.get_config()
 TmpCurDir = config.get_config().TmpDir
 
+
+GDriveStorage = GDriveMnger.get_instance(False)
+GdriveCacheStorage = GDriveMnger.get_instance(True)
 
 def error_msg_handle(exp):
     import traceback

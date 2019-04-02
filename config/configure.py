@@ -8,17 +8,23 @@ curdir = os.path.dirname(os.path.realpath(__file__))
 configfile = os.path.join(curdir, 'config.json')
 
 
-class BackendConfigure(PyJSON):
+class BackendConfigure:
     configfile = None
 
-    def __init__(self, d):
-        if self.configfile is None:
+    def __init__(self, info:dict):
+        if BackendConfigure.configfile is None:
             self.StorageMountPoint = None
             self.CacheStorageMountPoint = None
             self.TmpDir = None
-            super().__init__(d)
-            self.configfile = self
+            for key,value in info.items():
+                if key == 'StorageMountPoint':
+                    self.StorageMountPoint = value
+                if key == 'CacheStorageMountPoint':
+                    self.CacheStorageMountPoint = value
+                if key == 'TmpDir':
+                    self.TmpDir = value
             self.create_config_dir()
+            BackendConfigure.configfile = self
 
     def create_dir(self, path):
         try:
@@ -43,6 +49,7 @@ class BackendConfigure(PyJSON):
     @classmethod
     def get_config(cls):
         if cls.configfile is None:
+            print('first configure')
             if os.path.exists(configfile):
                 with open(configfile, 'r') as conffile:
                     confdata = json.load(conffile)
@@ -50,4 +57,18 @@ class BackendConfigure(PyJSON):
             else:
                 return None
         else:
+            print('allready configured')
             return cls.configfile
+
+
+import unittest
+
+
+class Test_Configure(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
+
+    def test_configure(self):
+        BackendConfigure.get_config()
+        config = BackendConfigure.get_config()
+        print(config)
