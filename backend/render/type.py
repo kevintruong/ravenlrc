@@ -43,7 +43,7 @@ class Title(PyJSON):
     def __init__(self, d):
         super().__init__(d)
         if 'file' in self.__dict__:
-            self.file = ContentDir.get_file_path(ContentDir.TITLE_DIR, self.file)
+            self.file = ContentDir.verify_file(ContentDir.TITLE_DIR, self.file)
 
 
 class Resolution(Size):
@@ -95,7 +95,7 @@ class Spectrum(PyJSON):
         self.custom = None
         super().__init__(d)
         if 'file' in self.__dict__:
-            self.file = ContentDir.get_file_path(ContentDir.SPECTRUM_DIR, self.file)
+            self.file = ContentDir.verify_file(ContentDir.SPECTRUM_DIR, self.file)
 
 
 class BgSpectrum:
@@ -107,13 +107,11 @@ class BgSpectrum:
                 self.size = Size(info[keyvalue])
 
 
-class BgEffect:
+class BgEffect(PyJSON):
     def __init__(self, info: dict):
-        from backend.render.cache import ContentDir
-        self.file = ContentDir.get_file_path(ContentDir.EFFECT_DIR, info['file'])
-        check_file_existed(self.file)
-        self.opacity = int(info['opacity'])
-        pass
+        super().__init__(info)
+        self.file = ContentDir.verify_file(ContentDir.EFFECT_DIR, self.file)
+        self.opacity = int(self.opacity)
 
 
 class BgLyric:
@@ -147,7 +145,7 @@ class WaterMask(PyJSON):
     def __init__(self, d):
         super().__init__(d)
         if 'file' in self.__dict__:
-            self.file = ContentDir.get_file_path(ContentDir.WATERMASK_DIR, self.file)
+            self.file = ContentDir.verify_file(ContentDir.WATERMASK_DIR, self.file)
 
 
 class MusicVideoKind(IntEnum):
@@ -168,8 +166,8 @@ class Background:
         self.timing = None
         for field in info.keys():
             if field == 'file':
-                self.file = ContentDir.get_file_path(ContentDir.BGIMG_DIR, info[field])
-                check_file_existed(self.file)
+                self.file = ContentDir.verify_file(ContentDir.BGIMG_DIR, info[field])
+                # check_file_existed(self.file)
             elif field == 'effect':
                 self.effect = BgEffect(info[field])
             elif field == 'lyric':

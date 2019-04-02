@@ -75,10 +75,6 @@ class GDriveMnger:
                 GDriveMnger.GDriveStorage = GDriveMnger(cachestorage=False)
             return GDriveMnger.GDriveStorage
 
-
-    def list_file(self):
-        return
-
     def get_share_link(self, filepath: str):
         filename = FileInfo(filepath).filename
         fileinfo = self.viewFile(filename)

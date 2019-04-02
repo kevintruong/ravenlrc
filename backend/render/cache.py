@@ -25,6 +25,27 @@ class StorageInfo:
         self.path = path
 
 
+class ContentFileInfo:
+    def __init__(self, filename, fileinfo=None,
+                 dirname=None,
+                 filepath=None,
+                 storage: GDriveMnger = None
+                 ):
+        self.filename = filename
+        self.fileinfo = fileinfo
+        self.dirname = dirname
+        self.filepath = filepath
+        self.storage = storage
+
+        pass
+
+    def get(self):
+        if self.filepath:
+            return self.filepath
+        else:
+            return self.storage.download_file(self.fileinfo['id'], self.dirname)
+
+
 class ContentDir:
     SONG_DIR = os.path.join(contentDir, 'Song')
     EFFECT_DIR = os.path.join(contentDir, 'Effect')
@@ -125,6 +146,34 @@ class ContentDir:
             return file_path
         except Exception as exp:
             raise FileNotFoundError('Not found {} in {}'.format(filename, dir))
+
+    @classmethod
+    def verify_file(cls, dir, filename):
+        dir = os.path.basename(dir)
+        if cls.CacheGDriveMappingDictCls is None:
+            cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
+        storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
+        is_exists = GDriveStorage.is_file_exists_at_local(filename)
+        filepath = None
+        fileinfo = None
+        if is_exists:
+            listfiles = os.listdir(storeinfo.path)
+            if filename in listfiles:
+                filepath = os.path.join(storeinfo.path, filename)
+            else:
+                parent_id = storeinfo.id
+                fileinfo = GDriveStorage.viewFile(filename, parent_id)
+        else:
+            parent_id = storeinfo.id
+            fileinfo = GDriveStorage.viewFile(filename, parent_id)
+        if filepath or fileinfo:
+            return ContentFileInfo(filename,
+                                   fileinfo,
+                                   storeinfo.path,
+                                   filepath,
+                                   GDriveStorage)
+        else:
+            raise FileNotFoundError('not found {} in Storage'.format(filename))
 
 
 class CachedContentDir:

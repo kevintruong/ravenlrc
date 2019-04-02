@@ -1,17 +1,15 @@
 import os
 import shutil
-
-from backend.storage.gdrive import GDriveMnger
-from config.configure import BackendConfigure
-from datetime import datetime, timedelta
 from flask import abort
+from config.configure import BackendConfigure
 
 curdir = os.path.abspath(os.path.dirname(__file__))
 config: BackendConfigure = BackendConfigure.get_config()
 TmpCurDir = config.get_config().TmpDir
 
-GDriveStorage = GDriveMnger.get_instance(False)
-GdriveCacheStorage = GDriveMnger.get_instance(True)
+
+# GDriveStorage = GDriveMnger.get_instance(False)
+# GdriveCacheStorage = GDriveMnger.get_instance(True)
 
 
 def error_msg_handle(exp):
@@ -40,23 +38,13 @@ def http(request):
     }
     if request.method != 'POST':
         return abort(405)
-    all_file = os.listdir(curdir)
-    print("project file {}".format(all_file))
-
     shutil.copy2(os.path.join(curdir, 'request.json'), TmpCurDir)
-    all_file = os.listdir(TmpCurDir)
-    print("all files {}".format(all_file))
     try:
-        print("start render")
-        print("import module")
         from backend.render.engine import BackgroundsRender
         import json
         from backend.yclogger import telelog
         from backend.render.parser import SongApi
-        print("load json request module")
         body = request.get_json()
-        print("json data {}".format(body))
-        telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
         songapi = SongApi(body)
         song_render = BackgroundsRender(songapi)
         retval = song_render.run()

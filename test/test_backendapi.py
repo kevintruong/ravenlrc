@@ -291,7 +291,7 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_server_send_render_api(self):
-        rest_api = 'https://raven-backend.herokuapp.com/api/video/render'
+        rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/http'
         response = requests.post(rest_api,
                                  json=self.data)
         print(response.headers)

@@ -54,19 +54,23 @@ class RenderSpectrum(RenderEngine):
         super().__init__(rendertype)
         self.spectrumconf = spectrumconf
         self.spectrum = spectrum
+        self.formatted_watermask = None
 
     def format(self):
         timelength = self.rendertype.configure.duration
-        src = self.spectrum.file
+        src = self.spectrum.file.filename
         renderfile_name = CachedFile.get_cached_filename(src,
-                                                         attribute=self.spectrumconf)
+                                                         attribute=[self.rendertype,
+                                                                    self.spectrumconf,
+                                                                    self.spectrum.custom,
+                                                                    self.spectrum.templatecode])
 
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if renderfile is None:
             renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
             # formatted_spectrum = SpectrumMvTemplateFile().getfullpath()
             ffmpegcli = FfmpegCli()
-            ffmpegcli.scale_video_by_width_height(self.spectrum.file,
+            ffmpegcli.scale_video_by_width_height(self.spectrum.file.get(),
                                                   self.spectrumconf.size,
                                                   renderfile,
                                                   timelength=timelength)
@@ -74,15 +78,19 @@ class RenderSpectrum(RenderEngine):
         return renderfile
 
     def run(self, src: str, **kwargs):
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src,
-                                                              self.spectrum.file,
-                                                              self.spectrumconf.size)
+        self.formatted_watermask = self.format()
+        renderfile_name = CachedFile.get_cached_filename(src, attribute=[self.rendertype,
+                                                                         self.spectrumconf,
+                                                                         self.spectrum.custom,
+                                                                         self.spectrum.templatecode])
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not renderfile:
             renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
-            formatted_watermask = self.format()
             ffmpegcli = FfmpegCli()
-            ffmpegcli.add_logo_to_bg_img(src, formatted_watermask, renderfile, self.spectrumconf.position)
+            ffmpegcli.add_logo_to_bg_img(src,
+                                         self.formatted_watermask,
+                                         renderfile,
+                                         self.spectrumconf.position)
             CachedContentDir.gdrive_file_upload(renderfile)
         return renderfile
 
@@ -95,20 +103,30 @@ class RenderWaterMask(RenderEngine):
         self.watermask = watermask
 
     def format(self):
+        self.watermask.file = self.watermask.file.get()
         formatted_watermask = PngTempFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_video_by_width_height(self.watermask.file, self.watermaskconf.size, formatted_watermask)
+        ffmpegcli.scale_video_by_width_height(self.watermask.file,
+                                              self.watermaskconf.size,
+                                              formatted_watermask)
         return formatted_watermask
         pass
 
-    def run(self, src: str, **kwargs):
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.watermask.file, self.watermaskconf.size)
+    def run(self, src, **kwargs):
+        renderfile_name = SecondBgImgCachedFile.get_file_name(src.filename,
+                                                              self.watermask.file.filename,
+                                                              self.watermaskconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not output:
+            src: ContentFileInfo
+            src = src.get()
             output = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
             formatted_watermask = self.format()
             ffmpegcli = FfmpegCli()
-            ffmpegcli.add_logo_to_bg_img(src, formatted_watermask, output, self.watermaskconf.position)
+            ffmpegcli.add_logo_to_bg_img(src,
+                                         formatted_watermask,
+                                         output,
+                                         self.watermaskconf.position)
             CachedContentDir.gdrive_file_upload(output)
         return output
 
@@ -122,11 +140,15 @@ class RenderTitle(RenderEngine):
     def format(self):
         formatted_watermask = PngTempFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_video_by_width_height(self.title.file, self.titleconf.size, formatted_watermask)
+        ffmpegcli.scale_video_by_width_height(self.title.file.get(),
+                                              self.titleconf.size,
+                                              formatted_watermask)
         return formatted_watermask
 
     def run(self, src: str, **kwargs):
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src, self.title.file, self.titleconf.size)
+        renderfile_name = SecondBgImgCachedFile.get_file_name(src,
+                                                              self.title.file.filename,
+                                                              self.titleconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not output:
             output = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
@@ -159,7 +181,10 @@ class RenderBgEffect(RenderEngine):
 
     def get_effect_cached_file(self, profile, src, timelength):
         self.bgeffectfile = self.init_bgeffect_by_profile(profile)
-        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile, timelength)
+
+        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
+                                                           timelength)
+
         cached_filename = BgEffectCachedFile.get_cached_file_name(src, effect_file,
                                                                   self.bgEffect.opacity)
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
@@ -176,11 +201,13 @@ class RenderBgEffect(RenderEngine):
         :param profile:
         :return:
         '''
+        # self.bgEffect.file = self.bgEffect.file.get()
         ffmpegcli = FfmpegCli()
-        cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file,
+        cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file.filename,
                                                                attribute=profile)
         effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
+            self.bgEffect.file = self.bgEffect.file.get()
             effect_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.scale_effect_vid(self.bgEffect.file,
                                        self.rendertype.configure.resolution,
@@ -314,32 +341,25 @@ class BackgroundRender(RenderEngine):
         timeleng = self.rendertype.configure.duration
         self.input = self.file  # initial input by background file
         if self.watermask:
-            telelog.debug("render watermask")
             self.output = self.watermask.run(self.input)
             self.input = self.output
         if self.title:
-            telelog.debug("render title")
             self.output = self.title.run(self.input)
             self.input = self.output
         if self.file:
-            telelog.debug("render background file")
             self.input = self.get_cached_backgroundimg()
             self.output = self.get_cached_bgvid(self.input, timeleng)
             self.input = self.output
         if self.effect:
-            telelog.debug("render effect file")
             self.output = self.effect.run(self.input)
             self.input = self.output
         if self.spectrum:
-            telelog.debug("render spectrum file")
             self.output = self.spectrum.run(self.input)
             self.input = self.output
         if self.song:
-            telelog.debug("render song file {}".format("hello world"))
             self.output = self.song.run(self.input)
             self.input = self.output
         if self.lyric:
-            telelog.critical("render lyric file")
             self.output = self.lyric.run(self.input, output=self.finalfile)
         output_url = ContentDir.gdrive_file_upload(self.output)
         return output_url
@@ -389,6 +409,7 @@ class BackgroundsRender:
 
     def run(self):
         bgrender_engine: BackgroundRender
+        url_ret = ""
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)

@@ -3,7 +3,7 @@
   "backgrounds": [
     {
       "id": "backgroundid",
-      "file": "YeuXaLaKho.png",
+      "file": "DuaEmDiKhapTheGian.png",
       "timming": [
         {
           "start": "0",
@@ -12,7 +12,7 @@
       ],
       "effect": {
         "file": "Heart_Fly_Orange.mov",
-        "opacity": "30"
+        "opacity": "60"
       },
       "title": {
         "position": {
@@ -46,11 +46,11 @@
       },
       "spectrum": {
         "position": {
-          "x": "421",
+          "x": "521",
           "y": "200"
         },
         "size": {
-          "width": "391",
+          "width": "291",
           "height": "43"
         }
       },
@@ -60,12 +60,12 @@
           "y": "500"
         },
         "size": {
-          "width": "691",
-          "height": "143"
+          "width": "891",
+          "height": "243"
         },
         "font": {
           "name": "SVN-Futura Light",
-          "color": "0xffeeff",
+          "color": "0x000000",
           "size": "60"
         }
       }
@@ -74,14 +74,6 @@
   "song_effect": {
     "type": "SONG",
     "code": "EFFECT_CODE"
-  },
-  "spectrum": {
-    "templatecode": "circle light",
-    "file": "anhdechcangingoaiem.mov",
-    "custom": {
-      "option1": "option1_value",
-      "option2": "option1_value"
-    }
   },
   "watermask": {
     "file": "timshel_logo.png",
