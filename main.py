@@ -1,6 +1,5 @@
 import os
 import shutil
-
 from config.configure import BackendConfigure
 
 curdir = os.path.abspath(os.path.dirname(__file__))
@@ -43,7 +42,7 @@ def http(request):
     #
     # # Set CORS headers for main requests
 
-    heades = {
+    headers = {
         'Access-Control-Allow-Origin': 'https://mydomain.com',
         'Access-Control-Allow-Credentials': 'true'
     }
@@ -70,11 +69,10 @@ def http(request):
         songapi = SongApi(body)
         song_render = BackgroundsRender(songapi)
         retval = song_render.run()
-        return ('Hello World! {}'.format(retval), 200, headers)
+        return '{}'.format(retval), 200, headers
     except Exception as exp:
-        return error_msg_handle(exp)
+        print(error_msg_handle(exp))
 
-    return 'Hello World from kevinlrc {}'.format(all_file)
 
 # if __name__ == '__main__':
 #     http(None)

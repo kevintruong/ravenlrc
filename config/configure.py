@@ -2,6 +2,7 @@ import json
 import os
 
 from backend.utility.Utility import PyJSON
+from config.foldergenerator import SchemmaGenerator
 
 curdir = os.path.dirname(os.path.realpath(__file__))
 configfile = os.path.join(curdir, 'config.json')
@@ -35,6 +36,9 @@ class BackendConfigure(PyJSON):
             self.create_dir(self.CacheStorageMountPoint)
         if self.TmpDir:
             self.create_dir(self.TmpDir)
+        SchemmaGenerator(os.path.join(curdir, 'CacheStorageDirMap.json'),
+                         self.CacheStorageMountPoint).generate()
+        SchemmaGenerator(os.path.join(curdir, 'StorageDirMap.json'), self.StorageMountPoint).generate()
 
     @classmethod
     def get_config(cls):

@@ -1,5 +1,5 @@
 {
   "StorageMountPoint": "/tmp/raven/",
   "CacheStorageMountPoint": "/tmp/raven/",
- "TmpDir": "/tmp/raven"
+  "TmpDir": "/tmp/raven"
 }

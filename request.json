@@ -17,7 +17,7 @@
       "title": {
         "position": {
           "x": "221",
-          "y": "900"
+          "y": "500"
         },
         "size": {
           "width": "691",
@@ -32,10 +32,10 @@
       "watermask": {
         "position": {
           "x": "500",
-          "y": "200"
+          "y": "400"
         },
         "size": {
-          "width": "350",
+          "width": "250",
           "height": "43"
         },
         "font": {
@@ -46,17 +46,17 @@
       },
       "spectrum": {
         "position": {
-          "x": "421",
+          "x": "621",
           "y": "200"
         },
         "size": {
-          "width": "391",
+          "width": "291",
           "height": "43"
         }
       },
       "lyric": {
         "position": {
-          "x": "221",
+          "x": "421",
           "y": "500"
         },
         "size": {

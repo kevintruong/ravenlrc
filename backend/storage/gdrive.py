@@ -1,18 +1,15 @@
-import calendar
 import datetime
 import io
 import os
-import re
 import shutil
-import time
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+from backend.auth.authenticate import CONFIG_DIR
 from backend.storage.db.helper import GdriveStorageDb
-from backend.storage.foldergenerator import SchemmaGenerator
 from backend.storage.utils import MIMETYPES
 from backend.utility.Utility import FileInfo
 from config.configure import BackendConfigure
@@ -44,19 +41,18 @@ class GDriveMnger:
 
     def __init__(self, cachestorage=False):
         if cachestorage:
-            shutil.copy2(os.path.join(CurDir, 'cachestorage.json'),
+            shutil.copy2(os.path.join(CONFIG_DIR, 'cachestorage.json'),
                          TmpCurDir)
             rootdirname = 'cache'
             token = os.path.join(TmpCurDir, 'cachestorage.json')
             self.localdb = GdriveStorageDb('.cachedstoragedb.db')
-            SchemmaGenerator(os.path.join(CurDir, 'config/CacheStorageDirMap.json'), cachedcontentdir).generate()
+
         else:
             rootdirname = 'content'
-            shutil.copy2(os.path.join(CurDir, 'storage.json'),
+            shutil.copy2(os.path.join(CONFIG_DIR, 'storage.json'),
                          TmpCurDir)
             token = os.path.join(TmpCurDir, 'storage.json')
             self.localdb = GdriveStorageDb('.storagedb.db')
-            SchemmaGenerator(os.path.join(CurDir, 'config/StorageDirMap.json'), contentDir).generate()
         store = file.Storage(token)
         self.creds = store.get()
         if not self.creds or self.creds.invalid:
@@ -69,14 +65,16 @@ class GDriveMnger:
         self.rootdir_id = self.viewFile(rootdirname)['id']
 
     @classmethod
-    def get_instance(cls, type: str):
-        if type == 'cache':
-            if GDriveMnger.GDriveStorage is None:
+    def get_instance(cls, iscached):
+        if iscached:
+            if GDriveMnger.GdriveCacheStorage is None:
                 GDriveMnger.GdriveCacheStorage = GDriveMnger(cachestorage=True)
-                return GDriveStorage.GdriveCacheStorage
-            else:
-                GDriveMnger.GdriveStorage = GDriveMnger(cachestorage=False)
-                return GDriveStorage.GDriveStorage
+            return GDriveMnger.GdriveCacheStorage
+        else:
+            if GDriveMnger.GdriveCacheStorage is None:
+                GDriveMnger.GdriveCacheStorage = GDriveMnger(cachestorage=False)
+            return GDriveMnger.GdriveCacheStorage
+
 
     def list_file(self):
         return
@@ -315,5 +313,5 @@ class Test_GoogleFiles(unittest.TestCase):
         print(all_files)
 
 
-GDriveStorage = GDriveMnger(cachestorage=False)
-GdriveCacheStorage = GDriveMnger(cachestorage=True)
+GDriveStorage = GDriveMnger.get_instance(False)
+GdriveCacheStorage = GDriveMnger.get_instance(True)

@@ -3,7 +3,7 @@ import json
 import os
 from enum import Enum
 
-from backend.storage.gdrive import GDriveStorage, GdriveCacheStorage
+from backend.storage.gdrive import GDriveStorage, GdriveCacheStorage, GDriveMnger
 from backend.utility.Utility import FileInfo, only_latin_string
 from config.configure import BackendConfigure
 

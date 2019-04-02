@@ -1,7 +1,10 @@
 import os
 import sqlite3
 
+
 DEFAULT_DB = os.path.join(os.path.dirname(__file__), 'authenticate.sqlite3')
+
+CONFIG_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 class YtServiceAuthentication:

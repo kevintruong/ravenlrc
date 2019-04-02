@@ -395,6 +395,7 @@ class BackgroundsRender:
             telelog.critical("url return {}".format(url_ret))
             pass
         pass
+        return url_ret
 
     def generate_render_engine(self):
         for index, background_item in enumerate(self.songapi.backgrounds):

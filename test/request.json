@@ -1,9 +1,9 @@
 {
-  "song_url": "https://www.nhaccuatui.com/bai-hat/ve-phia-mua-the-bao.SxV6JNd5MjbB.html",
+  "song_url": "https://www.nhaccuatui.com/bai-hat/em-khong-the-tien-tien-ft-touliver.8gSTnzCeZxUF.html",
   "backgrounds": [
     {
       "id": "backgroundid",
-      "file": "NhungKeMongMo.png",
+      "file": "YeuXaLaKho.png",
       "timming": [
         {
           "start": "0",
@@ -57,16 +57,16 @@
       "lyric": {
         "position": {
           "x": "221",
-          "y": "900"
+          "y": "500"
         },
         "size": {
           "width": "691",
-          "height": "43"
+          "height": "143"
         },
         "font": {
           "name": "SVN-Futura Light",
-          "color": "0x345678",
-          "size": "30"
+          "color": "0xffeeff",
+          "size": "60"
         }
       }
     }
