@@ -3,14 +3,16 @@ import shutil
 
 from backend.storage.gdrive import GDriveMnger
 from config.configure import BackendConfigure
+from datetime import datetime, timedelta
+from flask import abort
 
 curdir = os.path.abspath(os.path.dirname(__file__))
 config: BackendConfigure = BackendConfigure.get_config()
 TmpCurDir = config.get_config().TmpDir
 
-
 GDriveStorage = GDriveMnger.get_instance(False)
 GdriveCacheStorage = GDriveMnger.get_instance(True)
+
 
 def error_msg_handle(exp):
     import traceback
@@ -32,28 +34,13 @@ def http(request):
         Response object using
         `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
     """
-    # # Set CORS headers for preflight requests
-    # if request.method == 'OPTIONS':
-    #     # Allows GET requests from origin https://mydomain.com with
-    #     # Authorization header
-    #     headers = {
-    #         'Access-Control-Allow-Origin': 'https://mydomain.com',
-    #         'Access-Control-Allow-Methods': 'GET',
-    #         'Access-Control-Allow-Headers': 'Authorization',
-    #         'Access-Control-Max-Age': '3600',
-    #         'Access-Control-Allow-Credentials': 'true'
-    #     }
-    #     return ('', 204, headers)
-    #
-    # # Set CORS headers for main requests
-
     headers = {
-        'Access-Control-Allow-Origin': 'https://mydomain.com',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': 'true'
     }
-
+    if request.method != 'POST':
+        return abort(405)
     all_file = os.listdir(curdir)
-
     print("project file {}".format(all_file))
 
     shutil.copy2(os.path.join(curdir, 'request.json'), TmpCurDir)
@@ -67,8 +54,7 @@ def http(request):
         from backend.yclogger import telelog
         from backend.render.parser import SongApi
         print("load json request module")
-        with open(os.path.join(curdir, 'request.json'), 'r', encoding='UTF-8') as json5file:
-            body = json.load(json5file)
+        body = request.get_json()
         print("json data {}".format(body))
         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
         songapi = SongApi(body)
@@ -77,7 +63,6 @@ def http(request):
         return '{}'.format(retval), 200, headers
     except Exception as exp:
         print(error_msg_handle(exp))
-
 
 # if __name__ == '__main__':
 #     http(None)

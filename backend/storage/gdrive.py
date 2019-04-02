@@ -71,9 +71,9 @@ class GDriveMnger:
                 GDriveMnger.GdriveCacheStorage = GDriveMnger(cachestorage=True)
             return GDriveMnger.GdriveCacheStorage
         else:
-            if GDriveMnger.GdriveCacheStorage is None:
-                GDriveMnger.GdriveCacheStorage = GDriveMnger(cachestorage=False)
-            return GDriveMnger.GdriveCacheStorage
+            if GDriveMnger.GDriveStorage is None:
+                GDriveMnger.GDriveStorage = GDriveMnger(cachestorage=False)
+            return GDriveMnger.GDriveStorage
 
 
     def list_file(self):
