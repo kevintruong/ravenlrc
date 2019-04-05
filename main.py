@@ -40,10 +40,10 @@ def http(request):
         return abort(405)
     shutil.copy2(os.path.join(curdir, 'request.json'), TmpCurDir)
     try:
-        from backend.render.engine import BackgroundsRender
+        from render import BackgroundsRender
         import json
         from backend.yclogger import telelog
-        from backend.render.parser import SongApi
+        from render.parser import SongApi
         body = request.get_json()
         songapi = SongApi(body)
         song_render = BackgroundsRender(songapi)

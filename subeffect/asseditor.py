@@ -4,10 +4,10 @@ import subprocess
 from urllib.parse import urlparse
 
 from backend.utility.TempFileMnger import *
-from backend.render.ffmpegcli import FFmpegProfile
-from backend.subeffect import pylrc
-from backend.subeffect.pysubs2 import *
-from backend.subeffect.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
+# from render import FFmpegProfile
+from subeffect import pylrc
+from subeffect.pysubs2 import *
+from subeffect.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
 
 
 class textrefactor(object):
@@ -191,13 +191,6 @@ class LyricConfigInfo:
         self.fontsize = subinfo['fontsize']
         self.fontname = subinfo['fontname']
 
-    def scale(self, resolution: FFmpegProfile):
-        if resolution == FFmpegProfile.PROFILE_LOW:
-            pass
-        elif resolution == FFmpegProfile.PROFILE_2K:
-            pass
-        elif resolution == FFmpegProfile.PROFILE_4K:
-            pass
 
 
 def create_ass_from_lrc(lrcfile: str, output: str,
@@ -225,7 +218,7 @@ def create_ass_subtitle(lrccontent: str,
                         output: str,
                         subinfo,
                         resolution=None):
-    from backend.render.type import Resolution
+    from render.type import Resolution
     resolution: Resolution
 
     subcorlor = subinfo.font.color
@@ -271,7 +264,7 @@ def create_ass_from_url(url: str, output: str, subinfo,
     :return:
     """
     if resolution is None:
-        from backend.render.type import Size
+        from render.type import Size
         resolution = Size()
     from backend.crawler.nct import NctCrawler
     tmpdir = YtTempDir().get_fullpath()

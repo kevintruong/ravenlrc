@@ -1,7 +1,7 @@
 import abc
 
-from backend.subeffect.keyword.keyword import AssDialueTextAnimatedTransform
 from backend.utility.Utility import PyJSON
+from subeffect.keyword.keyword import AssDialueTextAnimatedTransform
 
 
 class Effect:

@@ -309,5 +309,5 @@ class Test_GoogleFiles(unittest.TestCase):
         print(all_files)
 
 
-GDriveStorage = GDriveMnger.get_instance(False)
-GdriveCacheStorage = GDriveMnger.get_instance(True)
+# GDriveStorage = GDriveMnger.get_instance(False)
+# GdriveCacheStorage = GDriveMnger.get_instance(True)

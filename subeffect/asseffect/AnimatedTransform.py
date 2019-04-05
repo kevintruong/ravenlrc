@@ -1,6 +1,5 @@
-from enum import *
-
-from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
+from subeffect.Effect import *
+from subeffect.asseffect.AnimatedEffect import AnimatedEffect
 
 
 class Timing:

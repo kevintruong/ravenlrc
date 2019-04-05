@@ -1,7 +1,7 @@
 from .ssafile import SSAFile
 from .ssaevent import SSAEvent
 from .ssastyle import SSAStyle
-from backend.subeffect.pysubs2 import cli, time
+from subeffect.pysubs2 import time
 from .exceptions import *
 from .common import Color, VERSION
 

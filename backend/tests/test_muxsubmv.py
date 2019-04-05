@@ -1,9 +1,8 @@
-import os
 import shutil
 import unittest
 
-from backend.subeffect.asseditor import LyricConfigInfo, create_ass_from_url
-from backend.render.ffmpegcli import FfmpegCli
+from subeffect import LyricConfigInfo, create_ass_from_url
+from render import FfmpegCli
 from backend.utility.TempFileMnger import *
 
 curDir = os.path.dirname(__file__)

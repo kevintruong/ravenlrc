@@ -1,8 +1,8 @@
 import json
 import os
-from backend.render.cache import ContentDir
+from render import ContentDir
 from backend.crawler.nct import SongInfo
-from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict, non_accent_convert, \
+from backend.utility.Utility import create_mv_config_file, FileInfo, create_hashtag, todict, \
     generate_singer_song_hashtags
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))

@@ -3,7 +3,7 @@ import json
 import os
 from enum import Enum
 
-from backend.storage.gdrive import GDriveStorage, GdriveCacheStorage, GDriveMnger
+from backend.storage.gdrive import GDriveMnger
 from backend.utility.Utility import FileInfo, only_latin_string
 from config.configure import BackendConfigure
 
@@ -60,11 +60,13 @@ class ContentDir:
     WATERMASK_DIR = os.path.join(contentDir, 'Watermask')
     SPECTRUM_DIR = os.path.join(contentDir, 'Spectrum')
     CacheGDriveMappingDictCls = None
+    GDriveStorage = GDriveMnger.get_instance(False)
 
     def __init__(self):
         if self.CacheGDriveMappingDictCls is None:
             self.CacheGDriveMappingDict = {}
-            cacheddirs = GDriveStorage.list_out('content')
+
+            cacheddirs = ContentDir.GDriveStorage.list_out('content')
             for each_dir in cacheddirs:
                 if each_dir['name'] == 'Song':
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
@@ -95,7 +97,7 @@ class ContentDir:
                                                                                 each_dir['id'],
                                                                                 self.TITLE_DIR)
                 if each_dir['name'] == 'Mv':
-                    mv_cacheddirs = GDriveStorage.list_out(fid=each_dir['id'])
+                    mv_cacheddirs = ContentDir.GDriveStorage.list_out(fid=each_dir['id'])
                     for each_mv_dir in mv_cacheddirs:
                         if each_mv_dir['name'] == 'Preview':
                             self.CacheGDriveMappingDict[each_mv_dir['name']] = StorageInfo(each_dir['name'],
@@ -113,20 +115,20 @@ class ContentDir:
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
-        is_exists = GDriveStorage.is_file_exists_at_local(filename)
+        is_exists = cls.GDriveStorage.is_file_exists_at_local(filename)
         if is_exists:
             listfiles = os.listdir(storeinfo.path)
             if filename in listfiles:
                 return os.path.join(storeinfo.path, filename)
             else:
                 parent_id = storeinfo.id
-                fileinfo = GDriveStorage.viewFile(filename, parent_id)
-                file_path = GDriveStorage.download_file(fileinfo['id'], storeinfo.path)
+                fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
+                file_path = cls.GDriveStorage.download_file(fileinfo['id'], storeinfo.path)
                 return file_path
         else:
             parent_id = storeinfo.id
-            fileinfo = GDriveStorage.viewFile(filename, parent_id)
-            file_path = GDriveStorage.download_file(fileinfo['id'], storeinfo.path)
+            fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
+            file_path = cls.GDriveStorage.download_file(fileinfo['id'], storeinfo.path)
             return file_path
 
     @classmethod
@@ -135,7 +137,7 @@ class ContentDir:
             cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
-        fileinfo = GDriveStorage.upload_file(filepath, storeinfo.id)
+        fileinfo = cls.GDriveStorage.upload_file(filepath, storeinfo.id)
         return fileinfo['webContentLink']
 
     @classmethod
@@ -153,7 +155,7 @@ class ContentDir:
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
-        is_exists = GDriveStorage.is_file_exists_at_local(filename)
+        is_exists = cls.GDriveStorage.is_file_exists_at_local(filename)
         filepath = None
         fileinfo = None
         if is_exists:
@@ -162,16 +164,16 @@ class ContentDir:
                 filepath = os.path.join(storeinfo.path, filename)
             else:
                 parent_id = storeinfo.id
-                fileinfo = GDriveStorage.viewFile(filename, parent_id)
+                fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
         else:
             parent_id = storeinfo.id
-            fileinfo = GDriveStorage.viewFile(filename, parent_id)
+            fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
         if filepath or fileinfo:
             return ContentFileInfo(filename,
                                    fileinfo,
                                    storeinfo.path,
                                    filepath,
-                                   GDriveStorage)
+                                   cls.GDriveStorage)
         else:
             raise FileNotFoundError('not found {} in Storage'.format(filename))
 
@@ -181,11 +183,12 @@ class CachedContentDir:
     EFFECT_DIR = os.path.join(cachedcontentdir, 'Effect')
     BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
     CacheGDriveMappingDictCls = None
+    GdriveCacheStorage = GDriveMnger.get_instance(True)
 
     def __init__(self):
         if self.CacheGDriveMappingDictCls is None:
             self.CacheGDriveMappingDict = {}
-            cacheddirs = GdriveCacheStorage.list_out('content')
+            cacheddirs = CachedContentDir.GdriveCacheStorage.list_out('content')
             for each_dir in cacheddirs:
                 if each_dir['name'] == 'Song':
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
@@ -238,26 +241,26 @@ class CachedContentDir:
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
-        is_exists = GdriveCacheStorage.is_file_exists_at_local(filename)
+        is_exists = cls.GdriveCacheStorage.is_file_exists_at_local(filename)
         if is_exists:
             listfiles = os.listdir(storeinfo.path)
             if filename in listfiles:
                 return os.path.join(storeinfo.path, filename)
             else:
                 parent_id = storeinfo.id
-                fileinfo = GdriveCacheStorage.viewFile(filename, parent_id)
-                file_path = GdriveCacheStorage.download_file(fileinfo['id'], storeinfo.path)
+                fileinfo = cls.GdriveCacheStorage.viewFile(filename, parent_id)
+                file_path = cls.GdriveCacheStorage.download_file(fileinfo['id'], storeinfo.path)
                 return file_path
         else:
             listfiles = os.listdir(storeinfo.path)
             if filename in listfiles:
                 filepath = os.path.join(storeinfo.path, filename)
-                GdriveCacheStorage.upload_file(filepath, storeinfo.id)
+                cls.GdriveCacheStorage.upload_file(filepath, storeinfo.id)
                 return filepath
             parent_id = storeinfo.id
-            fileinfo = GdriveCacheStorage.viewFile(filename, parent_id)
+            fileinfo = cls.GdriveCacheStorage.viewFile(filename, parent_id)
             if len(fileinfo):
-                file_path = GdriveCacheStorage.download_file(fileinfo['id'], storeinfo.path)
+                file_path = cls.GdriveCacheStorage.download_file(fileinfo['id'], storeinfo.path)
                 return file_path
         return None
 
@@ -267,7 +270,7 @@ class CachedContentDir:
             cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
-        fileinfo = GdriveCacheStorage.upload_file(filepath, storeinfo.id)
+        fileinfo = cls.GdriveCacheStorage.upload_file(filepath, storeinfo.id)
         return fileinfo['webContentLink']
 
     @classmethod
@@ -404,7 +407,7 @@ class SecondBgImgCachedFile(CachedFile):
 
     @classmethod
     def get_file_name(cls, bgimg: str, watermask: str, size):
-        from backend.render.type import Size
+        from render.type import Size
         size: Size
         bgimg_name = FileInfo(bgimg).name
         ext = FileInfo(bgimg).ext
@@ -481,11 +484,6 @@ class BgImgCachedFile(CachedFile):
     @classmethod
     def get_cachedfile(cls, filename):
         return CachedContentDir.get_file_path(cls.CachedDir, filename)
-        # listfiles = os.listdir(cls.CachedDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedDir, file)
-        # return None
 
     @classmethod
     def create_cachedfile(cls, filename):

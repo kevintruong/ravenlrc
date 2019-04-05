@@ -1,5 +1,5 @@
 import unittest
-from backend.subeffect.asseffect.AnimatedTransform import *
+from subeffect.asseffect.AnimatedTransform import *
 
 
 class TestAssEffect(unittest.TestCase):

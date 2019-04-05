@@ -1,6 +1,6 @@
-from backend.subeffect.Effect import WordEffect
-from backend.subeffect.keyword.keyword import *
-from backend.subeffect.pysubs2 import SSAFile
+from subeffect.Effect import WordEffect
+from subeffect.keyword.keyword import *
+from subeffect.pysubs2 import SSAFile
 
 
 class KeyWordInfo:

@@ -4,8 +4,8 @@ import unittest
 
 import requests
 
-from backend.render.engine import BackgroundsRender
-from backend.render.parser import SongApi
+from render.engine import BackgroundsRender
+from render.parser import SongApi
 from backend.utility.TempFileMnger import *
 
 curDir = os.path.dirname(__file__)
@@ -308,6 +308,12 @@ class Test_RenderCmder(unittest.TestCase):
         rest_api = 'http://localhost:8000/api/song?url='
         response = requests.get(rest_api + url)
         print(response.text)
+
+    def test_lyric_effect(self):
+        self.url = r'http://127.0.0.1:5000/lyriceffect'
+        files = {'ass_in': open('test_create_mv.json5').read()}
+        r = requests.post(self.url, json=files)
+        print(r.text)
 
 
 if __name__ == '__main__':

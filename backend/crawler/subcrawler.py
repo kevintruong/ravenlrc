@@ -6,7 +6,7 @@ from time import sleep
 import requests
 
 from backend.crawler.rc4_py3 import decrypt
-from backend.subeffect.asseditor import *
+from subeffect.asseditor import *
 
 key = "Lyr1cjust4nct"
 curDir = os.path.dirname(__file__)
@@ -130,7 +130,6 @@ def wait_for_download(directory, timeout, nfiles=None):
 
 
 def selenium_get(url: str):
-    import time
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
 

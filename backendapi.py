@@ -37,8 +37,8 @@ def error_msg_handle(exp):
 def song(url):
     try:
         from backend.yclogger import telelog
-        from backend.render.parser import CrawlCmder
-        from backend.render.parser import Cmder
+        from render.parser import CrawlCmder
+        from render.parser import Cmder
         telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
         return cmder.run()
@@ -51,10 +51,10 @@ def song(url):
 @hug.post('/api/video/render')
 def render(body):
     try:
-        from backend.render.engine import BackgroundsRender
+        from render import BackgroundsRender
         import json
         from backend.yclogger import telelog
-        from backend.render.parser import SongApi
+        from render.parser import SongApi
         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
         songapi = SongApi(body)
         song_render = BackgroundsRender(songapi)

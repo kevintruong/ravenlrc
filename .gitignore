@@ -144,14 +144,14 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-/backend/subeffect/pylrc/LICENSE.txt
-/backend/subeffect/pylrc/README.rst
-/backend/subeffect/pylrc/setup.py
-/backend/subeffect/pylrc/tests/static/missing_endline.lrc
-/backend/subeffect/pylrc/tests/static/missing_endline.srt
-/backend/subeffect/pylrc/tests/static/nested.lrc
-/backend/subeffect/pylrc/tests/static/nested.srt
-/backend/subeffect/pylrc/tests/static/un_nested.lrc
-/backend/subeffect/pylrc/tests/static/un_nested.srt
-/backend/subeffect/pylrc/tests/test.py
+/subeffect/pylrc/LICENSE.txt
+/subeffect/pylrc/README.rst
+/subeffect/pylrc/setup.py
+/subeffect/pylrc/tests/static/missing_endline.lrc
+/subeffect/pylrc/tests/static/missing_endline.srt
+/subeffect/pylrc/tests/static/nested.lrc
+/subeffect/pylrc/tests/static/nested.srt
+/subeffect/pylrc/tests/static/un_nested.lrc
+/subeffect/pylrc/tests/static/un_nested.srt
+/subeffect/pylrc/tests/test.py
 /node_modules/

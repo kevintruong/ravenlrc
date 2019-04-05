@@ -1,10 +1,9 @@
 from threading import Thread
 
 from backend.crawler.nct import *
-from backend.render.type import *
-from backend.render.type import Background
+from render.type import *
+from render.type import Background
 from backend.utility.Utility import *
-from backend.yclogger import telelog
 
 
 class Cmder:
@@ -44,7 +43,7 @@ class RenderThread(Thread):
         self.postdata = postdata
 
     def run(self) -> None:
-        from backend.render.engine import BackgroundsRender
+        from render.engine import BackgroundsRender
         songapi = SongApi(self.postdata)
         song_render = BackgroundsRender(songapi)
         ret = song_render.run()

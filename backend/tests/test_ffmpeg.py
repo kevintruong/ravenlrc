@@ -1,8 +1,5 @@
 from backend.crawler.nct import NctCrawler
-from backend.render.ffmpegcli import *
 import unittest
-
-from backend.subeffect.asseditor import *
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")
@@ -71,7 +68,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_create_scale_video(self):
         bg_output = os.path.join(test_data_dir, "bg_out.mp4")
-        from backend.render.type import Size
+        from render.type import Size
         self.ffmpeg.scale_effect_vid(input_mp4_file, Size(), bg_output)
         leng_out = self.ffmpeg.get_media_time_length(bg_output)
 
@@ -87,7 +84,7 @@ class TestFFmpegCli(unittest.TestCase):
         input_vid = os.path.join(sample_data_dir, "media_out.mp4")
         ass_out = os.path.join(test_data_dir, "test.ass")
         output = os.path.join(test_data_dir, "sub_output.mp4")
-        from backend.render.type import BgLyric
+        from render.type import BgLyric
         subinfo = BgLyric({
             "position": {
                 "x": "221",

@@ -6,9 +6,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-from backend.crawler.crawler import SeleniumCrawler
 from backend.crawler.rc4_py3 import decrypt
-
 
 # from backend.utility.TempFileMnger import *
 # from backend.utility.Utility import FileInfo
@@ -59,18 +57,16 @@ class SongInfo:
                     self.title = nctsonginfo[keyvalue]
                 if keyvalue == 'songfile':
                     self.songfile = nctsonginfo[keyvalue]
-                    from backend.render.cache import SongFile
+                    from render.cache import SongFile
                     self.songfile = SongFile.get_fullpath(self.songfile)
                 if keyvalue == 'id':
                     self.id = nctsonginfo[keyvalue]
                 if keyvalue == 'lyrictext':
                     self.lyrictext = nctsonginfo[keyvalue]
                 if keyvalue == 'lyric':
-                    from backend.render.cache import SongFile
+                    from render.cache import SongFile
                     self.lyric = nctsonginfo[keyvalue]
                     self.lyric = SongFile.get_fullpath(self.lyric)
-
-    pass
 
 
 class NctSongInfo(SongInfo):
@@ -183,7 +179,7 @@ class NctCrawler(Crawler):
     def get_mp3file(self, outputdir: str):
         try:
             songinfo: SongInfo = self.songinfo
-            mp3file = requests.get(songinfo.songfile, allow_redirects=True,timeout=30)
+            mp3file = requests.get(songinfo.songfile, allow_redirects=True, timeout=30)
             localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singer)).encode('utf-8')
             with open(localmp3file, 'wb') as mp3filefd:
                 mp3filefd.write(mp3file.content)

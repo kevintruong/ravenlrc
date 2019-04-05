@@ -260,7 +260,7 @@ class FfmpegCli(object):
         :param output:
         :return:
         """
-        from backend.render.type import Size
+        from render.type import Size
         resolution: Size
         try:
             FfmpegCli.check_file_exist(input_effect)
@@ -291,7 +291,7 @@ class FfmpegCli(object):
         :param output:
         :return:
         '''
-        from backend.render.type import Size
+        from render.type import Size
         resolution: Size
         try:
             FfmpegCli.check_file_exist(input_bg)
@@ -313,7 +313,7 @@ class FfmpegCli(object):
         :param output_bg:
         :return:
         '''
-        from backend.render.type import Size
+        from render.type import Size
         resolution: Size
         try:
             FfmpegCli.check_file_exist(input_bg)
@@ -525,7 +525,7 @@ class FfmpegCli(object):
         :return:
         """
 
-        from backend.render.type import Position
+        from render.type import Position
         coordinate: Position
         FfmpegCli.check_file_exist(input_bg)
         FfmpegCli.check_file_exist(input_logo)

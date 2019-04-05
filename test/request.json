@@ -3,7 +3,7 @@
   "backgrounds": [
     {
       "id": "backgroundid",
-      "file": "DuaEmDiKhapTheGian.png",
+      "file": "TinhNhanOi.png",
       "timming": [
         {
           "start": "0",
@@ -84,6 +84,14 @@
     "file": "ThuongEmLaDieuAnhKhongTheNgo.png",
     "text": "Vì em vẫn - Hariwon",
     "option": "option_value"
+  },
+  "spectrum": {
+    "templatecode": "circle light",
+    "file": "anhdechcangingoaiem.mov",
+    "custom": {
+      "option1": "option1_value",
+      "option2": "option1_value"
+    }
   },
   "rendertype": {
     "type": "preview",

@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum
-from backend.render.cache import ContentDir
-from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.utility.Utility import check_file_existed, PyJSON
+from render.cache import ContentDir
+from subeffect.asseffect import LyricEffect
+from backend.utility.Utility import PyJSON
 
 
 class Size:

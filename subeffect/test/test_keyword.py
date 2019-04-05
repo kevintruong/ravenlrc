@@ -1,12 +1,10 @@
 import unittest
 
-from backend.subeffect.asseditor import LyricConfigInfo, create_ass_from_lrc, create_ass_from_url
-from backend.subeffect.asseffect.LyricEffect import LyricEffect
-from backend.subeffect.asseffect.LyricEffect import KeyWordInfo
-from backend.subeffect.keyword.keyword import *
-from backend.render.ffmpegcli import FfmpegCli, FFmpegProfile
+from subeffect import LyricConfigInfo, create_ass_from_url
+from subeffect.asseffect import LyricEffect
+from render import FfmpegCli, FFmpegProfile
 
-from backend.subeffect.asseffect.AnimatedEffect import AnimatedEffect
+from subeffect.asseffect import AnimatedEffect
 from backend.utility.TempFileMnger import *
 
 

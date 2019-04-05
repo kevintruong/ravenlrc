@@ -1,6 +1,9 @@
-from flashtext import *
 from enum import IntEnum
-from backend.subeffect.asseffect.AnimatedTransform import *
+
+from flashtext import *
+
+from subeffect.asseffect.AnimatedEffect import AnimatedEffect
+from subeffect.asseffect.AnimatedTransform import AnimatedTransform
 
 
 class SubtitleAlignment(IntEnum):
