@@ -1,4 +1,3 @@
-import logging
 import os
 
 import gspread as gspread
@@ -6,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from oauth2client import client, tools
 from oauth2client.file import Storage
 
-from backend.crawler.nct import SongInfo
+from crawler import SongInfo
 
 cur_dir = os.path.dirname(__file__)
 

@@ -1,7 +1,6 @@
 import shutil
-import unittest
 
-from backend.crawler.subcrawler import *
+from crawler.subcrawler import *
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")

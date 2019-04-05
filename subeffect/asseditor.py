@@ -266,7 +266,7 @@ def create_ass_from_url(url: str, output: str, subinfo,
     if resolution is None:
         from render.type import Size
         resolution = Size()
-    from backend.crawler.nct import NctCrawler
+    from crawler import NctCrawler
     tmpdir = YtTempDir().get_fullpath()
     lyricfile = NctCrawler(url).get_lyric(tmpdir)
     return create_ass_from_lrc(lyricfile, output, subinfo, resolution)

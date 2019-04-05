@@ -285,7 +285,7 @@ class YtCreatorTeleBotManager:
             isvalid = cls.url_validate(url)
             if isvalid:
                 print("url valid")
-                from backend.crawler.nct import SongInfoCrawler
+                from crawler import SongInfoCrawler
                 songinfo = SongInfoCrawler.get_song_info(url)
                 if cls.gsheetsonginfodb.emit(songinfo, record):
                     update.message.reply_text(

@@ -2,15 +2,10 @@ import abc
 import codecs
 import json
 import os
-
 import requests
 from bs4 import BeautifulSoup
-
-from backend.crawler.rc4_py3 import decrypt
-
-# from backend.utility.TempFileMnger import *
-# from backend.utility.Utility import FileInfo
 from backend.utility.Utility import FileInfo
+from crawler.rc4_py3 import decrypt
 
 
 class Crawler(abc.ABC):

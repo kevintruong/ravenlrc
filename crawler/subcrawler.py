@@ -5,7 +5,7 @@ from time import sleep
 
 import requests
 
-from backend.crawler.rc4_py3 import decrypt
+from crawler import decrypt
 from subeffect.asseditor import *
 
 key = "Lyr1cjust4nct"

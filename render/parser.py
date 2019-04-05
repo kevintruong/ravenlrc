@@ -1,6 +1,7 @@
+import abc
 from threading import Thread
 
-from backend.crawler.nct import *
+from crawler.nct import NctCrawler, SongInfo
 from render.type import *
 from render.type import Background
 from backend.utility.Utility import *
@@ -32,7 +33,7 @@ class CrawlCmder(Cmder):
             return NctCrawler(self.url)
 
     def run(self):
-        crawler: Crawler = self.crawl_parser()
+        crawler = self.crawl_parser()
         return crawler.getdownload(self.output)
         pass
 

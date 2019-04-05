@@ -1,4 +1,4 @@
-from backend.crawler.nct import NctCrawler
+from crawler import NctCrawler
 import unittest
 
 curDir = os.path.dirname(__file__)
