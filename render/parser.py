@@ -1,16 +1,17 @@
 import abc
 from threading import Thread
-
 from crawler.nct import NctCrawler, SongInfo
-from render.type import *
-from render.type import Background
+# from render.type import *
 from backend.utility.Utility import *
+from render.cache import ContentDir
+from render.type import RenderType, Spectrum, Title, WaterMask, Lyric, Background
 
 
 class Cmder:
     def __init__(self):
+        pass
         # self.effect: BgEffect = None
-        self.background: Background = None
+        # self.background: Background = None
 
     @abc.abstractmethod
     def run(self):

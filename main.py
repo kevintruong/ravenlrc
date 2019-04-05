@@ -1,14 +1,9 @@
-import os
-from flask import abort
-from config.configure import BackendConfigure
-curdir = os.path.abspath(os.path.dirname(__file__))
+#!/usr/bin/env python3
+from flask import abort, Flask
+from flask import request
+from flask import jsonify
 
-config: BackendConfigure = BackendConfigure.get_config()
-TmpCurDir = config.get_config().TmpDir
-
-
-# GDriveStorage = GDriveMnger.get_instance(False)
-# GdriveCacheStorage = GDriveMnger.get_instance(True)
+app = Flask(__name__)
 
 
 def error_msg_handle(exp):
@@ -22,7 +17,31 @@ def error_msg_handle(exp):
             }
 
 
-def http(request):
+@app.route('/api/songcrawler')
+def songcrawler():
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true'
+    }
+    if request.method != 'GET':
+        return abort(405)
+    try:
+        from backend.yclogger import telelog
+        from render.parser import CrawlCmder
+        from render.parser import Cmder
+        url = request.args.get('url')
+        telelog.debug('```{}```'.format(url))
+        cmder: Cmder = CrawlCmder({'url': url})
+        songinfo = cmder.run()
+        return jsonify(songinfo), 200, headers
+    except Exception as exp:
+        return error_msg_handle(exp)
+
+    pass
+
+
+@app.route('/api/video/render', methods=['POST'])
+def render():
     """Responds to any HTTP request.
     Args:
         request (flask.Request): HTTP request object.
@@ -50,5 +69,6 @@ def http(request):
     except Exception as exp:
         print(error_msg_handle(exp))
 
-# if __name__ == '__main__':
-#     http(None)
+
+if __name__ == '__main__':
+    app.run(debug=True)

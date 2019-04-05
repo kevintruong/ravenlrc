@@ -298,7 +298,7 @@ class Test_RenderCmder(unittest.TestCase):
         print(response.content)
 
     def test_local_send_render_api(self):
-        rest_api = 'http://localhost:8000/api/video/render'
+        rest_api = r'http://127.0.0.1:5000/api/video/render'
         response = requests.post(rest_api,
                                  json=self.data)
         print(response.content)
@@ -314,6 +314,15 @@ class Test_RenderCmder(unittest.TestCase):
         files = {'ass_in': open('test_create_mv.json5').read()}
         r = requests.post(self.url, json=files)
         print(r.text)
+
+    def test_song_crawler(self):
+        self.url = r'http://127.0.0.1:5000/songcrawler?url={}'.format(nct_url)
+        r = requests.get(self.url)
+        print(r.text)
+
+
+
+
 
 
 if __name__ == '__main__':
