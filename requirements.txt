@@ -4,7 +4,6 @@ pandas
 psutil
 ffmpegbin
 ffmpeg-python
-selenium
 flashtext
 unidecode
 google-api-python-client
@@ -13,14 +12,10 @@ beautifulsoup4
 lxml
 unidecode
 gspread
-pydrive
 python-telegram-handler
-pydrive
 python-telegram-bot
 structlog
 python-json-logger
 requests
 google
-flashtext
-hug
 urllib3

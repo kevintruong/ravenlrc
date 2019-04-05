@@ -39,7 +39,11 @@ package:
 
 functions:
   first:
-    handler: http
+    handler: songscrawler
+    events:
+      - http: path
+  second:
+    handler: render
     events:
       - http: path
   # NOTE: the following uses an "event" event (pubSub event in this case).

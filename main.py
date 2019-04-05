@@ -1,9 +1,8 @@
 import os
-import shutil
 from flask import abort
 from config.configure import BackendConfigure
-
 curdir = os.path.abspath(os.path.dirname(__file__))
+
 config: BackendConfigure = BackendConfigure.get_config()
 TmpCurDir = config.get_config().TmpDir
 
@@ -38,9 +37,8 @@ def http(request):
     }
     if request.method != 'POST':
         return abort(405)
-    shutil.copy2(os.path.join(curdir, 'request.json'), TmpCurDir)
     try:
-        from render import BackgroundsRender
+        from render.engine import BackgroundsRender
         import json
         from backend.yclogger import telelog
         from render.parser import SongApi
