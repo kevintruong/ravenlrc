@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from flask import abort, Flask
-from flask import request
 from flask import jsonify
 
 app = Flask(__name__)
@@ -11,14 +10,14 @@ def error_msg_handle(exp):
     from backend.yclogger import telelog
     tracebackmsg = traceback.format_exc()
     telelog.error("{}".format(exp) + '\n' + '```{}```'.format(tracebackmsg))
-    return {'status': 'error',
-            'message': "{}".format(exp),
-            'traceback': "{}".format(tracebackmsg)
-            }
+    return str({'status': 'error',
+                'message': "{}".format(exp),
+                'traceback': "{}".format(tracebackmsg)
+                })
 
 
-@app.route('/api/songcrawler')
-def songcrawler():
+# @app.route('/api/songcrawler')
+def songcrawler(request):
     headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': 'true'
@@ -27,8 +26,8 @@ def songcrawler():
         return abort(405)
     try:
         from backend.yclogger import telelog
-        from render.parser import CrawlCmder
-        from render.parser import Cmder
+        from crawler.crawler import CrawlCmder
+        from backend.type import Cmder
         url = request.args.get('url')
         telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
@@ -36,12 +35,11 @@ def songcrawler():
         return jsonify(songinfo), 200, headers
     except Exception as exp:
         return error_msg_handle(exp)
-
     pass
 
 
-@app.route('/api/video/render', methods=['POST'])
-def render():
+# @app.route('/api/video/render', methods=['POST'])
+def render(request):
     """Responds to any HTTP request.
     Args:
         request (flask.Request): HTTP request object.
@@ -57,18 +55,16 @@ def render():
     if request.method != 'POST':
         return abort(405)
     try:
-        from render.engine import BackgroundsRender
         import json
+        from render.engine import BackgroundsRender
         from backend.yclogger import telelog
-        from render.parser import SongApi
         body = request.get_json()
-        songapi = SongApi(body)
-        song_render = BackgroundsRender(songapi)
+        telelog.debug(body)
+        song_render = BackgroundsRender(body)
         retval = song_render.run()
         return '{}'.format(retval), 200, headers
     except Exception as exp:
-        print(error_msg_handle(exp))
+        return error_msg_handle(exp)
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)

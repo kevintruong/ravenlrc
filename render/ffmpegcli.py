@@ -3,18 +3,19 @@ from __future__ import unicode_literals, print_function
 import json
 import os
 import subprocess
+import psutil as psutil
 from enum import Enum
 from pathlib import Path
 import platform
 import logging
-
 import ffmpeg
 import ffmpegbin.ffmpegbin
 
+from config.configure import BackendConfigure
+
+fontsdir = BackendConfigure.get_config().fontsdir
 ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
 ffprobepath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffprobe')
-# from backend.render.type import Size, Position
-import psutil as psutil
 
 logger = logging.getLogger('backend')
 cpucount = psutil.cpu_count()
@@ -361,11 +362,12 @@ class FfmpegCli(object):
         FfmpegCli.check_file_exist(input_sub)
         FfmpegCli.check_file_exist(input_video)
         input = ffmpeg.input(input_video)
-        subvid_stream = input['v'].filter('subtitles', input_sub)
+        subvid_stream = input['v'].filter('subtitles',
+                                          input_sub,
+                                          fontsdir=fontsdir)
         return (
             ffmpeg
-                .output(subvid_stream, input['a'],
-                        output_vid, acodec='copy', t=timelength)
+                .output(subvid_stream, output_vid)
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")

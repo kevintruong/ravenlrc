@@ -1,4 +1,4 @@
-flask-restful
+unicode
 flask
 gunicorn
 pandas
@@ -19,4 +19,5 @@ structlog
 python-json-logger
 requests
 google
+oauth2client
 urllib3

@@ -37,8 +37,8 @@ def error_msg_handle(exp):
 def song(url):
     try:
         from backend.yclogger import telelog
-        from render.parser import CrawlCmder
-        from render.parser import Cmder
+        from crawler.crawler import CrawlCmder
+        from backend.type import Cmder
         telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
         return cmder.run()

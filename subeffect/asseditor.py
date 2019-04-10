@@ -1,10 +1,7 @@
 from __future__ import unicode_literals
-
 import subprocess
 from urllib.parse import urlparse
-
 from backend.utility.TempFileMnger import *
-# from render import FFmpegProfile
 from subeffect import pylrc
 from subeffect.pysubs2 import *
 from subeffect.pysubs2.substation import ssa_rgb_to_color, color_to_ass_rgba
@@ -37,8 +34,6 @@ class textrefactor(object):
                    self.df_alpha_2,
                    self.df_plpha_3,
                    t1, t2, t3, t4)
-
-        # self.newtext = self.text
         self.newtext = fade_affect + self.text
         pass
 
@@ -183,14 +178,13 @@ class SubRectangle:
 
 
 class LyricConfigInfo:
-   
+
     def __init__(self, subinfo: dict):
         self.rectangle: SubRectangle = SubRectangle(subinfo['rectangle'])
         self.fontname = subinfo['fontname']
         self.fontcolor = subinfo['fontcolor']
         self.fontsize = subinfo['fontsize']
         self.fontname = subinfo['fontname']
-
 
 
 def create_ass_from_lrc(lrcfile: str, output: str,
@@ -266,7 +260,7 @@ def create_ass_from_url(url: str, output: str, subinfo,
     if resolution is None:
         from render.type import Size
         resolution = Size()
-    from crawler import NctCrawler
+    from crawler.nct import NctCrawler
     tmpdir = YtTempDir().get_fullpath()
     lyricfile = NctCrawler(url).get_lyric(tmpdir)
     return create_ass_from_lrc(lyricfile, output, subinfo, resolution)

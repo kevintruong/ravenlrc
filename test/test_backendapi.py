@@ -284,14 +284,13 @@ class Test_RenderCmder(unittest.TestCase):
 
     def test_load_render_api(self):
         # from backend.BackendCmder import SongApi
-        self.renderconf = SongApi(self.data)
-        bgsRender = BackgroundsRender(self.renderconf)
+        bgsRender = BackgroundsRender(self.data)
         output = bgsRender.run()
         print(output)
         pass
 
     def test_server_send_render_api(self):
-        rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/http'
+        rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/render'
         response = requests.post(rest_api,
                                  json=self.data)
         print(response.headers)

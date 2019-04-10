@@ -1,5 +1,11 @@
-from crawler import NctCrawler
+import json
+import os
+
+from crawler.nct import NctCrawler
 import unittest
+
+from render.ffmpegcli import FfmpegCli, Coordinate
+from subeffect.asseditor import create_ass_from_url, LyricConfigInfo, create_ass_from_lrc
 
 curDir = os.path.dirname(__file__)
 sample_data_dir = os.path.join(curDir, "sample_data")
@@ -18,7 +24,7 @@ else:
 
 # input_mp4_file = os.path.join(sample_data_dir, "in1.mp4")
 
-input_mp4_file = os.path.join(sample_data_dir, "in1.mp4")
+input_mp4_file = os.path.join(sample_data_dir, "muon_ruou_to_tinh.mp4")
 
 bg_img00 = os.path.join(sample_data_dir, "bg_img00.png")
 bg_img01 = os.path.join(sample_data_dir, "bg_img01.png")
@@ -99,9 +105,8 @@ class TestFFmpegCli(unittest.TestCase):
                 "color": "0x345678",
                 "size": "30"
             }})
-        input_vid_url = r"https://drive.google.com/uc?id=1CUAQ2vSzwQFmdIHj7wgG5FNkx2xfdZJA&export=download"
         create_ass_from_url(full_test, ass_out, subinfo)
-        compiler = self.ffmpeg.adding_sub_to_video(ass_out, input_vid_url, output).compile()
+        compiler = self.ffmpeg.adding_sub_to_video(ass_out, input_mp4_file, output)
         print(compiler)
 
         length_in = self.ffmpeg.get_media_time_length(input_vid)

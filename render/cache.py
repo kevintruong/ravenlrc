@@ -26,7 +26,8 @@ class StorageInfo:
 
 
 class ContentFileInfo:
-    def __init__(self, filename, fileinfo=None,
+    def __init__(self, filename,
+                 fileinfo=None,
                  dirname=None,
                  filepath=None,
                  storage: GDriveMnger = None
@@ -206,33 +207,6 @@ class CachedContentDir:
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
                                                                                 each_dir['id'],
                                                                                 self.SONG_DIR)
-                # if each_dir['name'] == 'Watermask':
-                #     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
-                #                                                                 each_dir['id'],
-                #                                                                 self.WATERMASK_DIR)
-                # if each_dir['name'] == 'Spectrum':
-                #     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
-                #                                                                 each_dir['id'],
-                #                                                                 self.BGIMG_DIR)
-                # if each_dir['name'] == 'ChannelInfo':
-                #     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
-                #                                                                 each_dir['id'],
-                #                                                                 self.CHANNELINFO_DIR)
-                # if each_dir['name'] == 'Title':
-                #     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
-                #                                                                 each_dir['id'],
-                #                                                                 self.TITLE_DIR)
-                # if each_dir['name'] == 'Mv':
-                #     mv_cacheddirs = GDriveStorage.list_out(fid=each_dir['id'])
-                #     for each_mv_dir in mv_cacheddirs:
-                #         if each_mv_dir['name'] == 'Preview':
-                #             self.CacheGDriveMappingDict[each_mv_dir['name']] = StorageInfo(each_dir['name'],
-                #                                                                            each_mv_dir['id'],
-                #                                                                            self.MVPREV_DIR)
-                #         if each_mv_dir['name'] == 'Release':
-                #             self.CacheGDriveMappingDict[each_mv_dir['name']] = StorageInfo(each_dir['name'],
-                #                                                                            each_mv_dir['id'],
-                #                                                                            self.MVRELEASE_DIR)
             CachedContentDir.CacheGDriveMappingDictCls = self.CacheGDriveMappingDict
         pass
 
@@ -283,7 +257,35 @@ class CachedContentDir:
             return None
             # raise FileNotFoundError('Not found {} in {}'.format(filename, dir))
 
-    # @classmethod
+    @classmethod
+    def verify_file(cls, dir, filename):
+        dir = os.path.basename(dir)
+        if cls.CacheGDriveMappingDictCls is None:
+            cls.CacheGDriveMappingDictCls = ContentDir().CacheGDriveMappingDict
+        storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
+        is_exists = cls.GdriveCacheStorage.is_file_exists_at_local(filename)
+        filepath = None
+        fileinfo = None
+        if is_exists:
+            listfiles = os.listdir(storeinfo.path)
+            if filename in listfiles:
+                filepath = os.path.join(storeinfo.path, filename)
+            else:
+                parent_id = storeinfo.id
+                fileinfo = cls.GdriveCacheStorage.viewFile(filename, parent_id)
+        else:
+            parent_id = storeinfo.id
+            fileinfo = cls.GdriveCacheStorage.viewFile(filename, parent_id)
+        if filepath or fileinfo:
+            return ContentFileInfo(filename,
+                                   fileinfo,
+                                   storeinfo.path,
+                                   filepath,
+                                   cls.GdriveCacheStorage)
+        else:
+            return None
+
+        # @classmethod
     # def get_file_path(cls, dir: str, filename: str):
     #     listfiles = os.listdir(dir)
     #     for file in listfiles:
@@ -352,20 +354,15 @@ class SongFile:
 
 
 class LyricMvCachedFile(CachedFile):
-    CachedEffectDir = os.path.join(CachedContentDir.SONG_DIR)
+    CacheDir = os.path.join(CachedContentDir.SONG_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
-        return CachedContentDir.get_file_path(cls.CachedEffectDir, filename)
-        # listfiles = os.listdir(cls.CachedEffectDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedEffectDir, file)
-        # return None
+        return CachedContentDir.get_file_path(cls.CacheDir, filename)
 
     @classmethod
     def create_cachedfile(cls, filename):
-        return os.path.join(cls.CachedEffectDir, filename)
+        return os.path.join(cls.CacheDir, filename)
 
 
 class LyricCachedFile(CachedFile):
@@ -374,11 +371,6 @@ class LyricCachedFile(CachedFile):
     @classmethod
     def get_cachedfile(cls, filename):
         return CachedContentDir.get_file_path(cls.CachedEffectDir, filename)
-        # listfiles = os.listdir(cls.CachedEffectDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedEffectDir, file)
-        # return None
 
     @classmethod
     def create_cachedfile(cls, filename):
@@ -386,20 +378,15 @@ class LyricCachedFile(CachedFile):
 
 
 class EffectCachedFile(CachedFile):
-    CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR)
+    CacheDir = os.path.join(CachedContentDir.EFFECT_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
-        return CachedContentDir.get_file_path(cls.CachedEffectDir, filename)
-        # listfiles = os.listdir(cls.CachedEffectDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedEffectDir, file)
-        # return None
+        return CachedContentDir.get_file_path(cls.CacheDir, filename)
 
     @classmethod
     def create_cachedfile(cls, filename):
-        return os.path.join(cls.CachedEffectDir, filename)
+        return os.path.join(cls.CacheDir, filename)
 
 
 class SecondBgImgCachedFile(CachedFile):
@@ -418,11 +405,6 @@ class SecondBgImgCachedFile(CachedFile):
     @classmethod
     def get_cachedfile(cls, filename):
         return CachedContentDir.get_file_path(cls.CachedDir, filename)
-        # listfiles = os.listdir(cls.CachedDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedDir, file)
-        # return None
 
     @classmethod
     def create_cachedfile(cls, filename):
@@ -430,20 +412,15 @@ class SecondBgImgCachedFile(CachedFile):
 
 
 class MuxAudioVidCachedFile(CachedFile):
-    CachedAudioVidDir = os.path.join(CachedContentDir.SONG_DIR)
+    CacheDir = os.path.join(CachedContentDir.SONG_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
-        return CachedContentDir.get_file_path(cls.CachedAudioVidDir, filename)
-        # listfiles = os.listdir(cls.CachedAudioVidDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedAudioVidDir, file)
-        # return None
+        return CachedContentDir.get_file_path(cls.CacheDir, filename)
 
     @classmethod
     def create_cachedfile(cls, filename):
-        return os.path.join(cls.CachedAudioVidDir, filename)
+        return os.path.join(cls.CacheDir, filename)
 
     @classmethod
     def get_cached_file_name(cls, video, audio):
@@ -454,21 +431,15 @@ class MuxAudioVidCachedFile(CachedFile):
 
 
 class BgEffectCachedFile(CachedFile):
-    CachedEffectDir = os.path.join(CachedContentDir.EFFECT_DIR)
-    BgEffectCachedDir = os.path.join(CachedEffectDir)
+    CacheDir = os.path.join(CachedContentDir.EFFECT_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
-        return CachedContentDir.get_file_path(cls.BgEffectCachedDir, filename)
-        # listfiles = os.listdir(cls.BgEffectCachedDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.BgEffectCachedDir, file)
-        # return None
+        return CachedContentDir.get_file_path(cls.CacheDir, filename)
 
     @classmethod
     def create_cachedfile(cls, filename):
-        return os.path.join(cls.BgEffectCachedDir, filename)
+        return os.path.join(cls.CacheDir, filename)
 
     @classmethod
     def get_cached_file_name(cls, previewbgmv, previeweffectmv, opacity_val=0):
@@ -493,20 +464,15 @@ class BgImgCachedFile(CachedFile):
 
 
 class BgVidCachedFile(CachedFile):
-    CachedBgVidDir = os.path.join(CachedContentDir.BGIMG_DIR)
+    CacheDir = os.path.join(CachedContentDir.BGIMG_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
-        return CachedContentDir.get_file_path(cls.CachedBgVidDir, filename)
-        # listfiles = os.listdir(cls.CachedBgVidDir)
-        # for file in listfiles:
-        #     if filename in file:
-        #         return os.path.join(cls.CachedBgVidDir, file)
-        # return None
+        return CachedContentDir.get_file_path(cls.CacheDir, filename)
 
     @classmethod
     def create_cachedfile(cls, filename):
-        return os.path.join(cls.CachedBgVidDir, filename)
+        return os.path.join(cls.CacheDir, filename)
 
 
 import unittest

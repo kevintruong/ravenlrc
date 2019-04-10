@@ -1,54 +1,6 @@
-import abc
-from threading import Thread
-from crawler.nct import NctCrawler, SongInfo
-# from render.type import *
+from backend.type import SongInfo
 from backend.utility.Utility import *
-from render.cache import ContentDir
-from render.type import RenderType, Spectrum, Title, WaterMask, Lyric, Background
-
-
-class Cmder:
-    def __init__(self):
-        pass
-        # self.effect: BgEffect = None
-        # self.background: Background = None
-
-    @abc.abstractmethod
-    def run(self):
-        pass
-
-
-class CrawlCmder(Cmder):
-    def __init__(self, crawlcmd: dict):
-        super().__init__()
-        for key in crawlcmd.keys():
-            if 'url' == key:
-                self.url = crawlcmd[key]
-            if 'output' == key:
-                self.output = crawlcmd['output']
-            else:
-                self.output = ContentDir.SONG_DIR
-
-    def crawl_parser(self):
-        if 'nhaccuatui' in self.url:
-            return NctCrawler(self.url)
-
-    def run(self):
-        crawler = self.crawl_parser()
-        return crawler.getdownload(self.output)
-        pass
-
-
-class RenderThread(Thread):
-    def __init__(self, postdata):
-        super().__init__()
-        self.postdata = postdata
-
-    def run(self) -> None:
-        from render.engine import BackgroundsRender
-        songapi = SongApi(self.postdata)
-        song_render = BackgroundsRender(songapi)
-        ret = song_render.run()
+from render.type import *
 
 
 class SongApi:
@@ -90,6 +42,7 @@ class SongApi:
     def get_song_info_from_url(self):
         if self.song is None and self.song_url:
             crawlerdict = {'url': self.song_url}
+            from crawler.crawler import CrawlCmder
             crawler = CrawlCmder(crawlerdict)
             self.song: SongInfo = SongInfo(json.loads(crawler.run()))
             pass
@@ -100,8 +53,3 @@ class SongApi:
             background = Background(background_info)
             backgrounds.append(background)
         return backgrounds
-
-
-class layer:
-    def __init__(self):
-        pass

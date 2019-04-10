@@ -39,7 +39,7 @@ package:
 
 functions:
   first:
-    handler: songscrawler
+    handler: songcrawler
     events:
       - http: path
   second:

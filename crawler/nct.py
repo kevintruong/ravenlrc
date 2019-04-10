@@ -1,9 +1,10 @@
 import abc
 import codecs
-import json
 import os
 import requests
 from bs4 import BeautifulSoup
+
+from backend.type import SongInfo
 from backend.utility.Utility import FileInfo
 from crawler.rc4_py3 import decrypt
 
@@ -26,42 +27,6 @@ class SongInfoCrawler:
             return NctCrawler(url).songinfo
         else:
             raise Exception('not support crawl song info from {}'.format(url))
-
-
-class SongInfo:
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
-
-    def __init__(self, nctsonginfo=None):
-        self.singer = None
-        self.info = None
-        self.title = None
-        self.songfile = None
-        self.id = None
-        self.lyrictext = None
-        self.lyric = None
-        self.id = None
-        if nctsonginfo:
-            for keyvalue in nctsonginfo.keys():
-                if keyvalue == 'singer':
-                    self.singer = nctsonginfo[keyvalue]
-                if keyvalue == 'info':
-                    self.info = nctsonginfo[keyvalue]
-                if keyvalue == 'title':
-                    self.title = nctsonginfo[keyvalue]
-                if keyvalue == 'songfile':
-                    self.songfile = nctsonginfo[keyvalue]
-                    from render.cache import SongFile
-                    self.songfile = SongFile.get_fullpath(self.songfile)
-                if keyvalue == 'id':
-                    self.id = nctsonginfo[keyvalue]
-                if keyvalue == 'lyrictext':
-                    self.lyrictext = nctsonginfo[keyvalue]
-                if keyvalue == 'lyric':
-                    from render.cache import SongFile
-                    self.lyric = nctsonginfo[keyvalue]
-                    self.lyric = SongFile.get_fullpath(self.lyric)
 
 
 class NctSongInfo(SongInfo):

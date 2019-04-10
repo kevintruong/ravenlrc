@@ -1,13 +1,16 @@
 from abc import *
+from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename
 from backend.yclogger import telelog
 from render.cache import *
+from render.parser import SongApi
 from render.type import *
 from render.ffmpegcli import FfmpegCli, FFmpegProfile
-from render.parser import SongApi
+
+# from subeffect.asseditor import create_ass_from_lrc
+# from crawler.nct import SongInfo
 from subeffect.asseditor import create_ass_from_lrc
-from crawler.nct import SongInfo
 
 
 class RenderEngine(ABC):
@@ -26,7 +29,8 @@ class RenderEngine(ABC):
 class RenderSong(RenderEngine):
 
     def run(self, src: str, **kwargs):
-        cached_filename, effectmv_cachedfile = self.get_cached_file(src)
+        cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
+        effectmv_cachedfile = self.get_cached_file(cached_filename)
         if effectmv_cachedfile is None:
             ffmpegcli = FfmpegCli()
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
@@ -36,10 +40,9 @@ class RenderSong(RenderEngine):
             CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
         return effectmv_cachedfile
 
-    def get_cached_file(self, src):
-        cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
+    def get_cached_file(self, cached_filename):
         effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
-        return cached_filename, effectmv_cachedfile
+        return effectmv_cachedfile
 
     def __init__(self, songinfo: SongInfo):
         super().__init__()
@@ -261,7 +264,9 @@ class RenderLyric(RenderEngine):
         resolution = self.rendertype.configure.resolution
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
         self.lrcconf.scale_font_size_by_factor(scale_factor)
-        cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile, attribute=self, extension='.ass')
+        cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile,
+                                                              attribute=self,
+                                                              extension='.ass')
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
@@ -274,9 +279,6 @@ class RenderLyric(RenderEngine):
         return cachedfilepath
 
     def run(self, src: str, **kwargs):
-        if 'output' in kwargs:
-            output = kwargs['output']
-
         cached_filename = LyricCachedFile.get_cached_filename(src, attribute=self.assfile)
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
@@ -353,11 +355,11 @@ class BackgroundRender(RenderEngine):
         if self.spectrum:
             self.output = self.spectrum.run(self.input)
             self.input = self.output
+        if self.lyric:
+            self.output = self.lyric.run(self.input)
+            self.input = self.output
         if self.song:
             self.output = self.song.run(self.input)
-            self.input = self.output
-        if self.lyric:
-            self.output = self.lyric.run(self.input, output=self.finalfile)
         output_url = ContentDir.gdrive_file_upload(self.output)
         return output_url
 
@@ -451,31 +453,7 @@ class BackgroundsRender:
             self.bgrenderengine.append(bgRender)
             pass
 
-    def __init__(self, renderdata: SongApi):
+    def __init__(self, renderdata):
         self.bgrenderengine = []
-        self.songapi = renderdata
+        self.songapi = SongApi(renderdata)
         self.generate_render_engine()
-        super().__init__()
-
-
-import unittest
-import os
-import json
-
-
-class Test_Render_Engine(unittest.TestCase):
-    def setUp(self):
-        jsonfile = r'/mnt/Data/Project/ytcreatorservice/test/request.json'
-        with open(jsonfile, 'r', encoding='UTF-8') as json5file:
-            self.data = json.load(json5file)
-        jsondata = json.dumps(self.data, indent=1)
-        telelog.debug(jsondata)
-        self.renderconf = SongApi(self.data)
-        log = self.renderconf.toJSON()
-        print(log)
-        self.bgsRender = BackgroundsRender(self.renderconf)
-
-    def test_run(self):
-        output = self.bgsRender.run()
-        print(output)
-        pass

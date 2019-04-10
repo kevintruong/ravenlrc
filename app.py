@@ -37,8 +37,8 @@ def error_msg_handle(exp):
 def song(url):
     try:
         from backend.yclogger import telelog
-        from render.parser import CrawlCmder
-        from render.parser import Cmder
+        from crawler.crawler import CrawlCmder
+        from backend.type import Cmder
         telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
         return cmder.run()
@@ -51,40 +51,11 @@ def song(url):
 @hug.post('/api/video/render')
 def render(body):
     try:
-        from render import BackgroundsRender
-        from render.parser import RenderThread
+        from render.engine import BackgroundsRender
         import json
         from backend.yclogger import telelog
         from render.parser import SongApi
         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
-        renderthread = RenderThread(body)
-        renderthread.start()
     except Exception as exp:
         return error_msg_handle(exp)
     return {'url': 'render started'}
-#
-#
-# @hug.post('api/video/publish')
-# def publish(body):
-#     return {'msg': 'not support yet'}
-#     pass
-#
-#
-# @hug.post('/api/layer/render')
-# def render_layer(body):
-#     try:
-#         from backend.render.engine import BackgroundsRender
-#         import json
-#         from backend.yclogger import telelog
-#         from backend.render.parser import SongApi
-#         telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
-#         songapi = SongApi(body)
-#         song_render = BackgroundsRender(songapi)
-#         ret = song_render.run()
-#         from backend.storage.gdrive import GDriveMnger
-#         sharelink = GDriveMnger().get_share_link(ret)
-#         if sharelink:
-#             ret = sharelink
-#     except Exception as exp:
-#         return error_msg_handle(exp)
-#     return {'url': ret}

@@ -1,22 +1,22 @@
 import json
 import os
 
-from backend.utility.Utility import PyJSON
 from config.foldergenerator import SchemmaGenerator
 
 curdir = os.path.dirname(os.path.realpath(__file__))
 configfile = os.path.join(curdir, 'config.json')
+fontsdir = os.path.abspath(os.path.join(curdir, '../.fonts'))
 
 
 class BackendConfigure:
     configfile = None
 
-    def __init__(self, info:dict):
+    def __init__(self, info: dict):
         if BackendConfigure.configfile is None:
             self.StorageMountPoint = None
             self.CacheStorageMountPoint = None
             self.TmpDir = None
-            for key,value in info.items():
+            for key, value in info.items():
                 if key == 'StorageMountPoint':
                     self.StorageMountPoint = value
                 if key == 'CacheStorageMountPoint':
@@ -24,6 +24,7 @@ class BackendConfigure:
                 if key == 'TmpDir':
                     self.TmpDir = value
             self.create_config_dir()
+            self.fontsdir = fontsdir
             BackendConfigure.configfile = self
 
     def create_dir(self, path):
