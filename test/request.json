@@ -65,15 +65,15 @@
         },
         "font": {
           "name": "UTM Silk Script",
-          "color": "0x000000",
-          "size": "60"
+          "color": "0xFFFFFF",
+          "size": "80"
         }
       }
     }
   ],
   "song_effect": {
     "type": "SONG",
-    "code": "EFFECT_CODE"
+    "name": "Trans_Eff_002"
   },
   "watermask": {
     "file": "timshel_logo.png",

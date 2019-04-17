@@ -106,8 +106,7 @@ class TestFFmpegCli(unittest.TestCase):
                 "size": "30"
             }})
         create_ass_from_url(full_test, ass_out, subinfo)
-        compiler = self.ffmpeg.adding_sub_to_video(ass_out, input_mp4_file, output)
-        print(compiler)
+        self.ffmpeg.adding_sub_to_video(ass_out, input_mp4_file, output)
 
         length_in = self.ffmpeg.get_media_time_length(input_vid)
         length_out = self.ffmpeg.get_media_time_length(output)

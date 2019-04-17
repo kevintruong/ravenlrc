@@ -14,8 +14,9 @@ import ffmpegbin.ffmpegbin
 from config.configure import BackendConfigure
 
 fontsdir = BackendConfigure.get_config().fontsdir
-ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
 ffprobepath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffprobe')
+# ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
+ffmpegpath = 'ffmpeg'
 
 logger = logging.getLogger('backend')
 cpucount = psutil.cpu_count()
@@ -367,7 +368,7 @@ class FfmpegCli(object):
                                           fontsdir=fontsdir)
         return (
             ffmpeg
-                .output(subvid_stream, output_vid)
+                .output(subvid_stream, output_vid,t=timelength)
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")

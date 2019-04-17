@@ -1,0 +1,3 @@
+[submodule "subeffect"]
+	path = subeffect
+	url = ../lyriceffect.git

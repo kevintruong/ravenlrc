@@ -155,3 +155,5 @@ venv.bak/
 /subeffect/pylrc/tests/static/un_nested.srt
 /subeffect/pylrc/tests/test.py
 /node_modules/
+.gitignore
+pylrc/__pycache__/

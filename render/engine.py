@@ -1,4 +1,6 @@
 from abc import *
+
+from Api.songeffect import generate_songeffect_for_lrc
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename
@@ -246,6 +248,7 @@ class RenderLyric(RenderEngine):
                  lrcconf: BgLyric,
                  lyric: Lyric,
                  lyricfile=None,
+                 songeffect=None,
                  rendertype=None):
         super().__init__(rendertype)
         self.lyric = lyric
@@ -258,6 +261,8 @@ class RenderLyric(RenderEngine):
                 self.lyricfile = self.lyric.file
             else:
                 self.lyricfile = lyricfile
+        if songeffect:
+            self.songeffect = songeffect
         self.assfile = self.generate_lyric_effect_file()
 
     def generate_lyric_effect_file(self):
@@ -270,11 +275,13 @@ class RenderLyric(RenderEngine):
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
-            create_ass_from_lrc(self.lyricfile,
-                                cachedfilepath,
-                                self.lrcconf,
-                                resolution)
-            cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
+            if self.songeffect:
+                # create_ass_from_lrc(self.lyricfile,
+                #                     cachedfilepath,
+                #                     self.lrcconf,
+                #                     resolution)
+                # cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
+                self.create_songeffect_assfile(cachedfilepath)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
         return cachedfilepath
 
@@ -289,6 +296,14 @@ class RenderLyric(RenderEngine):
                                           cachedfilepath)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
         return cachedfilepath
+
+    def create_songeffect_assfile(self,output):
+        with open(output,'w') as ass_songeffect:
+            with open(self.lyricfile,'r') as lrcfile:
+                lrcdata = lrcfile.read()
+            data = generate_songeffect_for_lrc(self.songeffect.name,lrcdata,self.lrcconf)
+            ass_songeffect.write(data)
+        return output
 
     def create_effect_lyric_file(self, ass_file):
         try:
@@ -436,6 +451,7 @@ class BackgroundsRender:
                 bgRender.lyric = RenderLyric(background_item.lyric,
                                              self.songapi.lyric,
                                              lyricfile,
+                                             self.songapi.song_effect,
                                              bgRender.rendertype)
             if background_item.spectrum and self.songapi.spectrum:
                 bgRender.spectrum = RenderSpectrum(background_item.spectrum,
@@ -447,6 +463,7 @@ class BackgroundsRender:
                                                      bgRender.rendertype)
             if self.songapi.song:
                 bgRender.song = RenderSong(self.songapi.song)
+
             if background_item.timing:
                 print('not support yet')
 
