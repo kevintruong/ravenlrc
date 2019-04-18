@@ -21,12 +21,6 @@ class SongApi:
                 self.song = SongInfo(jsondata[keyvalue])
             if keyvalue == 'backgrounds':
                 self.backgrounds = self.get_list_background(jsondata[keyvalue])
-            if keyvalue == 'spectrum':
-                self.spectrum = Spectrum(jsondata[keyvalue])
-            if keyvalue == 'title':
-                self.title = Title(jsondata[keyvalue])
-            if keyvalue == 'watermask':
-                self.watermask = WaterMask(jsondata[keyvalue])
             if keyvalue == 'lyric':
                 self.lyric = Lyric(jsondata[keyvalue])
             if keyvalue == 'rendertype':

@@ -1,9 +1,13 @@
 {
   "song_url": "https://www.nhaccuatui.com/bai-hat/em-khong-the-tien-tien-ft-touliver.8gSTnzCeZxUF.html",
+  "song_effect": {
+    "type": "SONG",
+    "name": "Trans_Eff_019"
+  },
   "backgrounds": [
     {
       "id": "backgroundid",
-      "file": "TinhNhanOi.png",
+      "file": "CoGaiM52.png",
       "timming": [
         {
           "start": "0",
@@ -15,6 +19,9 @@
         "opacity": "60"
       },
       "title": {
+        "file": "ThuongEmLaDieuAnhKhongTheNgo.png",
+        "text": "Vì em vẫn - Hariwon",
+        "option": "option_value",
         "position": {
           "x": "221",
           "y": "900"
@@ -30,6 +37,9 @@
         }
       },
       "watermask": {
+        "file": "timshel_logo.png",
+        "text": "#timshel",
+        "option": "option_value",
         "position": {
           "x": "500",
           "y": "200"
@@ -45,6 +55,12 @@
         }
       },
       "spectrum": {
+        "templatecode": "circle light",
+        "file": "anhdechcangingoaiem.mov",
+        "custom": {
+          "option1": "option1_value",
+          "option2": "option1_value"
+        },
         "position": {
           "x": "521",
           "y": "200"
@@ -56,8 +72,8 @@
       },
       "lyric": {
         "position": {
-          "x": "221",
-          "y": "500"
+          "x": "1200",
+          "y": "800"
         },
         "size": {
           "width": "891",
@@ -71,28 +87,6 @@
       }
     }
   ],
-  "song_effect": {
-    "type": "SONG",
-    "name": "Trans_Eff_002"
-  },
-  "watermask": {
-    "file": "timshel_logo.png",
-    "text": "#timshel",
-    "option": "option_value"
-  },
-  "title": {
-    "file": "ThuongEmLaDieuAnhKhongTheNgo.png",
-    "text": "Vì em vẫn - Hariwon",
-    "option": "option_value"
-  },
-  "spectrum": {
-    "templatecode": "circle light",
-    "file": "anhdechcangingoaiem.mov",
-    "custom": {
-      "option1": "option1_value",
-      "option2": "option1_value"
-    }
-  },
   "rendertype": {
     "type": "preview",
     "config": {

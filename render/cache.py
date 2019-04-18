@@ -139,6 +139,7 @@ class ContentDir:
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
         fileinfo = cls.GDriveStorage.upload_file(filepath, storeinfo.id)
+        print(filepath)
         return fileinfo['webContentLink']
 
     @classmethod

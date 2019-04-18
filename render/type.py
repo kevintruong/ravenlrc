@@ -53,11 +53,11 @@ class Resolution(Size):
 
 class RenderConfigure:
     def __init__(self, info: dict):
-        for keyvalue in info.keys():
+        for keyvalue, value in info.items():
             if keyvalue == 'duration':
-                self.duration = info[keyvalue]
+                self.duration = value
             if keyvalue == 'resolution':
-                self.resolution = Resolution(info[keyvalue])
+                self.resolution = Resolution(value)
 
     def get_resolution_str(self):
         return '_'.join(str(attr) for attr in self.resolution.__dict__.values())
@@ -66,7 +66,7 @@ class RenderConfigure:
 class RenderType:
     def __init__(self, info=None):
         if info:
-            for keyvalue in info.keys():
+            for keyvalue, value in info.items():
                 if keyvalue == 'type':
                     self.type = info[keyvalue]
                 if keyvalue == 'config':
@@ -100,18 +100,29 @@ class Spectrum(PyJSON):
 
 class BgSpectrum:
     def __init__(self, info: dict):
-        for keyvalue in info.keys():
-            if keyvalue == 'position':
-                self.position = Position(info[keyvalue])
-            if keyvalue == 'size':
-                self.size = Size(info[keyvalue])
+        self.templatecode = None
+        self.custom = None
+        for key, value in info.items():
+            if key == 'file':
+                self.file = ContentDir.verify_file(ContentDir.SPECTRUM_DIR, value)
+            if key == 'position':
+                self.position = Position(value)
+            if key == 'size':
+                self.size = Size(value)
+            if key == 'custom':
+                self.custom = PyJSON(value)
+                print('TODO not support yet')
+            if key == 'templatecode':
+                self.templatecode = value
 
 
-class BgEffect(PyJSON):
+class BgEffect:
     def __init__(self, info: dict):
-        super().__init__(info)
-        self.file = ContentDir.verify_file(ContentDir.EFFECT_DIR, self.file)
-        self.opacity = int(self.opacity)
+        for key, value in info.items():
+            if key == 'file':
+                self.file = ContentDir.verify_file(ContentDir.EFFECT_DIR, value)
+            if key == 'opacity':
+                self.opacity = int(str(value))
 
 
 class BgLyric:
@@ -131,14 +142,44 @@ class BgLyric:
         self.position.y = int(self.position.y * factor)
 
 
-class BgTitle(BgLyric):
+class BgTitle:
     def __init__(self, info: dict):
-        super().__init__(info)
+        for key, value in info.items():
+            if key == 'file':
+                self.file = ContentDir.verify_file(ContentDir.TITLE_DIR, value)
+                continue
+            if key == 'text':
+                self.text = value
+                continue
+            if key == 'position':
+                self.position = Position(value)
+                continue
+            if key == 'size':
+                self.size = Size(value)
+                continue
+            if key == 'font':
+                self.font = Font(value)
+                continue
 
 
-class BgWaterMask(BgLyric):
+class BgWaterMask:
     def __init__(self, info: dict):
-        super().__init__(info)
+        for key, value in info.items():
+            if key == 'file':
+                self.file = ContentDir.verify_file(ContentDir.WATERMASK_DIR, value)
+                continue
+            if key == 'text':
+                self.text = value
+                continue
+            if key == 'position':
+                self.position = Position(value)
+                continue
+            if key == 'size':
+                self.size = Size(value)
+                continue
+            if key == 'font':
+                self.font = Font(value)
+                continue
 
 
 class WaterMask(PyJSON):
@@ -167,7 +208,6 @@ class Background:
         for field in info.keys():
             if field == 'file':
                 self.file = ContentDir.verify_file(ContentDir.BGIMG_DIR, info[field])
-                # check_file_existed(self.file)
             elif field == 'effect':
                 self.effect = BgEffect(info[field])
             elif field == 'lyric':

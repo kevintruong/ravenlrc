@@ -52,27 +52,24 @@ class RenderSong(RenderEngine):
 
 
 class RenderSpectrum(RenderEngine):
-    def __init__(self, spectrumconf: BgSpectrum, spectrum: Spectrum, rendertype: RenderType):
+    def __init__(self, spectrumconf: BgSpectrum, rendertype: RenderType):
         super().__init__(rendertype)
         self.spectrumconf = spectrumconf
-        self.spectrum = spectrum
         self.formatted_watermask = None
 
     def format(self):
         timelength = self.rendertype.configure.duration
-        src = self.spectrum.file.filename
+        src = self.spectrumconf.file.filename
         renderfile_name = CachedFile.get_cached_filename(src,
                                                          attribute=[self.rendertype,
-                                                                    self.spectrumconf,
-                                                                    self.spectrum.custom,
-                                                                    self.spectrum.templatecode])
+                                                                    self.spectrumconf.custom,
+                                                                    self.spectrumconf.templatecode])
 
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if renderfile is None:
             renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
-            # formatted_spectrum = SpectrumMvTemplateFile().getfullpath()
             ffmpegcli = FfmpegCli()
-            ffmpegcli.scale_video_by_width_height(self.spectrum.file.get(),
+            ffmpegcli.scale_video_by_width_height(self.spectrumconf.file.get(),
                                                   self.spectrumconf.size,
                                                   renderfile,
                                                   timelength=timelength)
@@ -82,9 +79,9 @@ class RenderSpectrum(RenderEngine):
     def run(self, src: str, **kwargs):
         self.formatted_watermask = self.format()
         renderfile_name = CachedFile.get_cached_filename(src, attribute=[self.rendertype,
-                                                                         self.spectrumconf,
-                                                                         self.spectrum.custom,
-                                                                         self.spectrum.templatecode])
+                                                                         self.formatted_watermask,
+                                                                         self.spectrumconf.custom,
+                                                                         self.spectrumconf.templatecode])
         renderfile = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not renderfile:
             renderfile = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
@@ -99,16 +96,15 @@ class RenderSpectrum(RenderEngine):
 
 class RenderWaterMask(RenderEngine):
     def __init__(self, watermaskconf: BgWaterMask,
-                 watermask: WaterMask, rendertype=None):
+                 rendertype=None):
         super().__init__(rendertype)
         self.watermaskconf = watermaskconf
-        self.watermask = watermask
 
     def format(self):
-        self.watermask.file = self.watermask.file.get()
+        self.watermaskconf.file = self.watermaskconf.file.get()
         formatted_watermask = PngTempFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_video_by_width_height(self.watermask.file,
+        ffmpegcli.scale_video_by_width_height(self.watermaskconf.file,
                                               self.watermaskconf.size,
                                               formatted_watermask)
         return formatted_watermask
@@ -116,7 +112,7 @@ class RenderWaterMask(RenderEngine):
 
     def run(self, src, **kwargs):
         renderfile_name = SecondBgImgCachedFile.get_file_name(src.filename,
-                                                              self.watermask.file.filename,
+                                                              self.watermaskconf.file.filename,
                                                               self.watermaskconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not output:
@@ -134,22 +130,23 @@ class RenderWaterMask(RenderEngine):
 
 
 class RenderTitle(RenderEngine):
-    def __init__(self, titleconf: BgTitle, title: Title, rendertype=None):
+    def __init__(self, titleconf: BgTitle, rendertype=None):
         super().__init__(rendertype)
         self.titleconf = titleconf
-        self.title = title
+        # self.title = title
 
     def format(self):
         formatted_watermask = PngTempFile().getfullpath()
         ffmpegcli = FfmpegCli()
-        ffmpegcli.scale_video_by_width_height(self.title.file.get(),
+        ffmpegcli.scale_video_by_width_height(self.titleconf.file.get(),
                                               self.titleconf.size,
                                               formatted_watermask)
         return formatted_watermask
 
-    def run(self, src: str, **kwargs):
+    def run(self, src, **kwargs):
+        src: ContentFileInfo
         renderfile_name = SecondBgImgCachedFile.get_file_name(src,
-                                                              self.title.file.filename,
+                                                              self.titleconf.file.filename,
                                                               self.titleconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not output:
@@ -266,7 +263,6 @@ class RenderLyric(RenderEngine):
         self.assfile = self.generate_lyric_effect_file()
 
     def generate_lyric_effect_file(self):
-        resolution = self.rendertype.configure.resolution
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
         self.lrcconf.scale_font_size_by_factor(scale_factor)
         cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile,
@@ -297,11 +293,11 @@ class RenderLyric(RenderEngine):
             CachedContentDir.gdrive_file_upload(cachedfilepath)
         return cachedfilepath
 
-    def create_songeffect_assfile(self,output):
-        with open(output,'w') as ass_songeffect:
-            with open(self.lyricfile,'r') as lrcfile:
+    def create_songeffect_assfile(self, output):
+        with open(output, 'w') as ass_songeffect:
+            with open(self.lyricfile, 'r') as lrcfile:
                 lrcdata = lrcfile.read()
-            data = generate_songeffect_for_lrc(self.songeffect.name,lrcdata,self.lrcconf)
+            data = generate_songeffect_for_lrc(self.songeffect.name, lrcdata, self.lrcconf)
             ass_songeffect.write(data)
         return output
 
@@ -442,10 +438,8 @@ class BackgroundsRender:
             if background_item.effect:
                 bgRender.effect = RenderBgEffect(background_item.effect,
                                                  bgRender.rendertype)
-            if background_item.title and self.songapi.title:
-                bgRender.title = RenderTitle(background_item.title,
-                                             self.songapi.title,
-                                             bgRender.rendertype)
+            if background_item.title:
+                bgRender.title = RenderTitle(background_item.title)
             if background_item.lyric:
                 lyricfile = self.songapi.song.lyric
                 bgRender.lyric = RenderLyric(background_item.lyric,
@@ -453,13 +447,11 @@ class BackgroundsRender:
                                              lyricfile,
                                              self.songapi.song_effect,
                                              bgRender.rendertype)
-            if background_item.spectrum and self.songapi.spectrum:
+            if background_item.spectrum:
                 bgRender.spectrum = RenderSpectrum(background_item.spectrum,
-                                                   self.songapi.spectrum,
                                                    bgRender.rendertype)
-            if background_item.watermask and self.songapi.watermask:
+            if background_item.watermask:
                 bgRender.watermask = RenderWaterMask(background_item.watermask,
-                                                     self.songapi.watermask,
                                                      bgRender.rendertype)
             if self.songapi.song:
                 bgRender.song = RenderSong(self.songapi.song)

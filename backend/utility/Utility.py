@@ -5,8 +5,11 @@ import unidecode
 
 
 def get_filepath_info(filepath: str):
-    filename = os.path.basename(filepath)
-    dirname = os.path.dirname(filepath)
+    try:
+        filename = os.path.basename(filepath)
+        dirname = os.path.dirname(filepath)
+    except Exception as exp:
+        dirname = None
     ext = ".{}".format(filename.split(os.extsep)[-1])
     name = "".join(filename.split(os.extsep)[:-1])
     return [dirname, filename, name, ext]
