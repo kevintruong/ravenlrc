@@ -6,13 +6,13 @@ from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename
 from backend.yclogger import telelog
 from render.cache import *
+from render.ffmpegcli import FfmpegCli, FFmpegProfile
 from render.parser import SongApi
 from render.type import *
-from render.ffmpegcli import FfmpegCli, FFmpegProfile
+
 
 # from subeffect.asseditor import create_ass_from_lrc
 # from crawler.nct import SongInfo
-from subeffect.asseditor import create_ass_from_lrc
 
 
 class RenderEngine(ABC):
@@ -423,7 +423,7 @@ class BackgroundsRender:
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)
-            telelog.critical("url return {}".format(url_ret))
+            telelog.debug("url return {} ".format(url_ret))
             pass
         pass
         return url_ret

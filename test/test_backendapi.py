@@ -283,7 +283,6 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_load_render_api(self):
-        # from backend.BackendCmder import SongApi
         bgsRender = BackgroundsRender(self.data)
         output = bgsRender.run()
         print(output)
@@ -318,10 +317,6 @@ class Test_RenderCmder(unittest.TestCase):
         self.url = r'http://127.0.0.1:5000/songcrawler?url={}'.format(nct_url)
         r = requests.get(self.url)
         print(r.text)
-
-
-
-
 
 
 if __name__ == '__main__':

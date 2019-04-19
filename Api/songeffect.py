@@ -2,16 +2,16 @@ import json
 
 import requests
 
-from type import toJSON, BgLyric
+from render.type import BgLyric
 
-SONGEFFECT_ENDPOINT = 'http://172.17.0.2:5000/api/lrceffect'
+SONGEFFECT_ENDPOINT = 'https://subeffect.herokuapp.com'
 
 
-def generate_songeffect_for_lrc(effectname, lrccontent, config):
+def generate_songeffect_for_lrc(effectname, lrccontent, config:BgLyric):
     jsondata = {
         'effectname': effectname,
         'lrccontent': lrccontent,
-        'config': toJSON(config)
+        'config': config.toJSON()
     }
     strjson = json.dumps(jsondata)
     jsondata = json.loads(strjson)
@@ -34,6 +34,7 @@ class Test_SongEffect(unittest.TestCase):
         with open(self.lrcfile, 'r') as assfile:
             self.lrccontent = assfile.read()
 
+        from type import BgLyric
         self.config = BgLyric({
             "position": {
                 "x": "221",

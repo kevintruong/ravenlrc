@@ -1,6 +1,7 @@
+import ast
+import json
 from enum import Enum, IntEnum
 from render.cache import ContentDir
-from subeffect.asseffect import LyricEffect
 from backend.utility.Utility import PyJSON
 
 
@@ -35,7 +36,9 @@ class Lyric:
             self.file = info['file']
         if 'words' in info:
             for wordeffect in info['words']:
-                self.words.append(LyricEffect(wordeffect))
+                pass
+                #  TODO support later
+                # self.words.append(LyricEffect(wordeffect))
         pass
 
 
@@ -140,6 +143,10 @@ class BgLyric:
         self.size.width = int(self.size.width * factor)
         self.position.x = int(self.position.x * factor)
         self.position.y = int(self.position.y * factor)
+
+    def toJSON(self):
+        data = json.dumps(self, default=lambda o: o.__dict__)
+        return ast.literal_eval(data)
 
 
 class BgTitle:

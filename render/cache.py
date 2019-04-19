@@ -246,7 +246,8 @@ class CachedContentDir:
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
         fileinfo = cls.GdriveCacheStorage.upload_file(filepath, storeinfo.id)
-        return fileinfo['webContentLink']
+        os.remove(filepath)
+        return fileinfo
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):

@@ -90,7 +90,7 @@ class GDriveMnger:
         query = ""
         page_token = None
         if name:
-            query = "name contains '" + name + "' "
+            query = "name contains '" + name + "'"
         if fid:
             if name:
                 query += " and "

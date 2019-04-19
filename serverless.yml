@@ -33,6 +33,7 @@ package:
     - backend/tests/**
     - backend/vendor/**
     - backend/subeffect/test/**
+    - subeffect/**
     - ffmpeg/**
     - backend/**/test/**
     - Docs/**

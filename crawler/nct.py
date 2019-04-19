@@ -5,8 +5,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from backend.type import SongInfo
-from backend.utility.Utility import FileInfo
+from backend.utility.Utility import FileInfo, only_latin_string
+from crawler.db.helper import GdriveSongInfoDb
 from crawler.rc4_py3 import decrypt
+from render.cache import CachedContentDir
 
 
 class Crawler(abc.ABC):
@@ -62,14 +64,32 @@ class NctCrawler(Crawler):
     key = "Lyr1cjust4nct"
 
     def __init__(self, ncturl: str):
+        self.vipcookies = {
+            'authority': 'www.nhaccuatui.com',
+            'cache-control': 'max-age=0',
+            'upgrade-insecure-requests': '1',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'en-US,en;q=0.9',
+            'cookie': 'nctads_ck=g49j2tu1f2il4w4w6x64fhof_1554856256954; fbm_414296278689656=base_domain=.nhaccuatui.com; NCT_BALLOON_INDEX=true; __utma=157020004.1165531668.1554856257.1554856257.1555640036.2; __utmc=157020004; __utmz=157020004.1555640036.2.2.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); autoPlayNext=true; NCT_AUTH_JWT=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NTgyMzQyMjMsImxvZ2luTWV0aG9kIjoiMiIsInVzZXJJZCI6IjM1MDA3NTY2IiwibmJmIjoxNTU1NjQyMjIzLCJpYXQiOjE1NTU2NDIyMjMsImRldmljZUlkIjoiMzI2RjQyNjE2RjFFNDUwN0FGOURDQzI0NjUwQzA2MEQifQ.HkrSQiVikuH7-Ap3uziLGILkBm-VvLACQy2bQ6LGMBQ; NCT_BALLOON_INDEX-kevinraven=true; PaymentPageATM=49000; NCT_PAYMENT_DISCOUNT=; NCT_PAYMENT_DISCOUNT_A=; NCT_PAYMENT_AUTORENEW=new; NCT_ONOFF_ADV=1; __utmt=1; NCTNPLP=a32c585f6e8f316dc3d76e6edc2443b538d4ac2314425454f9a6135c898177dc; NCTNPLS=58e5801f60974d1267f8898b44c0af16; NCTCRLS=fb30d00ae64a520529006004e982a291c977687b0ec71b995d9b3d1825eec529cab3d7adcee90884af916eb9193e1849a885b80bafbcae99849cdd6f25e8953d03f50587f73a6f8075f424d7283129c4664d563f2e3c2f19f34f35e0d98e1d84cf83f3eda9c2cd35fd9df68a92e890b0ed4cb2c8721131fa1f94214cc3d24c11f03efe89190478615b3b70a50bb3a32b262d592b918d40527c17a70549b4d3662173ab5acb841066cb2296ad0f92a6c1bc7df478c155dfac51c4a4df8a017f98a6c5d9e220fdd0e44df40b5ea314929853d760c0d412c0dcb0dfbbdb502be6fb8a9f53d395d63df48f091d379d3349eb; 80085=401d10668d97dffa38c487e85e9; JSESSIONID=1s40xulznm0gi1x28vfwijgodk; __utmb=157020004.61.9.1555642662756',
+        }
+        self.localdb = GdriveSongInfoDb('.songinfo.db')
+        songid = ""
+        self.iscached = False
         if self.nctWmUrl not in ncturl:
             songinfos = ncturl.split("/")
             songid = songinfos[4]
             self.mobileNctWmUrl = NctCrawler.nctWmUrl + '{}'.format(songid)
         else:
             self.mobileNctWmUrl = ncturl
-        self.songinfo: NctSongInfo = self.parser()
-        pass
+            songid = ncturl.split(".")[3]
+        items = self.localdb.get_info_by_id(songid)
+        if len(items):
+            self.songinfo: SongInfo = SongInfo(items[0])
+            self.iscached = True
+        else:
+            self.songinfo: NctSongInfo = self.parser()
 
     def get_songkey(self, htmlbody):
         import re
@@ -93,7 +113,7 @@ class NctCrawler(Crawler):
                 return line.split('=', 1)[1].replace('"', '').replace(';', '')
 
     def song_info_xml_parser(self, xml_text):
-        fields = ['title', 'creator', 'location', 'info', 'lyric', 'key']
+        fields = ['title', 'creator', 'location', 'locationHQ', 'info', 'lyric', 'key']
         doc_el = BeautifulSoup(xml_text, 'xml')
         songinfo = SongInfo()
         for each_fields in fields:
@@ -106,6 +126,9 @@ class NctCrawler(Crawler):
                     songinfo.singer = value
                 if each_fields == 'location':
                     songinfo.songfile = value
+                if each_fields == 'locationHQ':
+                    if value:
+                        songinfo.songfile = value
                 if each_fields == 'lyric':
                     songinfo.lyric = value
                 if each_fields == 'key':
@@ -117,7 +140,7 @@ class NctCrawler(Crawler):
     def parser(self):
         crawler = requests.get(self.mobileNctWmUrl)
         song_xml = self.get_song_xml_file(crawler.text)
-        song_info = requests.get(song_xml)
+        song_info = requests.get(song_xml, headers=self.vipcookies)
         soup = BeautifulSoup(crawler.text, 'html')
         lyric_text = soup.find(attrs={'class': 'lyric'}).text
         formatlyric = self.reformat_lyric(lyric_text)
@@ -130,17 +153,28 @@ class NctCrawler(Crawler):
 
     def getdownload(self, outputdir: str):
         songinfo: SongInfo = self.songinfo
-        localmp3file = self.get_mp3file(outputdir)
-        locallyricfile = self.get_lyric(outputdir)
-        songinfo.songfile = FileInfo(localmp3file).filename
-        songinfo.lyric = FileInfo(locallyricfile).filename
+        if not self.iscached:
+            try:
+                localmp3file = self.get_mp3file(outputdir)
+                fileinfo = CachedContentDir.gdrive_file_upload(localmp3file)
+                songinfo.songfile = fileinfo['id']
+            except Exception as exp:
+                songinfo.songfile = None
+            try:
+                locallyricfile = self.get_lyric(outputdir)
+                fileinfo = CachedContentDir.gdrive_file_upload(locallyricfile)
+                songinfo.lyric = fileinfo['id']
+            except Exception as exp:
+                songinfo.lyric = None
+            self.localdb.insert_song(songinfo.__dict__)
         return songinfo.toJSON()
 
     def get_mp3file(self, outputdir: str):
         try:
             songinfo: SongInfo = self.songinfo
-            mp3file = requests.get(songinfo.songfile, allow_redirects=True, timeout=30)
-            localmp3file = os.path.join(outputdir, '{}_{}.mp3'.format(songinfo.title, songinfo.singer)).encode('utf-8')
+            mp3file = requests.get(songinfo.songfile, allow_redirects=True, timeout=30, headers=self.vipcookies)
+            mp3filename = only_latin_string('{}_{}'.format(songinfo.title, songinfo.singer))
+            localmp3file = os.path.join(outputdir, '{}.mp3'.format(mp3filename)).encode('utf-8')
             with open(localmp3file, 'wb') as mp3filefd:
                 mp3filefd.write(mp3file.content)
                 mp3filefd.close()
@@ -159,9 +193,6 @@ class NctCrawler(Crawler):
             return locallyricfile.decode('utf-8')
         except Exception as exp:
             raise Exception('can not get lyric file from the url {}'.format(self.songinfo.info))
-
-    def get_lyric_text(self):
-        pass
 
 
 # class NctCrawler_fix():

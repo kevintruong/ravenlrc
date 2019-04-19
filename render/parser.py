@@ -36,7 +36,7 @@ class SongApi:
     def get_song_info_from_url(self):
         if self.song is None and self.song_url:
             crawlerdict = {'url': self.song_url}
-            from crawler.crawler import CrawlCmder
+            from crawler.cmder import CrawlCmder
             crawler = CrawlCmder(crawlerdict)
             self.song: SongInfo = SongInfo(json.loads(crawler.run()))
             pass
