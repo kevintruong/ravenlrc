@@ -142,7 +142,7 @@ class NctCrawler(Crawler):
         song_xml = self.get_song_xml_file(crawler.text)
         song_info = requests.get(song_xml, headers=self.vipcookies)
         soup = BeautifulSoup(crawler.text, 'html')
-        lyric_text = soup.find(attrs={'class': 'lyric'}).text
+        lyric_text = soup.find(attrs={'class': 'pd_lyric trans', 'id': 'divLyric'}).text
         formatlyric = self.reformat_lyric(lyric_text)
         songinf = self.song_info_xml_parser(song_info.text)
         songinf.lyrictext = formatlyric

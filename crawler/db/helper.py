@@ -18,7 +18,7 @@ class SongInfoDb(abc.ABC):
 
     def connect(self, dbname):
         dbpath = os.path.join(curdir, dbname)
-        return sqlite3.connect(dbpath, check_same_thread=False)
+        return sqlite3.connect(dbname, check_same_thread=False)
 
     @abc.abstractmethod
     def insert_song(self, metadata: dict):
