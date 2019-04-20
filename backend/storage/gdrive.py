@@ -2,6 +2,7 @@ import datetime
 import io
 import os
 import shutil
+from threading import Lock
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
@@ -172,7 +173,6 @@ class GDriveMnger:
             file = self.viewFile(fileinfo.filename, pid)
             if file:
                 if self.push_needed(file, item_path=path):
-                    print('update exist file')
                     new_file = self.update_file(path, file['id'])
                 else:
                     print('file not change => reuse the exist remote file')
@@ -190,7 +190,7 @@ class GDriveMnger:
                                                        media_body=media,
                                                        fields='id,name,webContentLink,modifiedTime,mimeType').execute()
 
-            self.localdb.insert_file(new_file)
+            # self.localdb.insert_file(new_file)
             return new_file
         except Exception as exp:
             print('error on upload file to drive {}'.format(exp))
@@ -232,7 +232,6 @@ class GDriveMnger:
         drive_time = calendar.timegm(datetime.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ').timetuple())
         # drive_time = time.mktime(time.strptime(drive['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')) + float(19800.00)
         local_time = os.path.getmtime(item_path)
-        print('elapse time between local and drive ' + str(local_time - drive_time))
         if drive_time < local_time:
             return True
         return False

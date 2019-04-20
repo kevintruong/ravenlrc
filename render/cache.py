@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 from enum import Enum
+from threading import Lock
 
 from backend.storage.gdrive import GDriveMnger
 from backend.utility.Utility import FileInfo, only_latin_string
@@ -186,6 +187,7 @@ class CachedContentDir:
     BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
     CacheGDriveMappingDictCls = None
     GdriveCacheStorage = GDriveMnger.get_instance(True)
+    lockmutex = Lock()
 
     def __init__(self):
         if self.CacheGDriveMappingDictCls is None:
@@ -241,13 +243,18 @@ class CachedContentDir:
 
     @classmethod
     def gdrive_file_upload(cls, filepath):
+        fileinfo = None
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
-        fileinfo = cls.GdriveCacheStorage.upload_file(filepath, storeinfo.id)
-        os.remove(filepath)
-        return fileinfo
+        try:
+            cls.lockmutex.acquire()
+            fileinfo = cls.GdriveCacheStorage.upload_file(filepath, storeinfo.id)
+            os.remove(filepath)
+        finally:
+            cls.lockmutex.release()
+            return fileinfo
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):

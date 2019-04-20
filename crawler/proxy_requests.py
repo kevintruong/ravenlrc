@@ -6,11 +6,21 @@ import requests
 
 class ProxyRequests:
     proxy_source = 'https://proxy.rudnkh.me/txt'
+    proxyreq = None
 
     def __init__(self):
         self.proxylist = None
         self.proxydict = []
+        self.get_proxy_req()
         pass
+
+    @classmethod
+    def get_ins(cls):
+        if cls.proxyreq is None:
+            cls.proxyreq = ProxyRequests()
+            return cls.proxyreq
+        else:
+            return cls.proxyreq
 
     def get_proxy_req(self):
         self.proxylist = requests.get(self.proxy_source).text.split('\n')
@@ -18,14 +28,18 @@ class ProxyRequests:
             self.proxydict.append({'https': each_proxy})
 
     def get(self, url, **kwargs):
+        count = 0
         while True:
             try:
+                count = count + 1
                 current_proxydict = random.choice(self.proxydict)
-                print(current_proxydict)
-                rsp = requests.get(url, proxies=current_proxydict, timeout=5, **kwargs)
+                print('download {}current_proxydict {}'.format(url,current_proxydict))
+                rsp = requests.get(url, proxies=current_proxydict,  **kwargs)
                 return rsp
             except Exception as exp:
                 print(exp)
+                if count > 10:
+                    raise exp
 
 
 import unittest
@@ -39,7 +53,7 @@ class TestProxyRequest(unittest.TestCase):
 
     def test_get_proxylist(self):
         self.proxyRequests.get_proxy_req()
-        print(self.proxylist)
+        print(self.proxyRequests.proxylist)
 
     def test_get_url(self):
         while True:

@@ -5,6 +5,7 @@ import datetime
 import sqlite3
 import os
 import uuid
+from threading import Lock
 
 from config.configure import BackendConfigure
 config: BackendConfigure = BackendConfigure.get_config()
@@ -31,10 +32,21 @@ class SongInfoDb(abc.ABC):
 
 class GdriveSongInfoDb(SongInfoDb):
     FILES_TABLE = "tbl_songs"
+    songinfodb = None
 
     def __init__(self, dbname):
         super().__init__(dbname)
         self.create_schema()
+        self.mutex = Lock()
+
+    @classmethod
+    def get_gdrivesonginfodb(cls):
+        if cls.songinfodb is None:
+            cls.songinfodb = GdriveSongInfoDb('.songinfo.db')
+            return cls.songinfodb
+        else:
+            return cls.songinfodb
+
 
     def is_item_existed(self, metadata):
         items = self.get_info_by_id(metadata['id'])
@@ -44,32 +56,37 @@ class GdriveSongInfoDb(SongInfoDb):
             return False
 
     def insert_song(self, metadata: dict):
-        cursor = self.conn.cursor()
-        cursor.execute('''
-                INSERT or replace INTO tbl_songs (
-                    id,
-                    singer,
-                    title,
-                    songfile,
-                    lyrictext,
-                    lyric,
-                    info
-                ) VALUES (
-                   ?,?,?,?,?,?,?
-                );
-                ''', (
-            metadata["id"],
-            metadata["singer"],
-            metadata["title"],
-            metadata["songfile"],
-            metadata['lyrictext'],
-            metadata['lyric'],
-            metadata['info']
-        )
-                       )
-        self.conn.commit()
-        cursor.close()
-        return metadata["id"]
+        self.mutex.acquire()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('''
+                    INSERT or replace INTO tbl_songs (
+                        id,
+                        singer,
+                        title,
+                        songfile,
+                        lyrictext,
+                        lyric,
+                        info
+                    ) VALUES (
+                       ?,?,?,?,?,?,?
+                    );
+                    ''', (
+                metadata["id"],
+                metadata["singer"],
+                metadata["title"],
+                metadata["songfile"],
+                metadata['lyrictext'],
+                metadata['lyric'],
+                metadata['info']
+            )
+                           )
+            self.conn.commit()
+            cursor.close()
+        finally:
+            self.mutex.release()
+            return metadata["id"]
+
 
     def create_schema(self):
         cursor = self.conn.cursor()
