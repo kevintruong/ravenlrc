@@ -54,7 +54,7 @@ class Test_Crawler(unittest.TestCase):
     CurDir = os.path.dirname(os.path.realpath(__file__))
 
     def setUp(self) -> None:
-        self.songfiles = open(os.path.join(self.CurDir, 'song.txt', 'r'))
+        self.songfiles = open(os.path.join(self.CurDir, 'song.txt'), 'r')
 
     def test_run(self):
         threads = []
