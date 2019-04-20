@@ -66,7 +66,7 @@ class Test_Crawler(unittest.TestCase):
                         while True:
                             for index, threaditem in enumerate(threads):
                                 if not threaditem.isAlive():
-                                    threads.pop(index)
+                                    threads.remove(threaditem)
                                     print('thread lends {}'.format(len(threads)))
                                     enable = True
                             if enable:
