@@ -42,15 +42,17 @@ class GDriveMnger:
 
     def __init__(self, cachestorage=False):
         if cachestorage:
-            shutil.copy2(os.path.join(CONFIG_DIR, 'cachestorage.json'),
-                         TmpCurDir)
             token = os.path.join(TmpCurDir, 'cachestorage.json')
+            if not os.path.exists(token):
+                shutil.copy2(os.path.join(CONFIG_DIR, 'cachestorage.json'),
+                             TmpCurDir)
             self.localdb = GdriveStorageDb('.cachedstoragedb.db')
 
         else:
-            shutil.copy2(os.path.join(CONFIG_DIR, 'storage.json'),
-                         TmpCurDir)
             token = os.path.join(TmpCurDir, 'storage.json')
+            if not os.path.exists(token):
+                shutil.copy2(os.path.join(CONFIG_DIR, 'storage.json'),
+                             TmpCurDir)
             self.localdb = GdriveStorageDb('.storagedb.db')
         store = file.Storage(token)
         self.creds = store.get()
