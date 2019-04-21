@@ -251,7 +251,7 @@ class CachedContentDir:
         try:
             # cls.lockmutex.acquire()
             fileinfo = GDriveMnger(True).upload_file(filepath, storeinfo.id)
-            os.remove(filepath)
+            # os.remove(filepath)
         finally:
             # cls.lockmutex.release()
             return fileinfo
