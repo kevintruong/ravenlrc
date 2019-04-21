@@ -26,16 +26,16 @@ class SongInfo:
                     self.title = nctsonginfo[keyvalue]
                 if keyvalue == 'songfile':
                     self.songfile = nctsonginfo[keyvalue]
-                    from render.cache import SongFile
-                    self.songfile = SongFile.get_fullpath(self.songfile)
+                    # from render.cache import SongFile
+                    # self.songfile = SongFile.get_fullpath(self.songfile)
                 if keyvalue == 'id':
                     self.id = nctsonginfo[keyvalue]
                 if keyvalue == 'lyrictext':
                     self.lyrictext = nctsonginfo[keyvalue]
                 if keyvalue == 'lyric':
-                    from render.cache import SongFile
+                    # from render.cache import SongFile
                     self.lyric = nctsonginfo[keyvalue]
-                    self.lyric = SongFile.get_fullpath(self.lyric)
+                    # self.lyric = SongFile.get_fullpath(self.lyric)
         elif type(nctsonginfo) is tuple:
             self.id = nctsonginfo[0]
             self.singer = nctsonginfo[1]

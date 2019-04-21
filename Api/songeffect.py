@@ -16,7 +16,7 @@ def generate_songeffect_for_lrc(effectname, lrccontent, config:BgLyric):
     strjson = json.dumps(jsondata)
     jsondata = json.loads(strjson)
     headers = {"Accept-Encoding": "gzip"}
-    r = requests.post(SONGEFFECT_ENDPOINT, json=jsondata, headers=headers)
+    r = requests.post(SONGEFFECT_ENDPOINT + '/api/lrceffect', json=jsondata, headers=headers)
     songeffect: str = json.loads(r.content.decode('utf-8'))['data']
     return songeffect
 

@@ -133,7 +133,7 @@ class GDriveMnger:
         request = service.files().get_media(fileId=fid)
         return request, ""
 
-    def download_file(self, fid, output):
+    def download_file(self, fid, output='/tmp'):
         clone = self.get_item_info(fid)
         fname = clone['name']
         fh = io.BytesIO()
@@ -306,7 +306,6 @@ class Test_GoogleFiles(unittest.TestCase):
         self.gdriver.push_content('/mnt/Data/Project/ytcreatorservice/backend/storage', id)
         all_files = self.gdriver.list_out('storage', id)
         print(all_files)
-
 
 # GDriveStorage = GDriveMnger.get_instance(False)
 # GdriveCacheStorage = GDriveMnger.get_instance(True)

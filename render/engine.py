@@ -34,6 +34,7 @@ class RenderSong(RenderEngine):
         cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
         effectmv_cachedfile = self.get_cached_file(cached_filename)
         if effectmv_cachedfile is None:
+            self.songinfo.songfile= GDriveMnger(True).download_file(self.songinfo.songfile)
             ffmpegcli = FfmpegCli()
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.mux_audio_to_video(src,
@@ -250,14 +251,7 @@ class RenderLyric(RenderEngine):
         super().__init__(rendertype)
         self.lyric = lyric
         self.lrcconf = lrcconf
-
-        if self.lyric is None:
-            self.lyricfile = lyricfile
-        else:
-            if self.lyric.file:
-                self.lyricfile = self.lyric.file
-            else:
-                self.lyricfile = lyricfile
+        self.lyricfile = lyricfile
         if songeffect:
             self.songeffect = songeffect
         self.assfile = self.generate_lyric_effect_file()
@@ -295,6 +289,7 @@ class RenderLyric(RenderEngine):
 
     def create_songeffect_assfile(self, output):
         with open(output, 'w') as ass_songeffect:
+            self.lyricfile = GDriveMnger(True).download_file(self.lyricfile)
             with open(self.lyricfile, 'r') as lrcfile:
                 lrcdata = lrcfile.read()
             data = generate_songeffect_for_lrc(self.songeffect.name, lrcdata, self.lrcconf)

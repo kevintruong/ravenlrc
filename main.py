@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-from flask import abort, Flask
+import flask
+from flask import abort
 from flask import jsonify
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 
 def error_msg_handle(exp):
@@ -62,7 +63,10 @@ def render(request):
         telelog.debug(body)
         song_render = BackgroundsRender(body)
         retval = song_render.run()
-        return '{}'.format(retval), 200, headers
+        response = flask.jsonify(retval)
+        response.headers.set('Access-Control-Allow-Origin', '*')
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST')
+        return response
     except Exception as exp:
         return error_msg_handle(exp), 404, headers
 

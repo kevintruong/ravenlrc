@@ -33,10 +33,16 @@ package:
     - backend/tests/**
     - backend/vendor/**
     - backend/subeffect/test/**
+    - songcrawlers/**
     - subeffect/**
+    - .songinfo.db
+    - crawler/song.txt
+    - crawler/.songinfo.db
+    - crawler/test/**
     - ffmpeg/**
     - backend/**/test/**
     - Docs/**
+    - venv/**
 
 functions:
   first:
