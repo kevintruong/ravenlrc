@@ -249,11 +249,11 @@ class CachedContentDir:
         dirname = os.path.basename(os.path.dirname(filepath))
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
         try:
-            cls.lockmutex.acquire()
-            fileinfo = cls.GdriveCacheStorage.upload_file(filepath, storeinfo.id)
+            # cls.lockmutex.acquire()
+            fileinfo = GDriveMnger(True).upload_file(filepath, storeinfo.id)
             os.remove(filepath)
         finally:
-            cls.lockmutex.release()
+            # cls.lockmutex.release()
             return fileinfo
 
     @classmethod

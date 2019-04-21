@@ -44,12 +44,10 @@ class GDriveMnger:
         if cachestorage:
             shutil.copy2(os.path.join(CONFIG_DIR, 'cachestorage.json'),
                          TmpCurDir)
-            rootdirname = 'cache'
             token = os.path.join(TmpCurDir, 'cachestorage.json')
             self.localdb = GdriveStorageDb('.cachedstoragedb.db')
 
         else:
-            rootdirname = 'content'
             shutil.copy2(os.path.join(CONFIG_DIR, 'storage.json'),
                          TmpCurDir)
             token = os.path.join(TmpCurDir, 'storage.json')
@@ -63,7 +61,7 @@ class GDriveMnger:
             flags.noauth_local_webserver = True
             self.creds = tools.run_flow(flow, store, flags)
         self.service = build('drive', 'v3', http=self.creds.authorize(Http()))
-        self.rootdir_id = self.viewFile(rootdirname)['id']
+        # self.rootdir_id = self.viewFile(rootdirname)['id']
 
     @classmethod
     def get_instance(cls, iscached):
