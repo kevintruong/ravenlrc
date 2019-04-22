@@ -63,8 +63,6 @@ class ChiaSeNhacSpider(scrapy.Spider):
 
     def parse_song(self, response):
         hxs = scrapy.Selector(response)
-        all_links = hxs.xpath("//input[contains(@value, 'data.chiasenhac.com')]")
+        all_links = hxs.xpath("//input[contains(@value, 'data.chiasenhac.com')]/@value").extract()
         for href in all_links:
-            if "chiasenhac.vn/mp3" in href:
-                print(href)
-                yield response.follow(href, self.parse_song)
+            print(href)

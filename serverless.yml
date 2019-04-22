@@ -35,9 +35,9 @@ package:
     - backend/subeffect/test/**
     - songcrawlers/**
     - subeffect/**
-    - .songinfo.db
+#    - .songinfo.db
     - crawler/song.txt
-    - crawler/.songinfo.db
+#    - crawler/.songinfo.db
     - crawler/test/**
     - ffmpeg/**
     - backend/**/test/**

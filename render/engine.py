@@ -112,7 +112,7 @@ class RenderWaterMask(RenderEngine):
         pass
 
     def run(self, src, **kwargs):
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src.filename,
+        renderfile_name = SecondBgImgCachedFile.get_file_name(src,
                                                               self.watermaskconf.file.filename,
                                                               self.watermaskconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
@@ -343,8 +343,9 @@ class BackgroundRender(RenderEngine):
         print('not support yet')
 
     def render_background_full_time_length(self):
+        self.file: ContentFileInfo
         timeleng = self.rendertype.configure.duration
-        self.input = self.file  # initial input by background file
+        self.input = self.file.get() # initial input by background file
         if self.watermask:
             self.output = self.watermask.run(self.input)
             self.input = self.output
@@ -366,7 +367,7 @@ class BackgroundRender(RenderEngine):
             self.input = self.output
         if self.song:
             self.output = self.song.run(self.input)
-        output_url = ContentDir.gdrive_file_upload(self.output)
+        output_url = CachedContentDir.gdrive_file_upload(self.output)
         return output_url
 
     def init_background_render(self):
@@ -385,7 +386,7 @@ class BackgroundRender(RenderEngine):
         super().__init__()
         self.profile = None
         self.song: RenderSong = None
-        self.file: str = None
+        self.file= None
         self.timming: list = None
         self.effect: RenderBgEffect = None
         self.title: RenderTitle = None

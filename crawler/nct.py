@@ -99,6 +99,22 @@ class NctCrawler(Crawler):
             print('[Warning] crawl data {}'.format(self.mobileNctWmUrl))
             self.songinfo: NctSongInfo = self.parser()
 
+    @classmethod
+    def get_nct_songid(cls, ncturl: str):
+        try:
+            songid = ""
+            if cls.nctWmUrl not in ncturl:
+                songinfos = ncturl.split("/")
+                songid = songinfos[4]
+                cls.mobileNctWmUrl = NctCrawler.nctWmUrl + '{}'.format(songid)
+            else:
+                cls.mobileNctWmUrl = ncturl
+                songid = ncturl.split(".")[3]
+            return songid
+        except Exception as exp:
+            print('can not get songid from the url {}'.format(ncturl))
+            return None
+
     def get_songkey(self, htmlbody):
         import re
         express = re.compile(NctCrawler.songkey)
@@ -177,8 +193,8 @@ class NctCrawler(Crawler):
                 songinfo.lyric = fileinfo['id']
             except Exception as exp:
                 songinfo.lyric = None
-            self.localdb.insert_song(songinfo.__dict__)
-        return songinfo.toJSON()
+            # self.localdb.insert_song(songinfo.__dict__)
+        return songinfo
 
     def get_mp3file(self, outputdir: str):
         retry = 0
@@ -188,7 +204,7 @@ class NctCrawler(Crawler):
                 songinfo: SongInfo = self.songinfo
                 # mp3file = ProxyRequests.get_ins().get(songinfo.songfile,allow_redirects=True, timeout=60, headers=self.vipcookies)
                 mp3file = requests.get(songinfo.songfile, allow_redirects=True, timeout=60, headers=self.vipcookies)
-                mp3filename = only_latin_string('{}_{}_{}'.format(songinfo.title, songinfo.singer,songinfo.id))
+                mp3filename = only_latin_string('{}_{}_{}'.format(songinfo.title, songinfo.singer, songinfo.id))
                 localmp3file = os.path.join(outputdir, '{}.mp3'.format(mp3filename)).encode('utf-8')
                 with open(localmp3file, 'wb') as mp3filefd:
                     mp3filefd.write(mp3file.content)
@@ -205,7 +221,7 @@ class NctCrawler(Crawler):
     def get_lyric(self, outputdir: str):
         try:
             songinfo: SongInfo = self.songinfo
-            locallyricfile = os.path.join(outputdir, '{}_{}.lrc'.format(songinfo.title,songinfo.id)).encode('utf-8')
+            locallyricfile = os.path.join(outputdir, '{}_{}.lrc'.format(songinfo.title, songinfo.id)).encode('utf-8')
             lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
             returndata = decrypt(NctCrawler.key, lyricfile.content)
             with codecs.open(locallyricfile, 'w', "utf-8") as f:

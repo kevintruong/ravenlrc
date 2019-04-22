@@ -8,18 +8,22 @@ import uuid
 from threading import Lock
 
 from config.configure import BackendConfigure
+
 config: BackendConfigure = BackendConfigure.get_config()
 curdir = config.get_config().TmpDir
 import abc
 
 
 class SongInfoDb(abc.ABC):
-    def __init__(self, dbname):
-        self.conn = self.connect(dbname)
+    def __init__(self, dbname, readonly=False):
+        self.conn = self.connect(dbname, readonly)
 
-    def connect(self, dbname):
+    def connect(self, dbname, readonly=False):
         dbpath = os.path.join(curdir, dbname)
-        return sqlite3.connect(dbname, check_same_thread=False)
+        if readonly:
+            return sqlite3.connect('file:{}?mode=ro'.format(dbname), uri=True, check_same_thread=False)
+        else:
+            return sqlite3.connect(dbname, check_same_thread=False)
 
     @abc.abstractmethod
     def insert_song(self, metadata: dict):
@@ -32,24 +36,31 @@ class SongInfoDb(abc.ABC):
 
 class GdriveSongInfoDb(SongInfoDb):
     FILES_TABLE = "tbl_songs"
-    songinfodb = None
+    songinfodbrd = None
+    songinfodbrw = None
 
-    def __init__(self, dbname):
-        super().__init__(dbname)
+    def __init__(self, dbname, readonly=True):
+        super().__init__(dbname, readonly)
         self.create_schema()
         self.mutex = Lock()
 
     @classmethod
-    def get_gdrivesonginfodb(cls):
-        if cls.songinfodb is None:
-            cls.songinfodb = GdriveSongInfoDb('.songinfo.db')
-            return cls.songinfodb
+    def get_gdrivesonginfodb(cls, readonly=True):
+        if readonly:
+            if cls.songinfodbrd is None:
+                cls.songinfodbrd = GdriveSongInfoDb('.songinfo.db', True)
+                return cls.songinfodbrd
+            else:
+                return cls.songinfodbrd
         else:
-            return cls.songinfodb
+            if cls.songinfodbrw is None:
+                cls.songinfodbrw = GdriveSongInfoDb('.songinfo.db', False)
+                return cls.songinfodbrw
+            else:
+                return cls.songinfodbrw
 
-
-    def is_item_existed(self, metadata):
-        items = self.get_info_by_id(metadata['id'])
+    def is_item_existed(self, id: str):
+        items = self.get_info_by_id(id)
         if len(items):
             return True
         else:
@@ -86,7 +97,6 @@ class GdriveSongInfoDb(SongInfoDb):
         finally:
             self.mutex.release()
             return metadata["id"]
-
 
     def create_schema(self):
         cursor = self.conn.cursor()

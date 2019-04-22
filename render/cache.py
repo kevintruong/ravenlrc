@@ -185,6 +185,8 @@ class CachedContentDir:
     SONG_DIR = os.path.join(cachedcontentdir, 'Song')
     EFFECT_DIR = os.path.join(cachedcontentdir, 'Effect')
     BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
+    RENDER_DIR = os.path.join(cachedcontentdir, 'Render')  # contain all render cached file
+    MV_DIR = os.path.join(cachedcontentdir, 'MV')  # contain all render cached file
     CacheGDriveMappingDictCls = None
     GdriveCacheStorage = GDriveMnger.get_instance(True)
     lockmutex = Lock()
@@ -206,10 +208,15 @@ class CachedContentDir:
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
                                                                                 each_dir['id'],
                                                                                 self.BGIMG_DIR)
-                if each_dir['name'] == 'Song':
+                if each_dir['name'] == 'Render':
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
                                                                                 each_dir['id'],
-                                                                                self.SONG_DIR)
+                                                                                self.RENDER_DIR)
+                if each_dir['name'] == 'MV':
+                    self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
+                                                                            each_dir['id'],
+                                                                            self.MV_DIR)
+
             CachedContentDir.CacheGDriveMappingDictCls = self.CacheGDriveMappingDict
         pass
 
@@ -363,7 +370,7 @@ class SongFile:
 
 
 class LyricMvCachedFile(CachedFile):
-    CacheDir = os.path.join(CachedContentDir.SONG_DIR)
+    CacheDir = os.path.join(CachedContentDir.RENDER_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -375,7 +382,7 @@ class LyricMvCachedFile(CachedFile):
 
 
 class LyricCachedFile(CachedFile):
-    CachedEffectDir = os.path.join(CachedContentDir.SONG_DIR)
+    CachedEffectDir = os.path.join(CachedContentDir.RENDER_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -387,7 +394,7 @@ class LyricCachedFile(CachedFile):
 
 
 class EffectCachedFile(CachedFile):
-    CacheDir = os.path.join(CachedContentDir.EFFECT_DIR)
+    CacheDir = os.path.join(CachedContentDir.RENDER_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -399,7 +406,7 @@ class EffectCachedFile(CachedFile):
 
 
 class SecondBgImgCachedFile(CachedFile):
-    CachedDir = os.path.join(CachedContentDir.BGIMG_DIR)
+    CachedDir = os.path.join(CachedContentDir.RENDER_DIR)
 
     @classmethod
     def get_file_name(cls, bgimg: str, watermask: str, size):
@@ -421,7 +428,7 @@ class SecondBgImgCachedFile(CachedFile):
 
 
 class MuxAudioVidCachedFile(CachedFile):
-    CacheDir = os.path.join(CachedContentDir.SONG_DIR)
+    CacheDir = os.path.join(CachedContentDir.MV_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -459,7 +466,7 @@ class BgEffectCachedFile(CachedFile):
 
 
 class BgImgCachedFile(CachedFile):
-    CachedDir = os.path.join(CachedContentDir.BGIMG_DIR)
+    CachedDir = os.path.join(CachedContentDir.RENDER_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
@@ -473,7 +480,7 @@ class BgImgCachedFile(CachedFile):
 
 
 class BgVidCachedFile(CachedFile):
-    CacheDir = os.path.join(CachedContentDir.BGIMG_DIR)
+    CacheDir = os.path.join(CachedContentDir.RENDER_DIR)
 
     @classmethod
     def get_cachedfile(cls, filename):
