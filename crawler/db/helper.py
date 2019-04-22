@@ -7,10 +7,7 @@ import os
 import uuid
 from threading import Lock
 
-from config.configure import BackendConfigure
-
-config: BackendConfigure = BackendConfigure.get_config()
-curdir = config.get_config().TmpDir
+curdir = os.path.abspath(os.path.dirname(__file__))
 import abc
 
 
@@ -20,6 +17,7 @@ class SongInfoDb(abc.ABC):
 
     def connect(self, dbname, readonly=False):
         dbpath = os.path.join(curdir, dbname)
+        dbname = dbpath
         if readonly:
             return sqlite3.connect('file:{}?mode=ro'.format(dbname), uri=True, check_same_thread=False)
         else:

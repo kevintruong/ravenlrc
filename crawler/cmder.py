@@ -105,6 +105,10 @@ class Test_Crawler(unittest.TestCase):
             except Exception as exp:
                 print(exp)
 
+    def test_get_songinfo(self):
+        crawler = CrawlCmder.get_link('https://www.nhaccuatui.com/bai-hat/tim-ve-noi-dau-y-kroc.JVHiWTEfHeum.html')
+        print(crawler)
+
 
 if __name__ == '__main__':
     songfiles = open('/mnt/Data/Project/ytcreatorservice/crawler/song.txt', 'r')
