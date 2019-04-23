@@ -4,7 +4,7 @@ from Api.songeffect import generate_songeffect_for_lrc
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename
-from backend.yclogger import telelog
+from backend.yclogger import telelog, slacklog
 from render.cache import *
 from render.ffmpegcli import FfmpegCli, FFmpegProfile
 from render.parser import SongApi
@@ -320,7 +320,8 @@ class RenderLyric(RenderEngine):
             self.lyricfile = GDriveMnger(True).download_file(self.lyricfile)
             with open(self.lyricfile, 'r') as lrcfile:
                 lrcdata = lrcfile.read()
-            data = generate_songeffect_for_lrc(self.songeffect.name, lrcdata, self.lrcconf)
+            data = generate_songeffect_for_lrc(self.songeffect.name, lrcdata, self.lrcconf,
+                                               self.rendertype.configure.resolution)
             ass_songeffect.write(data)
         return output
 
@@ -449,7 +450,7 @@ class BackgroundsRender:
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)
-            telelog.debug("url return {} ".format(url_ret))
+            slacklog.info("url return ```{}``` ".format(url_ret))
             pass
         pass
         return url_ret

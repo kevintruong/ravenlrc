@@ -2,6 +2,9 @@ import logging.config
 
 from pythonjsonlogger import jsonlogger
 from structlog import configure, processors, stdlib, threadlocal
+import logging
+from slack_logger import SlackHandler, SlackFormatter
+import slack_logger
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
@@ -26,7 +29,11 @@ DEFAULT_CONFIGURE = {
         'telegram': {
             'class': 'telegram_handler.TelegramFormatter',
             'fmt': '%(levelname)s %(message)s'
-        }
+        },
+        'slack': {
+            'class': 'slack_logger.SlackFormatter',
+            # 'fmt': '%(levelname)s %(message)s'
+        },
     },
     'handlers': {
         'telegram': {
@@ -34,14 +41,27 @@ DEFAULT_CONFIGURE = {
             'formatter': 'telegram',
             'token': '714001436:AAHJ54DYwZeTHAPhjFagVPKeG61nURx7GI8',
             'chat_id': '-366235120'
-        }
+        },
+        'slack-info': {
+            'class': 'slack_logger.SlackHandler',
+            'level': 'INFO',
+            'url': 'https://hooks.slack.com/services/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',
+            'formatter': 'slack',
+            'mention': 'UH6HC1DJ8'
+        },
     },
     'loggers': {
         'telelog': {
             'handlers': ['telegram'],
             'level': logging.DEBUG
+        },
+
+        'slacklog': {
+            'handlers': ['slack-info'],
+            'level': logging.INFO
         }
     }
+
 }
 
 logging.config.dictConfig(DEFAULT_CONFIGURE)
@@ -61,3 +81,4 @@ configure(
         stdlib.render_to_log_kwargs]
 )
 telelog = logging.getLogger('telelog')
+slacklog = logging.getLogger('slacklog')

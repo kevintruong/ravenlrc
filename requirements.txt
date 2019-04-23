@@ -21,3 +21,4 @@ requests
 google
 oauth2client
 urllib3
+slack-logger

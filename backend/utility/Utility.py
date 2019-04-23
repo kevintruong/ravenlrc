@@ -3,7 +3,7 @@ import re
 
 import unidecode
 
-from backend.yclogger import telelog
+from backend.yclogger import telelog, slacklog
 
 
 def get_filepath_info(filepath: str):
@@ -161,7 +161,6 @@ def telegram_send_previewlink(url: str):
     markdown = '''[![Audi R8](http://img.youtube.com/vi/KOxbO0EI4MA/0.jpg)](https://www.youtube.com/watch?v=KOxbO0EI4MA "Audi R8")'''
     test_markdown = '''<iframe  title="YouTube video player" width="480" height="390" src="{}" frameborder="0" allowfullscreen></iframe>'''.format(url)
     htmlvideo = r'''<a href="{}">preview link</a>'''.format(url)
-
     telelog.debug(test_markdown)
 
 
@@ -215,8 +214,8 @@ class Test_no_accent_vietnames(unittest.TestCase):
         pass
 
     def test_telegram_html(self):
-        telegram_send_previewlink(
-            'https://drive.google.com/a/student.sbccd.edu/uc?id=17TsP4ZkaO9wmoEuYqxwCTHbHPbCahb4d&export=download')
+
+        slacklog.info("<https://drive.google.com/a/student.sbccd.edu/uc?id=17TsP4ZkaO9wmoEuYqxwCTHbHPbCahb4d&export=download>")
 
     def test_generate_singer_song_hashtags(self):
         test = "Hà Anh Tuấn"

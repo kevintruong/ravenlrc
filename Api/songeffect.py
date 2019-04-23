@@ -2,16 +2,20 @@ import json
 
 import requests
 
-from render.type import BgLyric
+from render.type import BgLyric, Size
+from type import toJSON
 
 SONGEFFECT_ENDPOINT = 'https://subeffect.herokuapp.com'
+# SONGEFFECT_ENDPOINT = 'http://172.17.0.2:5000'
 
 
-def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric):
+def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric, resolution=None):
+    resolution: Size
     jsondata = {
         'effectname': effectname,
         'lrccontent': lrccontent,
-        'config': config.toJSON()
+        'config': toJSON(config),
+        'resolution': toJSON(resolution)
     }
     strjson = json.dumps(jsondata)
     jsondata = json.loads(strjson)
@@ -23,7 +27,6 @@ def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric):
 
 def get_song_effect_list():
     pass
-
 
 
 import unittest
@@ -55,8 +58,12 @@ class Test_SongEffect(unittest.TestCase):
                 "size": "80"
             }
         })
-        self.effectname = 'Trans_Eff_001'
+        self.resolution = Size({
+            'width': "1280",
+            'height': "720"
+        })
+        self.effectname = 'Trans_Eff_019'
 
     def test_gen_songeffect(self):
-        ret = generate_songeffect_for_lrc(self.effectname, self.lrccontent, self.config)
+        ret = generate_songeffect_for_lrc(self.effectname, self.lrccontent, self.config, resolution=self.resolution)
         print(ret)
