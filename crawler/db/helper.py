@@ -6,21 +6,31 @@ import sqlite3
 import os
 import uuid
 from threading import Lock
+from backend.storage.gdrive import GDriveMnger
 
 curdir = os.path.abspath(os.path.dirname(__file__))
 import abc
 
 
 class SongInfoDb(abc.ABC):
+
     def __init__(self, dbname, readonly=False):
+        self.gdriveDbId = '1BaC2g73AOh6WIBppWQF8elmDk7JEcFVt'
         self.conn = self.connect(dbname, readonly)
 
     def connect(self, dbname, readonly=False):
         dbpath = os.path.join(curdir, dbname)
         dbname = dbpath
         if readonly:
+            if not os.path.exists(dbname):
+                if not os.path.exists(os.path.join('/tmp', dbname)):
+                    dbname = GDriveMnger.get_instance(False).download_file(self.gdriveDbId)
+                else:
+                    dbname = os.path.join('/tmp', dbname)
             return sqlite3.connect('file:{}?mode=ro'.format(dbname), uri=True, check_same_thread=False)
         else:
+            if not os.path.exists(dbname):
+                dbname = GDriveMnger.get_instance(False).download_file(self.gdriveDbId, curdir)
             return sqlite3.connect(dbname, check_same_thread=False)
 
     @abc.abstractmethod

@@ -477,7 +477,7 @@ class FfmpegCli(object):
         # self.ffmpeg_cli_run(self.ffmpeg_cli, mp3out)
         pass
 
-    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str):
+    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str,timelength = 90):
         '''
         render -i ${input_vid} -i $input_aud -map 0:v -map 1:a -c copy -shortest ${output_mv}
         :param input_vid:
@@ -492,8 +492,8 @@ class FfmpegCli(object):
         self.clean_up_mp3_meta_data(input_audio, tempaudiofile)
         (
             ffmpeg.output(ffmpeg.input(input_vid)['v'],
-                          ffmpeg.input(input_audio)['a']
-                          , output_vid, acodec='copy', vcodec='copy')
+                          ffmpeg.input(tempaudiofile)['a']
+                          , output_vid, acodec='copy', vcodec='copy',t=timelength)
                 .global_args('-shortest')
                 .global_args('-threads', '{}'.format(cpucount))
                 .global_args("-preset", "ultrafast")

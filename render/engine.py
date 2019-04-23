@@ -18,9 +18,9 @@ from render.type import *
 class RenderEngine(ABC):
     def __init__(self, rendertype=None):
         if rendertype is None:
-            self.rendertype = rendertype
-        else:
             self.rendertype = RenderType()
+        else:
+            self.rendertype = rendertype
         pass
 
     @abstractmethod
@@ -30,17 +30,21 @@ class RenderEngine(ABC):
 
 class RenderSong(RenderEngine):
 
-    def run(self, src: str, **kwargs):
-        cached_filename = MuxAudioVidCachedFile.get_cached_file_name(src, self.songinfo.songfile)
+    def run(self, src: ContentFileInfo, **kwargs):
+        cached_filename = CachedFile.get_cached_filename(src.filename,
+                                                         attribute=[self.rendertype,
+                                                                    self.songinfo])
         effectmv_cachedfile = self.get_cached_file(cached_filename)
         if effectmv_cachedfile is None:
-            self.songinfo.songfile= GDriveMnger(True).download_file(self.songinfo.songfile)
+            self.songinfo.songfile = GDriveMnger(True).download_file(self.songinfo.songfile)
+            src = src.get()
             ffmpegcli = FfmpegCli()
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.mux_audio_to_video(src,
                                          self.songinfo.songfile,
                                          effectmv_cachedfile)
             CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+            effectmv_cachedfile = self.get_cached_file(cached_filename)
         return effectmv_cachedfile
 
     def get_cached_file(self, cached_filename):
@@ -161,33 +165,50 @@ class RenderTitle(RenderEngine):
 
 class RenderBgEffect(RenderEngine):
 
-    def run(self, src: str, **kwargs):
+    def run(self, src: ContentFileInfo, **kwargs):
         profile = self.rendertype.configure.resolution
         timelength = self.rendertype.configure.duration
-        cached_filename, output, effect_file = self.get_effect_cached_file(profile,
-                                                                           src,
-                                                                           timelength)
 
-        if output is None:
-            ffmpegcli = FfmpegCli()
-            output = BgEffectCachedFile.create_cachedfile(cached_filename)
-
-            ffmpegcli.add_affect_to_video(effect_file,
-                                          src,
-                                          output,
-                                          self.bgEffect.opacity)
-            CachedContentDir.gdrive_file_upload(output)
-        return output
-
-    def get_effect_cached_file(self, profile, src, timelength):
         self.bgeffectfile = self.init_bgeffect_by_profile(profile)
 
         effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
                                                            timelength)
 
-        cached_filename = BgEffectCachedFile.get_cached_file_name(src, effect_file,
-                                                                  self.bgEffect.opacity)
+        cached_filename = BgEffectCachedFile.get_cached_filename(src.filename,
+                                                                 attribute=[effect_file.filename,
+                                                                            self.bgEffect.opacity])
+
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+
+        # cached_filename, output, effect_file = self.get_effect_cached_file(profile,
+        #                                                                    src,
+        #                                                                    timelength)
+
+        if effect_cachedfile is None:
+            ffmpegcli = FfmpegCli()
+            effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
+            effect_file = effect_file.get()
+            src = src.get()
+            ffmpegcli.add_affect_to_video(effect_file,
+                                          src,
+                                          effect_cachedfile,
+                                          self.bgEffect.opacity)
+            CachedContentDir.gdrive_file_upload(effect_cachedfile)
+            effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+        return effect_cachedfile
+
+    def get_effect_cached_file(self, profile, src: ContentFileInfo, timelength):
+        self.bgeffectfile = self.init_bgeffect_by_profile(profile)
+
+        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
+                                                           timelength)
+
+        cached_filename = BgEffectCachedFile.get_cached_filename(src.filename,
+                                                                 attribute=[effect_file.filename,
+                                                                            self.bgEffect.opacity])
+
+        effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+
         return cached_filename, effect_cachedfile, effect_file
 
     def __init__(self, bgeffect: BgEffect, rendertype=None):
@@ -202,17 +223,18 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         # self.bgEffect.file = self.bgEffect.file.get()
-        ffmpegcli = FfmpegCli()
         cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file.filename,
                                                                attribute=profile)
-        effect_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
+        effect_cachedfile: ContentFileInfo = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
+            ffmpegcli = FfmpegCli()
             self.bgEffect.file = self.bgEffect.file.get()
             effect_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.scale_effect_vid(self.bgEffect.file,
                                        self.rendertype.configure.resolution,
                                        effect_cachedfile)
             CachedContentDir.gdrive_file_upload(effect_cachedfile)
+            effect_cachedfile: ContentFileInfo = EffectCachedFile.get_cachedfile(cached_filename)
         return effect_cachedfile
 
     def init_bgeffect_video_with_length(self, effectprofilefile, length):
@@ -222,20 +244,20 @@ class RenderBgEffect(RenderEngine):
         :param length:
         :return:
         '''
-        ffmpegcli = FfmpegCli()
-        cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile,
+        cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile.filename,
+                                                               attribute=self.rendertype,
                                                                extention='.mp4')
         effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
+            ffmpegcli = FfmpegCli()
+            effectprofilefile = effectprofilefile.get()
             effectmv_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
-            preview_affectmv = effectmv_cachedfile
             ffmpegcli.create_background_affect_with_length(effectprofilefile,
                                                            length,
-                                                           preview_affectmv)
-        else:
-            preview_affectmv = effectmv_cachedfile
-        return preview_affectmv
-        pass
+                                                           effectmv_cachedfile)
+            # CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+            effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
+        return effectmv_cachedfile
 
 
 class RenderLyric(RenderEngine):
@@ -273,18 +295,24 @@ class RenderLyric(RenderEngine):
                 # cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
                 self.create_songeffect_assfile(cachedfilepath)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
+            cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
 
-    def run(self, src: str, **kwargs):
-        cached_filename = LyricCachedFile.get_cached_filename(src, attribute=self.assfile)
+    def run(self, src: ContentFileInfo, **kwargs):
+        cached_filename = LyricCachedFile.get_cached_filename(src.filename,
+                                                              attribute=[self.lyricfile,
+                                                                         self.lrcconf])
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
             ffmpegcli = FfmpegCli()
-            ffmpegcli.adding_sub_to_video(self.assfile,
+            assfile = self.assfile.get()
+            src = src.get()
+            ffmpegcli.adding_sub_to_video(assfile,
                                           src,
                                           cachedfilepath)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
+            cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
 
     def create_songeffect_assfile(self, output):
@@ -321,23 +349,26 @@ class BackgroundRender(RenderEngine):
             ffmpegcli.scale_img_by_width_height(self.input,
                                                 self.rendertype.configure.resolution,
                                                 bg_cachedfile)
+
+            CachedContentDir.gdrive_file_upload(bg_cachedfile)
+            bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         return bg_cachedfile
 
     def get_cached_bgvid(self, bgfile, time_length):
-        ffmpegcli = FfmpegCli()
-        cached_filename = BgVidCachedFile.get_cached_filename(bgfile,
+        cached_filename = BgVidCachedFile.get_cached_filename(bgfile.filename,
                                                               attribute=self.rendertype.configure,
                                                               extension='.mp4')
         bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         if bgvid_cachedfile is None:
+            ffmpegcli = FfmpegCli()
+            bgfile = bgfile.get()
             bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-            preview_bgmv = bgvid_cachedfile
             ffmpegcli.create_media_file_from_img(input_img=bgfile,
                                                  time_length=time_length,
-                                                 output_video=preview_bgmv)
-        else:
-            preview_bgmv = bgvid_cachedfile
-        return preview_bgmv
+                                                 output_video=bgvid_cachedfile)
+            CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
+            bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        return bgvid_cachedfile
 
     def render_background_based_timming(self):
         print('not support yet')
@@ -345,7 +376,7 @@ class BackgroundRender(RenderEngine):
     def render_background_full_time_length(self):
         self.file: ContentFileInfo
         timeleng = self.rendertype.configure.duration
-        self.input = self.file.get() # initial input by background file
+        self.input = self.file.get()  # initial input by background file
         if self.watermask:
             self.output = self.watermask.run(self.input)
             self.input = self.output
@@ -367,8 +398,7 @@ class BackgroundRender(RenderEngine):
             self.input = self.output
         if self.song:
             self.output = self.song.run(self.input)
-        output_url = CachedContentDir.gdrive_file_upload(self.output)
-        return output_url
+        return self.output.fileinfo
 
     def init_background_render(self):
         return self.get_cached_backgroundimg()
@@ -386,7 +416,7 @@ class BackgroundRender(RenderEngine):
         super().__init__()
         self.profile = None
         self.song: RenderSong = None
-        self.file= None
+        self.file = None
         self.timming: list = None
         self.effect: RenderBgEffect = None
         self.title: RenderTitle = None

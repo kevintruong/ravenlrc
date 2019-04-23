@@ -195,12 +195,18 @@ class GDriveMnger:
         except Exception as exp:
             print('error on upload file to drive {}'.format(exp))
 
-    def list_out(self, dirname=None, fid=None):
+    def list_out(self, dirname=None, fid=None, mintype=None):
         if fid is None:
             dirinfo = self.viewFile(dirname)
             query = "'" + dirinfo['id'] + "' in parents"
         else:
             query = "'" + fid + "' in parents"
+        query += " "
+        if mintype:
+            query += "and ("
+            query += "mimeType='" + mintype + "'"
+            query += ")"
+            pass
         page_token = None
         resule = []
         while True:

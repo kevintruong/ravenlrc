@@ -7,7 +7,7 @@ from render.type import BgLyric
 SONGEFFECT_ENDPOINT = 'https://subeffect.herokuapp.com'
 
 
-def generate_songeffect_for_lrc(effectname, lrccontent, config:BgLyric):
+def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric):
     jsondata = {
         'effectname': effectname,
         'lrccontent': lrccontent,
@@ -19,6 +19,11 @@ def generate_songeffect_for_lrc(effectname, lrccontent, config:BgLyric):
     r = requests.post(SONGEFFECT_ENDPOINT + '/api/lrceffect', json=jsondata, headers=headers)
     songeffect: str = json.loads(r.content.decode('utf-8'))['data']
     return songeffect
+
+
+def get_song_effect_list():
+    pass
+
 
 
 import unittest

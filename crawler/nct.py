@@ -1,13 +1,13 @@
 import abc
 import codecs
 import os
+
 import requests
 from bs4 import BeautifulSoup
 
 from backend.type import SongInfo
-from backend.utility.Utility import FileInfo, only_latin_string
+from backend.utility.Utility import only_latin_string
 from crawler.db.helper import GdriveSongInfoDb
-from crawler.proxy_requests import ProxyRequests
 from crawler.rc4_py3 import decrypt
 from render.cache import CachedContentDir
 

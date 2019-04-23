@@ -35,9 +35,9 @@ package:
     - backend/subeffect/test/**
     - songcrawlers/**
     - subeffect/**
-#    - .songinfo.db
+    #    - .songinfo.db
     - crawler/song.txt
-#    - crawler/.songinfo.db
+    #    - crawler/.songinfo.db
     - crawler/test/**
     - ffmpeg/**
     - backend/**/test/**
@@ -49,10 +49,14 @@ functions:
     handler: songcrawler
     events:
       - http: path
+    environment:
+      DEPLOY_ENV: GOOGLE
   second:
     handler: render
     events:
       - http: path
+    environment:
+      DEPLOY_ENV: GOOGLE
   # NOTE: the following uses an "event" event (pubSub event in this case).
   # Please create the corresponding resources in the Google Cloud
   # before deploying this service through Serverless
