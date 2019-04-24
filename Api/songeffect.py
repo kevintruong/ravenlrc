@@ -16,6 +16,7 @@ def toJSON(objinfo):
 
 def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric, resolution=None):
     resolution: Size
+    config.font.color = hex(config.font.color)  # convert back to hex string
     jsondata = {
         'effectname': effectname,
         'lrccontent': lrccontent,
@@ -47,7 +48,7 @@ class Test_SongEffect(unittest.TestCase):
         with open(self.lrcfile, 'r') as assfile:
             self.lrccontent = assfile.read()
 
-        from type import BgLyric
+        from render.type import BgLyric
         self.config = BgLyric({
             "position": {
                 "x": "221",
@@ -59,7 +60,7 @@ class Test_SongEffect(unittest.TestCase):
             },
             "font": {
                 "name": "UTM Silk Script",
-                "color": "0xFFFFFF",
+                "color": "0xabcdef",
                 "size": "80"
             }
         })
@@ -70,5 +71,8 @@ class Test_SongEffect(unittest.TestCase):
         self.effectname = 'Trans_Eff_019'
 
     def test_gen_songeffect(self):
-        ret = generate_songeffect_for_lrc(self.effectname, self.lrccontent, self.config, resolution=self.resolution)
+        ret = generate_songeffect_for_lrc(self.effectname,
+                                          self.lrccontent,
+                                          self.config,
+                                          resolution=self.resolution)
         print(ret)

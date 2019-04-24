@@ -15,8 +15,7 @@ from config.configure import BackendConfigure
 
 fontsdir = BackendConfigure.get_config().fontsdir
 ffprobepath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffprobe')
-# ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
-ffmpegpath = 'ffmpeg'
+ffmpegpath = os.path.join(ffmpegbin.ffmpegbin.ffmpegpath, 'ffmpeg')
 
 logger = logging.getLogger('backend')
 cpucount = psutil.cpu_count()
