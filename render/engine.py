@@ -42,7 +42,8 @@ class RenderSong(RenderEngine):
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.mux_audio_to_video(src,
                                          self.songinfo.songfile,
-                                         effectmv_cachedfile)
+                                         effectmv_cachedfile,
+                                         self.rendertype.configure.duration)
             CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
             effectmv_cachedfile = self.get_cached_file(cached_filename)
         return effectmv_cachedfile
@@ -51,8 +52,8 @@ class RenderSong(RenderEngine):
         effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
         return effectmv_cachedfile
 
-    def __init__(self, songinfo: SongInfo):
-        super().__init__()
+    def __init__(self, songinfo: SongInfo, rendertype=None):
+        super().__init__(rendertype)
         self.songinfo = songinfo
 
 
@@ -301,7 +302,8 @@ class RenderLyric(RenderEngine):
     def run(self, src: ContentFileInfo, **kwargs):
         cached_filename = LyricCachedFile.get_cached_filename(src.filename,
                                                               attribute=[self.lyricfile,
-                                                                         self.lrcconf])
+                                                                         self.lrcconf,
+                                                                         self.rendertype])
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
@@ -310,7 +312,7 @@ class RenderLyric(RenderEngine):
             src = src.get()
             ffmpegcli.adding_sub_to_video(assfile,
                                           src,
-                                          cachedfilepath)
+                                          cachedfilepath, timelength=self.rendertype.configure.duration)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
@@ -320,7 +322,9 @@ class RenderLyric(RenderEngine):
             self.lyricfile = GDriveMnger(True).download_file(self.lyricfile)
             with open(self.lyricfile, 'r') as lrcfile:
                 lrcdata = lrcfile.read()
-            data = generate_songeffect_for_lrc(self.songeffect.name, lrcdata, self.lrcconf,
+            data = generate_songeffect_for_lrc(self.songeffect.name,
+                                               lrcdata,
+                                               self.lrcconf,
                                                self.rendertype.configure.resolution)
             ass_songeffect.write(data)
         return output
@@ -424,7 +428,7 @@ class BackgroundRender(RenderEngine):
         self.watermask: RenderWaterMask = None
         self.lyric: RenderLyric = None
         self.spectrum: RenderSpectrum = None
-        self.rendertype: RenderType = None
+        self.redertype: RenderType = None
         self.input = None
         self.output = None
         self.finalfile = None
@@ -456,6 +460,10 @@ class BackgroundsRender:
         return url_ret
 
     def generate_render_engine(self):
+        if 'publish' in self.songapi.rendertype.type:
+            songfile = GDriveMnger(True).download_file(self.songapi.song.songfile)
+            self.songapi.rendertype.configure.duration = FfmpegCli().get_media_time_length(songfile)
+            pass
         for index, background_item in enumerate(self.songapi.backgrounds):
             bgRender = BackgroundRender()
             if self.songapi.rendertype:
@@ -466,7 +474,7 @@ class BackgroundsRender:
                 bgRender.effect = RenderBgEffect(background_item.effect,
                                                  bgRender.rendertype)
             if background_item.title:
-                bgRender.title = RenderTitle(background_item.title)
+                bgRender.title = RenderTitle(background_item.title, rendertype=bgRender.rendertype)
             if background_item.lyric:
                 lyricfile = self.songapi.song.lyric
                 bgRender.lyric = RenderLyric(background_item.lyric,
@@ -481,7 +489,7 @@ class BackgroundsRender:
                 bgRender.watermask = RenderWaterMask(background_item.watermask,
                                                      bgRender.rendertype)
             if self.songapi.song:
-                bgRender.song = RenderSong(self.songapi.song)
+                bgRender.song = RenderSong(self.songapi.song, bgRender.rendertype)
 
             if background_item.timing:
                 print('not support yet')

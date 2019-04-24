@@ -23,7 +23,7 @@ class SongApi:
                 self.backgrounds = self.get_list_background(jsondata[keyvalue])
             if keyvalue == 'lyric':
                 self.lyric = Lyric(jsondata[keyvalue])
-            if keyvalue == 'rendertype':
+            if keyvalue == 'renderType':
                 self.rendertype = RenderType(jsondata[keyvalue])
             if keyvalue == 'song_effect':
                 self.song_effect = PyJSON(jsondata[keyvalue])
@@ -39,7 +39,7 @@ class SongApi:
             from crawler.cmder import CrawlCmder
             crawler = CrawlCmder(crawlerdict)
             self.song: SongInfo = SongInfo(json.loads(crawler.run()))
-            pass
+
 
     def get_list_background(self, info: list):
         backgrounds = []

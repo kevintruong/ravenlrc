@@ -68,12 +68,35 @@ class RenderConfigure:
 
 class RenderType:
     def __init__(self, info=None):
+        self.type = None
+        self.configure = None
         if info:
             for keyvalue, value in info.items():
                 if keyvalue == 'type':
                     self.type = info[keyvalue]
                 if keyvalue == 'config':
                     self.configure = RenderConfigure(info[keyvalue])
+            if self.type and self.configure is None:
+                if 'preview' in self.type:
+                    self.configure = RenderConfigure(
+                        {
+                            'duration': 90,
+                            'resolution': {
+                                'width': 768,
+                                'height': 432
+                            }
+                        }
+                    )
+                elif 'publish' in self.type:
+                    self.configure = RenderConfigure(
+                        {
+                            'duration': 90,
+                            'resolution': {
+                                'width': 1920,
+                                'height': 1080
+                            }
+                        }
+                    )
         else:
             self.type = 'preview'
             self.configure = RenderConfigure(

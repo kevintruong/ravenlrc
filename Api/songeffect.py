@@ -1,12 +1,17 @@
+import ast
 import json
-
 import requests
-
 from render.type import BgLyric, Size
-from type import toJSON
 
 SONGEFFECT_ENDPOINT = 'https://subeffect.herokuapp.com'
+
+
 # SONGEFFECT_ENDPOINT = 'http://172.17.0.2:5000'
+
+
+def toJSON(objinfo):
+    data = json.dumps(objinfo, default=lambda o: o.__dict__)
+    return ast.literal_eval(data)
 
 
 def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric, resolution=None):
