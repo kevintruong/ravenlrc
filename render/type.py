@@ -24,7 +24,10 @@ class Position:
 class Font:
     def __init__(self, info: dict):
         self.name = info['name']
-        self.color = int(info['color'], 16)
+        if '0x' in info['color'] or '0X' in info['color']:
+            self.color: int = int(info['color'], 0)
+        else:
+            self.color: int = int(info['color'], 0)
         self.size = int(info['size'])
 
 

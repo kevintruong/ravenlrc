@@ -90,5 +90,44 @@ def render(request: Request):
     except Exception as exp:
         return error_msg_handle(exp), 404, headers
 
+
+def publish(request: Request):
+    """Responds to any HTTP request.
+    Args:
+        request (flask.Request): HTTP request object.
+    Returns:
+        The response text or any set of values that can be turned into a
+        Response object using
+        `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
+    """
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true'
+    }
+    if request.method != 'POST' and request.method != 'OPTIONS':
+        return abort(405)
+    try:
+
+        # Set CORS headers for the preflight request
+        if request.method == 'OPTIONS':
+            # Allows GET requests from any origin with the Content-Type
+            # header and caches preflight response for an 3600s
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET,POST',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '3600'
+            }
+            return '', 204, headers
+
+        from Api.publish import publish_vid
+        from backend.yclogger import slacklog
+        # Set CORS headers for the main request
+        body = request.get_json()
+        slacklog.info(body)
+        publish_vid(body)
+    except Exception as exp:
+        return error_msg_handle(exp), 404, headers
+
 # if __name__ == '__main__':
 #     app.run(debug=True)

@@ -47,7 +47,6 @@ DEFAULT_CONFIGURE = {
             'level': 'INFO',
             'url': 'https://hooks.slack.com/services/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',
             'formatter': 'slack',
-            'mention': 'UH6HC1DJ8'
         },
     },
     'loggers': {

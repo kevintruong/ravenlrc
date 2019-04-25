@@ -98,6 +98,10 @@ class ContentDir:
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
                                                                                 each_dir['id'],
                                                                                 self.TITLE_DIR)
+                if each_dir['name'] == 'MvConfig':
+                    self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
+                                                                                each_dir['id'],
+                                                                                self.MVCONF_DIR)
                 if each_dir['name'] == 'Mv':
                     mv_cacheddirs = ContentDir.GDriveStorage.list_out(fid=each_dir['id'])
                     for each_mv_dir in mv_cacheddirs:
@@ -141,7 +145,7 @@ class ContentDir:
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
         fileinfo = cls.GDriveStorage.upload_file(filepath, storeinfo.id)
         print(filepath)
-        return fileinfo['webContentLink']
+        return fileinfo
 
     @classmethod
     def get_file_path(cls, dir: str, filename: str):
@@ -161,16 +165,12 @@ class ContentDir:
         is_exists = cls.GDriveStorage.is_file_exists_at_local(filename)
         filepath = None
         fileinfo = None
-        if is_exists:
-            listfiles = os.listdir(storeinfo.path)
-            if filename in listfiles:
-                filepath = os.path.join(storeinfo.path, filename)
-            else:
-                parent_id = storeinfo.id
-                fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
-        else:
-            parent_id = storeinfo.id
-            fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
+        listfiles = os.listdir(storeinfo.path)
+        if filename in listfiles:
+            filepath = os.path.join(storeinfo.path, filename)
+        parent_id = storeinfo.id
+        fileinfo = cls.GDriveStorage.viewFile(filename, parent_id)
+
         if filepath or fileinfo:
             return ContentFileInfo(filename,
                                    fileinfo,

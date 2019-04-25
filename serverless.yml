@@ -57,6 +57,12 @@ functions:
       - http: path
     environment:
       DEPLOY_ENV: GOOGLE
+  third:
+    handler: publish
+    events:
+      - http: path
+    environment:
+      DEPLOY_ENV: GOOGLE   DEPLOY_ENV: GOOGLE
   # NOTE: the following uses an "event" event (pubSub event in this case).
   # Please create the corresponding resources in the Google Cloud
   # before deploying this service through Serverless

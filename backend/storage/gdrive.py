@@ -2,14 +2,13 @@ import datetime
 import io
 import os
 import shutil
-from threading import Lock
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from httplib2 import Http
 from oauth2client import file, client, tools
 
-from backend.auth.authenticate import CONFIG_DIR
+from publisher.auth.authenticate import CONFIG_DIR
 from backend.storage.db.helper import GdriveStorageDb
 from backend.storage.utils import MIMETYPES
 from backend.utility.Utility import FileInfo

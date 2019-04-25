@@ -1,6 +1,8 @@
 import hug
 import traceback
 
+from handler import handler_publish
+
 api = hug.API(__name__)
 api.http.add_middleware(hug.middleware.CORSMiddleware(api, max_age=10))
 
@@ -48,14 +50,10 @@ def song(url):
 
 #
 #
-@hug.post('/api/video/render')
-def render(body):
+@hug.post('/api/video/publish')
+def publish(body):
     try:
-        from render.engine import BackgroundsRender
-        import json
-        from backend.yclogger import telelog
-        from render.parser import SongApi
-        telelog.debug('```{}```'.format(json.dumps(body, indent=1)))
+        handler_publish(body)
     except Exception as exp:
         return error_msg_handle(exp)
     return {'url': 'render started'}

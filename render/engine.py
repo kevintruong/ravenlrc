@@ -1,6 +1,7 @@
 from abc import *
+from threading import Thread
 
-from Api.songeffect import generate_songeffect_for_lrc
+from Api.songeffect import generate_songeffect_for_lrc, toJSON
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename
@@ -283,7 +284,9 @@ class RenderLyric(RenderEngine):
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
         self.lrcconf.scale_font_size_by_factor(scale_factor)
         cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile,
-                                                              attribute=self,
+                                                              attribute=[self.lrcconf,
+                                                                         self.rendertype,
+                                                                         self.songeffect],
                                                               extension='.ass')
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
@@ -301,9 +304,12 @@ class RenderLyric(RenderEngine):
 
     def run(self, src: ContentFileInfo, **kwargs):
         cached_filename = LyricCachedFile.get_cached_filename(src.filename,
-                                                              attribute=[self.lyricfile,
+                                                              attribute=[self.assfile.filename,
                                                                          self.lrcconf,
                                                                          self.rendertype])
+        slacklog.info(src.filename + ' {}'.format(toJSON([self.assfile.filename,
+                                                          self.lrcconf,
+                                                          self.rendertype])))
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
@@ -312,7 +318,8 @@ class RenderLyric(RenderEngine):
             src = src.get()
             ffmpegcli.adding_sub_to_video(assfile,
                                           src,
-                                          cachedfilepath, timelength=self.rendertype.configure.duration)
+                                          cachedfilepath,
+                                          timelength=self.rendertype.configure.duration)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
@@ -449,14 +456,14 @@ class BackgroundRender(RenderEngine):
 class BackgroundsRender:
 
     def run(self):
+        self.generate_render_engine()
         bgrender_engine: BackgroundRender
         url_ret = ""
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)
-            slacklog.info("url return ```{}``` ".format(url_ret))
-            pass
-        pass
+        self.config_id = self.backup_config(url_ret['id'])
+        url_ret['id'] = self.config_id
         return url_ret
 
     def generate_render_engine(self):
@@ -497,7 +504,43 @@ class BackgroundsRender:
             self.bgrenderengine.append(bgRender)
             pass
 
+    def backup_config(self, id: str):
+        fileconfigname = '{}.json'.format(id)
+        try:
+            config_file = ContentDir.verify_file(ContentDir.MVCONF_DIR, fileconfigname)
+        except Exception as exp:
+            print('find not found => let upload new')
+            config_file = None
+        if config_file is None:
+            config_file = os.path.join(ContentDir.MVCONF_DIR, fileconfigname)
+            with open(config_file, 'w') as jsonfile:
+                json.dump(self.renderdata, jsonfile, indent=4, sort_keys=True)
+            fileinfo = ContentDir.gdrive_file_upload(config_file)
+            id = fileinfo['id']
+        else:
+            slacklog.info('already have configure file {}'.format(fileconfigname))
+            if config_file.fileinfo is None:
+                config_file.fileinfo = ContentDir.gdrive_file_upload(config_file.filepath)
+            id = config_file.fileinfo['id']
+        return id
+
     def __init__(self, renderdata):
+        self.renderdata = renderdata
         self.bgrenderengine = []
         self.songapi = SongApi(renderdata)
-        self.generate_render_engine()
+        self.config_id = None
+
+    def set_publish_typte(self, typerender):
+        self.songapi.rendertype = RenderType(typerender)
+
+
+class RenderThread(Thread):
+    def __init__(self, jsondata, typerender):
+        super().__init__()
+        self.song_render = BackgroundsRender(jsondata)
+        self.song_render.set_publish_typte(typerender)
+        self.daemon = True
+
+    def run(self) -> None:
+        ret = self.song_render.run()
+        slacklog.info("RELEASE return ```{}``` ".format(ret))
