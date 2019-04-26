@@ -105,12 +105,9 @@ def generate_song_hashtags(songname: str):
     songname_groups = re.search('\(([^)]+)', songname)
     if songname_groups:
         songname_other = songname_groups.group(1)
-    # songname_other = re.search('\(([^)]+)', songname).group(1)
-
     newsongname = songname.split('(', 1)[0].lower().rstrip()
     songtags = []
     if newsongname:
-        print(newsongname)
         songname = newsongname
 
     non_accent_singname = non_accent_convert(songname.lower())
@@ -118,7 +115,6 @@ def generate_song_hashtags(songname: str):
     songtags.append(non_accent_singname)
     songtags.append(songname.lower())
     if songname_other:
-        print(songname_other)
         songtags.append(songname_other)
         songtags.append(non_accent_convert(songname_other))
     return songtags
@@ -129,10 +125,8 @@ def generate_singer_song_hash_combine(singerhashtags: list, songname_hashtags: l
     combine_hashtags = []
     for singer_hashtag in singerhashtags:
         length = 0
-        combine_hashtags.append(singer_hashtag + " {}".format(datetime.now().year))
-        for songname in songname_hashtags[:2]:
+        for songname in songname_hashtags:
             combine_hashtags.append(singer_hashtag.lower() + " " + songname)
-            # combine_hashtags.append(songname.lower() + " " + singer_hashtag.lower())
             combine_hashtags.append(songname + " lyrics")
             for each in combine_hashtags:
                 length = length + len(each)
@@ -146,20 +140,26 @@ def generate_singer_song_hash_combine(singerhashtags: list, songname_hashtags: l
 def generate_singer_song_hashtags(singers: str, songname: str):
     singer_hashtags = generate_youtube_singer_hashtags(singers)
     song_hashtags = generate_song_hashtags(songname)
+
     combine_hashtags = generate_singer_song_hash_combine(singer_hashtags, song_hashtags)
-    final_hashtags = song_hashtags + combine_hashtags + singer_hashtags
-    lenth = 0
-    for each in final_hashtags:
-        lenth = lenth + len(each)
-    if lenth > 500:
-        raise Exception("hashtags too long {}".format(lenth))
-    print(lenth)
+    final_hashtags = combine_hashtags + song_hashtags + singer_hashtags
+
     return final_hashtags
+
+
+def clean_up(dirpath='/tmp/raven'):
+    for path in os.listdir(dirpath):
+        full_path = os.path.join(dirpath, path)
+        if os.path.isfile(full_path):
+            os.remove(full_path)
+        else:
+            clean_up(full_path)
 
 
 def telegram_send_previewlink(url: str):
     markdown = '''[![Audi R8](http://img.youtube.com/vi/KOxbO0EI4MA/0.jpg)](https://www.youtube.com/watch?v=KOxbO0EI4MA "Audi R8")'''
-    test_markdown = '''<iframe  title="YouTube video player" width="480" height="390" src="{}" frameborder="0" allowfullscreen></iframe>'''.format(url)
+    test_markdown = '''<iframe  title="YouTube video player" width="480" height="390" src="{}" frameborder="0" allowfullscreen></iframe>'''.format(
+        url)
     htmlvideo = r'''<a href="{}">preview link</a>'''.format(url)
     telelog.debug(test_markdown)
 
@@ -214,8 +214,8 @@ class Test_no_accent_vietnames(unittest.TestCase):
         pass
 
     def test_telegram_html(self):
-
-        slacklog.info("<https://drive.google.com/a/student.sbccd.edu/uc?id=17TsP4ZkaO9wmoEuYqxwCTHbHPbCahb4d&export=download>")
+        slacklog.info(
+            "<https://drive.google.com/a/student.sbccd.edu/uc?id=17TsP4ZkaO9wmoEuYqxwCTHbHPbCahb4d&export=download>")
 
     def test_generate_singer_song_hashtags(self):
         test = "Hà Anh Tuấn"
@@ -235,6 +235,7 @@ class Test_no_accent_vietnames(unittest.TestCase):
 
     def test_create_file_config(self):
         print(create_mv_config_file('Tết đến xuân về'))
+        clean_up('/tmp/raven/cache')
 
     def test_crete_hashtag(self):
         test = "Hà Anh Tuấn"

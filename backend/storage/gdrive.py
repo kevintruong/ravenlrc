@@ -2,6 +2,7 @@ import datetime
 import io
 import os
 import shutil
+from threading import Lock
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
@@ -38,31 +39,36 @@ else:
 class GDriveMnger:
     GdriveCacheStorage = None
     GDriveStorage = None
+    authLock = Lock()
 
     def __init__(self, cachestorage=False):
-        if cachestorage:
-            token = os.path.join(TmpCurDir, 'cachestorage.json')
-            if not os.path.exists(token):
-                shutil.copy2(os.path.join(CONFIG_DIR, 'cachestorage.json'),
-                             TmpCurDir)
-            self.localdb = GdriveStorageDb('.cachedstoragedb.db')
+        try:
+            GDriveMnger.authLock.acquire()
+            if cachestorage:
+                token = os.path.join(TmpCurDir, 'cachestorage.json')
+                if not os.path.exists(token):
+                    shutil.copy2(os.path.join(CONFIG_DIR, 'cachestorage.json'),
+                                 TmpCurDir)
+                self.localdb = GdriveStorageDb('.cachedstoragedb.db')
 
-        else:
-            token = os.path.join(TmpCurDir, 'storage.json')
-            if not os.path.exists(token):
-                shutil.copy2(os.path.join(CONFIG_DIR, 'storage.json'),
-                             TmpCurDir)
-            self.localdb = GdriveStorageDb('.storagedb.db')
-        store = file.Storage(token)
-        self.creds = store.get()
-        if not self.creds or self.creds.invalid:
-            client_id = ClientSecretfile
-            flow = client.flow_from_clientsecrets(client_id, SCOPES)
-            flags = tools.argparser.parse_args(args=[])
-            flags.noauth_local_webserver = True
-            self.creds = tools.run_flow(flow, store, flags)
-        self.service = build('drive', 'v3', http=self.creds.authorize(Http()))
-        # self.rootdir_id = self.viewFile(rootdirname)['id']
+            else:
+                token = os.path.join(TmpCurDir, 'storage.json')
+                if not os.path.exists(token):
+                    shutil.copy2(os.path.join(CONFIG_DIR, 'storage.json'),
+                                 TmpCurDir)
+                self.localdb = GdriveStorageDb('.storagedb.db')
+            store = file.Storage(token)
+            self.creds = store.get()
+            if not self.creds or self.creds.invalid:
+                client_id = ClientSecretfile
+                flow = client.flow_from_clientsecrets(client_id, SCOPES)
+                flags = tools.argparser.parse_args(args=[])
+                flags.noauth_local_webserver = True
+                self.creds = tools.run_flow(flow, store, flags)
+            self.service = build('drive', 'v3', http=self.creds.authorize(Http()))
+            # self.rootdir_id = self.viewFile(rootdirname)['id']
+        finally:
+            GDriveMnger.authLock.release()
 
     @classmethod
     def get_instance(cls, iscached):
@@ -132,7 +138,7 @@ class GDriveMnger:
         request = service.files().get_media(fileId=fid)
         return request, ""
 
-    def download_file(self, fid, output='/tmp'):
+    def download_file(self, fid, output='/tmp/raven/cache'):
         clone = self.get_item_info(fid)
         fname = clone['name']
         fh = io.BytesIO()

@@ -1,15 +1,21 @@
+import time
 from abc import *
-from threading import Thread
+from threading import Thread, Event
 
 from Api.songeffect import generate_songeffect_for_lrc, toJSON
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
-from backend.utility.Utility import generate_mv_filename
+from backend.utility.Utility import generate_mv_filename, clean_up
 from backend.yclogger import telelog, slacklog
 from render.cache import *
 from render.ffmpegcli import FfmpegCli, FFmpegProfile
 from render.parser import SongApi
 from render.type import *
+
+from publisher.youtube.youtube_uploader import YoutubeUploader
+from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
+from publisher.youtube.youtube_uploader import YtMvConfigStatus
+from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
 
 
 # from subeffect.asseditor import create_ass_from_lrc
@@ -117,8 +123,8 @@ class RenderWaterMask(RenderEngine):
         return formatted_watermask
         pass
 
-    def run(self, src, **kwargs):
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src,
+    def run(self, src: ContentFileInfo, **kwargs):
+        renderfile_name = SecondBgImgCachedFile.get_file_name(src.filename,
                                                               self.watermaskconf.file.filename,
                                                               self.watermaskconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
@@ -133,6 +139,7 @@ class RenderWaterMask(RenderEngine):
                                          output,
                                          self.watermaskconf.position)
             CachedContentDir.gdrive_file_upload(output)
+            output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         return output
 
 
@@ -152,11 +159,12 @@ class RenderTitle(RenderEngine):
 
     def run(self, src, **kwargs):
         src: ContentFileInfo
-        renderfile_name = SecondBgImgCachedFile.get_file_name(src,
+        renderfile_name = SecondBgImgCachedFile.get_file_name(src.filename,
                                                               self.titleconf.file.filename,
                                                               self.titleconf.size)
         output = SecondBgImgCachedFile.get_cachedfile(renderfile_name)
         if not output:
+            src = src.get()
             output = SecondBgImgCachedFile.create_cachedfile(renderfile_name)
             formattedtitle_img = self.format()
             ffmpegcli = FfmpegCli()
@@ -172,22 +180,26 @@ class RenderBgEffect(RenderEngine):
         timelength = self.rendertype.configure.duration
 
         self.bgeffectfile = self.init_bgeffect_by_profile(profile)
+        #
+        # effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
+        #                                                    timelength)
 
-        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
-                                                           timelength)
+        effectfile_name = EffectCachedFile.get_cached_filename(self.bgeffectfile.filename,
+                                                               attribute=self.rendertype,
+                                                               extention='.mp4')
 
         cached_filename = BgEffectCachedFile.get_cached_filename(src.filename,
-                                                                 attribute=[effect_file.filename,
+                                                                 attribute=[effectfile_name,
                                                                             self.bgEffect.opacity])
 
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
 
-        # cached_filename, output, effect_file = self.get_effect_cached_file(profile,
-        #                                                                    src,
-        #                                                                    timelength)
-
         if effect_cachedfile is None:
             ffmpegcli = FfmpegCli()
+
+            effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
+                                                               timelength)
+
             effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
             effect_file = effect_file.get()
             src = src.get()
@@ -198,20 +210,6 @@ class RenderBgEffect(RenderEngine):
             CachedContentDir.gdrive_file_upload(effect_cachedfile)
             effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
         return effect_cachedfile
-
-    def get_effect_cached_file(self, profile, src: ContentFileInfo, timelength):
-        self.bgeffectfile = self.init_bgeffect_by_profile(profile)
-
-        effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
-                                                           timelength)
-
-        cached_filename = BgEffectCachedFile.get_cached_filename(src.filename,
-                                                                 attribute=[effect_file.filename,
-                                                                            self.bgEffect.opacity])
-
-        effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
-
-        return cached_filename, effect_cachedfile, effect_file
 
     def __init__(self, bgeffect: BgEffect, rendertype=None):
         super().__init__(rendertype)
@@ -297,7 +295,9 @@ class RenderLyric(RenderEngine):
                 #                     self.lrcconf,
                 #                     resolution)
                 # cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
+                slacklog.info('lrcconf {}'.format(toJSON(self.lrcconf)))
                 self.create_songeffect_assfile(cachedfilepath)
+                slacklog.info('lrcconf {}'.format(toJSON(self.lrcconf)))
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
@@ -307,9 +307,6 @@ class RenderLyric(RenderEngine):
                                                               attribute=[self.assfile.filename,
                                                                          self.lrcconf,
                                                                          self.rendertype])
-        slacklog.info(src.filename + ' {}'.format(toJSON([self.assfile.filename,
-                                                          self.lrcconf,
-                                                          self.rendertype])))
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
@@ -388,7 +385,7 @@ class BackgroundRender(RenderEngine):
     def render_background_full_time_length(self):
         self.file: ContentFileInfo
         timeleng = self.rendertype.configure.duration
-        self.input = self.file.get()  # initial input by background file
+        # self.input = self.file.get()  # initial input by background file
         if self.watermask:
             self.output = self.watermask.run(self.input)
             self.input = self.output
@@ -410,7 +407,7 @@ class BackgroundRender(RenderEngine):
             self.input = self.output
         if self.song:
             self.output = self.song.run(self.input)
-        return self.output.fileinfo
+        return self.output
 
     def init_background_render(self):
         return self.get_cached_backgroundimg()
@@ -462,8 +459,7 @@ class BackgroundsRender:
         for bgrender_engine in self.bgrenderengine:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)
-        self.config_id = self.backup_config(url_ret['id'])
-        url_ret['id'] = self.config_id
+        self.config_id = self.backup_config(url_ret.fileinfo['id'])
         return url_ret
 
     def generate_render_engine(self):
@@ -535,12 +531,86 @@ class BackgroundsRender:
 
 
 class RenderThread(Thread):
-    def __init__(self, jsondata, typerender):
+    def __init__(self, jsondata, typerender, channel='timshel'):
         super().__init__()
+        self.config = jsondata
         self.song_render = BackgroundsRender(jsondata)
         self.song_render.set_publish_typte(typerender)
         self.daemon = True
+        self.outputfile = None
+        self.channel = channel
 
     def run(self) -> None:
         ret = self.song_render.run()
         slacklog.info("RELEASE return ```{}``` ".format(ret))
+        self.outputfile = ret
+        self.youtube_publish()
+
+    def youtube_publish(self):
+        upload_mvfile = self.outputfile.get()
+        songinfo = self.song_render.songapi.song
+        handler = YoutubeUploader(self.channel)
+        status = YtMvConfigStatus(3)
+        snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
+                                                                           songinfo))
+        resp = handler.upload_video(upload_mvfile, snippet, status)
+        print(resp)
+
+
+class RenderThreadQueue(Thread):
+    RenderQueue = None
+
+    def __init__(self):
+        super().__init__()
+        self.renderqueue = []
+        self.daemon = True
+        self.event = Event()
+        self.lock = Lock()
+
+    @classmethod
+    def get_renderqueue(cls):
+        if cls.RenderQueue is None:
+            cls.RenderQueue = RenderThreadQueue()
+            cls.RenderQueue.start()
+            return cls.RenderQueue
+        else:
+            return cls.RenderQueue
+
+    def add(self, renderreq):
+        self.lock.acquire()
+        self.renderqueue.append(renderreq)
+        print(len(self.renderqueue))
+        self.lock.release()
+        self.set_notify()
+
+    def run(self) -> None:
+        slacklog.info('start render thread queue')
+        while True:
+            while len(self.renderqueue):
+                try:
+                    print(len(self.renderqueue))
+                    self.lock.acquire()
+                    renderreq = self.renderqueue.pop()
+                    self.lock.release()
+                    slacklog.info('render thread start')
+                    renderreq: RenderThread
+                    renderreq.start()
+                    renderreq.join()
+                    clean_up('/tmp/raven/cache')
+                    clean_up('/tmp/raven/content')
+                    slacklog.info('render thread complete')
+                except Exception as exp:
+                    slacklog.error(exp)
+            time.sleep(2)
+
+    def set_notify(self):
+        self.event.set()
+
+
+import unittest
+
+
+class Test_ThreadRenderQueue(unittest.TestCase):
+    def test_renderthreadqueue_run(self):
+        threadqueue = RenderThreadQueue.get_renderqueue()
+        threadqueue.join()

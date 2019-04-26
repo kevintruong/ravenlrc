@@ -5,10 +5,10 @@ songcrawlers/
 Docs/
 docker/
 backend/tests
-crawler/**/*.db
-crawler/**/*.sql
-crawler/test
-backend/.idea
+#crawler/**/*.db
+#crawler/**/*.sql
+#crawler/test
+#backend/.idea
 backend/vendor
 test
 venv_37

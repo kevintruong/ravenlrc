@@ -4,6 +4,7 @@ import unittest
 
 import requests
 
+from Api.publish import publish_vid
 from render.engine import BackgroundsRender
 from render.parser import SongApi
 from backend.utility.TempFileMnger import *
@@ -283,10 +284,24 @@ class Test_RenderCmder(unittest.TestCase):
         pass
 
     def test_load_render_api(self):
-        bgsRender = BackgroundsRender(self.data)
-        output = bgsRender.run()
-        print(output)
-        pass
+        from handler import handler_render
+        retval = handler_render(self.data)
+        print(retval)
+
+    def test_handler_publish(self):
+        from handler import handler_render
+        from handler import handler_publish
+        retval = handler_render(self.data)
+        print(retval)
+        body = {
+            'id': '{}'.format(retval['id'])
+        }
+        ret = handler_publish(body)
+        while True:
+            import time
+            time.sleep(1)
+
+
 
     def test_server_send_render_api(self):
         rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/render'

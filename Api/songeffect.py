@@ -1,12 +1,10 @@
 import ast
+import copy
 import json
 import requests
 from render.type import BgLyric, Size
 
 SONGEFFECT_ENDPOINT = 'https://subeffect.herokuapp.com'
-
-
-# SONGEFFECT_ENDPOINT = 'http://172.17.0.2:5000'
 
 
 def toJSON(objinfo):
@@ -16,11 +14,12 @@ def toJSON(objinfo):
 
 def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric, resolution=None):
     resolution: Size
-    config.font.color = hex(config.font.color)  # convert back to hex string
+    newconfig = copy.copy(config)
+    newconfig.font.color = hex(config.font.color)  # convert back to hex string
     jsondata = {
         'effectname': effectname,
         'lrccontent': lrccontent,
-        'config': toJSON(config),
+        'config': toJSON(newconfig),
         'resolution': toJSON(resolution)
     }
     strjson = json.dumps(jsondata)
@@ -28,6 +27,7 @@ def generate_songeffect_for_lrc(effectname, lrccontent, config: BgLyric, resolut
     headers = {"Accept-Encoding": "gzip"}
     r = requests.post(SONGEFFECT_ENDPOINT + '/api/lrceffect', json=jsondata, headers=headers)
     songeffect: str = json.loads(r.content.decode('utf-8'))['data']
+    config.font.color = int(config.font.color, 0)  # convert back to hex string
     return songeffect
 
 
@@ -47,7 +47,6 @@ class Test_SongEffect(unittest.TestCase):
         self.lrcfile = os.path.join(self.CurDir, '../subeffect/test/nested.lrc')
         with open(self.lrcfile, 'r') as assfile:
             self.lrccontent = assfile.read()
-
         from render.type import BgLyric
         self.config = BgLyric({
             "position": {

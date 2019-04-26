@@ -13,8 +13,8 @@ def handler_render(body):
     slacklog.info(body)
     song_render = BackgroundsRender(body)
     retval = song_render.run()
-    retval['id'] = song_render.config_id
-    return retval
+    retval.fileinfo['id'] = song_render.config_id
+    return retval.fileinfo
     pass
 
 
@@ -24,20 +24,20 @@ def handler_publish(body):
     :param body:  {'id': config_id}
     :return:
     """
-    from render.engine import BackgroundsRender, RenderThread
+    from render.engine import RenderThread
+    from render.engine import RenderThreadQueue
+
     if 'id' not in body:
         raise Exception('Not found configure id in body {}'.format(body))
     id = body['id']
-    from render.cache import ContentDir
-    configfile = ContentDir.GDriveStorage.download_file(id)
+    from backend.storage.gdrive import GDriveMnger
+    configfile = GDriveMnger(False).download_file(id)
     with open(configfile, 'r', encoding='utf-8') as fd:
         jsondata = json.load(fd)
     rendertype = {'type': 'publish'}
     song_render = RenderThread(jsondata,
                                rendertype)
-    song_render.start()
-    return song_render
-    pass
+    RenderThreadQueue.get_renderqueue().add(song_render)
 
 
 import unittest

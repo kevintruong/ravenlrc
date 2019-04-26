@@ -2,9 +2,9 @@ import json
 import os
 import unittest
 
-from backend.publisher.facebook.fb_publish import FbPageAPI
-from backend.publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
-from backend.publisher.youtube.youtube_uploader import YoutubeUploader, YtMvConfigStatus
+from publisher import FbPageAPI
+from publisher import YtMvConfigSnippet, YoutubeMVInfo
+from publisher import YoutubeUploader, YtMvConfigStatus
 
 test_dir = os.path.dirname(__file__)
 sample_data = os.path.join(test_dir, "sample_data")

@@ -2,7 +2,7 @@ from tempfile import *
 import os
 
 cur_dir = os.path.dirname(__file__)
-temp_dir = '/tmp'
+temp_dir = '/tmp/raven/cache'
 if not os.path.isdir(temp_dir):
     os.mkdir(temp_dir)
 

@@ -3,8 +3,11 @@ import json
 
 import requests
 
-RENDER_ENDPOINT = 'https://subeffect.herokuapp.com'
+# RENDER_ENDPOINT = 'https://ravpublish.herokuapp.com/'
+#
 RENDER_ENDPOINT = 'http://172.17.0.2:5000'
+# RENDER_ENDPOINT = 'http://35.236.11.179:5000'
+
 
 
 def toJSON(objinfo):
