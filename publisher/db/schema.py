@@ -1,4 +1,4 @@
-from backend.publisher.db.helper import connect
+from publisher.db.helper import connect
 
 
 def create_schema():
