@@ -515,7 +515,7 @@ class BackgroundsRender:
             fileinfo = ContentDir.gdrive_file_upload(config_file)
             id = fileinfo['id']
         else:
-            slacklog.info('already have configure file {}'.format(fileconfigname))
+            telelog.info('already have configure file {}'.format(fileconfigname))
             if config_file.fileinfo is None:
                 config_file.fileinfo = ContentDir.gdrive_file_upload(config_file.filepath)
             id = config_file.fileinfo['id']
@@ -543,13 +543,12 @@ class RenderThread(Thread):
 
     def run(self) -> None:
         ret = self.song_render.run()
-        slacklog.info("RELEASE return ```{}``` ".format(ret))
+        slacklog.info("RELEASE ```{}``` ".format(ret))
         self.outputfile = self.song_render.output
         self.youtube_publish()
 
     def youtube_publish(self):
         try:
-            slacklog.info('start upload {}'.format(toJSON(self.song_render.songapi.song)))
             upload_mvfile = self.outputfile.get()
             songinfo = self.song_render.songapi.song
             handler = YoutubeUploader(self.channel)
@@ -557,9 +556,7 @@ class RenderThread(Thread):
             snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
                                                                                songinfo))
             resp = handler.upload_video(upload_mvfile, snippet, status)
-            print(resp)
         except Exception as exp:
-            slacklog.error("error when publish video {}".format(exp))
             raise exp
 
 
@@ -585,7 +582,6 @@ class RenderThreadQueue(Thread):
     def add(self, renderreq):
         self.lock.acquire()
         self.renderqueue.append(renderreq)
-        print(len(self.renderqueue))
         self.lock.release()
         self.set_notify()
 
@@ -597,13 +593,13 @@ class RenderThreadQueue(Thread):
                     self.lock.acquire()
                     renderreq = self.renderqueue.pop()
                     self.lock.release()
-                    slacklog.info('render thread start')
+                    telelog.info('render thread start')
                     renderreq: RenderThread
                     renderreq.start()
                     renderreq.join()
                     clean_up('/tmp/raven/cache')
                     clean_up('/tmp/raven/content')
-                    slacklog.info('render thread complete')
+                    telelog.info('render thread complete')
                 except Exception as exp:
                     slacklog.error(exp)
             time.sleep(2)

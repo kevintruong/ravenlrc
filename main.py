@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 import flask
 from flask import abort, Request
-from flask import jsonify
-
-
-# app = Flask(__name__)
 
 
 def error_msg_handle(exp):
-    import traceback
-    from backend.yclogger import telelog
-    tracebackmsg = traceback.format_exc()
-    telelog.error("{}".format(exp) + '\n' + '```{}```'.format(tracebackmsg))
+    from backend.yclogger import stacklogger
+    tracebackmsg = stacklogger.format(exp)
+    from backend.yclogger import slacklog
+    slacklog.error("{}".format(exp) + '\n' + '```{}```'.format(tracebackmsg))
     return str({'status': 'error',
                 'message': "{}".format(exp),
                 'traceback': "{}".format(tracebackmsg)
@@ -31,7 +27,6 @@ def songcrawler(request):
         from crawler.cmder import CrawlCmder
         from backend.type import Cmder
         url = request.args.get('url')
-        telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
         songinfo = cmder.run()
         response = flask.jsonify(songinfo)
@@ -102,7 +97,6 @@ def render(request: Request):
     try:
         import json
         from render.engine import BackgroundsRender
-        from backend.yclogger import slacklog
         from backend.yclogger import telelog
         from handler import handler_render
 
@@ -123,8 +117,9 @@ def render(request: Request):
             'Access-Control-Allow-Origin': '*'
         }
         body = request.get_json()
-        slacklog.debug(body)
+        telelog.debug(body)
         retval = handler_render(body)
+        telelog.debug(retval)
         response = flask.jsonify(retval)
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -163,10 +158,9 @@ def publish(request: Request):
             return '', 204, headers
 
         from Api.publish import publish_vid
-        from backend.yclogger import slacklog
-        # Set CORS headers for the main request
+        from backend.yclogger import telelog
         body = request.get_json()
-        slacklog.info(body)
+        telelog.info(body)
         return publish_vid(body)
     except Exception as exp:
         return error_msg_handle(exp), 404, headers

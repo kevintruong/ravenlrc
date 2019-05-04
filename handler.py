@@ -26,9 +26,7 @@ def handler_render(body):
     :return:
     """
     from render.engine import BackgroundsRender
-    from backend.yclogger import slacklog
     # Set CORS headers for the main request
-    slacklog.info(body)
     song_render = BackgroundsRender(body)
     retval = song_render.run()
     retval['id'] = song_render.config_id
@@ -59,7 +57,6 @@ def handler_publish(body):
         RenderThreadQueue.get_renderqueue().add(song_render)
         return {'status', 'Render Req Added'}
     except Exception as exp:
-        print(exp)
         raise exp
 
 
@@ -67,15 +64,17 @@ def handler_getcolorscheme(fileid):
     from backend.storage.gdrive import GDriveMnger
     from backend.colorz.colorz import colorz
     from backend.colorz.colorz import hexify
-
-    configfile = GDriveMnger(False).download_file(fileid)
-    with open(configfile, 'rb') as fd:
-        color_scheme = colorz(fd)
-    hexcolors = ()
-    for pair in color_scheme:
-        value = tuple(map(hexify, pair))
-        hexcolors += value
-    return {'data': list(hexcolors)}
+    try:
+        configfile = GDriveMnger(False).download_file(fileid)
+        with open(configfile, 'rb') as fd:
+            color_scheme = colorz(fd)
+        hexcolors = ()
+        for pair in color_scheme:
+            value = tuple(map(hexify, pair))
+            hexcolors += value
+        return {'data': list(hexcolors)}
+    except Exception as exp:
+        raise exp
 
 
 import unittest

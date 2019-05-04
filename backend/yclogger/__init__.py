@@ -1,10 +1,7 @@
 import logging.config
-
+import stackprinter as stacklogger
 from pythonjsonlogger import jsonlogger
 from structlog import configure, processors, stdlib, threadlocal
-import logging
-from slack_logger import SlackHandler, SlackFormatter
-import slack_logger
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
@@ -47,7 +44,7 @@ DEFAULT_CONFIGURE = {
             'level': 'INFO',
             'url': 'https://hooks.slack.com/services/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',
             'formatter': 'slack',
-        },
+        }
     },
     'loggers': {
         'telelog': {
@@ -81,3 +78,4 @@ configure(
 )
 telelog = logging.getLogger('telelog')
 slacklog = logging.getLogger('slacklog')
+stacklogger.set_excepthook(style='color')
