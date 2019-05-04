@@ -1,7 +1,6 @@
-import hug
 import traceback
 
-from handler import handler_publish
+import hug
 
 api = hug.API(__name__)
 api.http.add_middleware(hug.middleware.CORSMiddleware(api, max_age=10))
@@ -53,7 +52,12 @@ def song(url):
 @hug.post('/api/video/publish')
 def publish(body):
     try:
-        handler_publish(body)
+        from Api.publish import publish_vid
+        from handler import handler_publish
+        from backend.yclogger import slacklog
+        slacklog.info('RELEASE: {}'.format(body))
+        status = handler_publish(body)
+        return status
     except Exception as exp:
         return error_msg_handle(exp)
     return {'url': 'render started'}

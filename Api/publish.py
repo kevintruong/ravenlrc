@@ -5,9 +5,8 @@ import requests
 
 # RENDER_ENDPOINT = 'https://ravpublish.herokuapp.com/'
 #
-RENDER_ENDPOINT = 'http://172.17.0.2:5000'
-# RENDER_ENDPOINT = 'http://35.236.11.179:5000'
-
+# RENDER_ENDPOINT = 'http://localhost:5000'
+RENDER_ENDPOINT = 'http://35.197.57.162:5000'
 
 
 def toJSON(objinfo):
@@ -17,4 +16,4 @@ def toJSON(objinfo):
 
 def publish_vid(body):
     r = requests.post(RENDER_ENDPOINT + '/api/video/publish', json=body)
-    return r
+    return r.text, r.status_code

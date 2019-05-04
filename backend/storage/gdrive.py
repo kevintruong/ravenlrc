@@ -42,6 +42,11 @@ class GDriveMnger:
     authLock = Lock()
 
     def __init__(self, cachestorage=False):
+        self.iscachedstorage = cachestorage
+        self.reset_authenticate()
+
+    def reset_authenticate(self):
+        cachestorage = self.iscachedstorage
         try:
             GDriveMnger.authLock.acquire()
             if cachestorage:
@@ -66,7 +71,6 @@ class GDriveMnger:
                 flags.noauth_local_webserver = True
                 self.creds = tools.run_flow(flow, store, flags)
             self.service = build('drive', 'v3', http=self.creds.authorize(Http()))
-            # self.rootdir_id = self.viewFile(rootdirname)['id']
         finally:
             GDriveMnger.authLock.release()
 
@@ -89,6 +93,7 @@ class GDriveMnger:
         return None
 
     def viewFile(self, name=None, fid=None):
+        self.reset_authenticate()
 
         """
         view-files: Filter based list of the names and ids of the first 10 files the user has access to
@@ -130,6 +135,7 @@ class GDriveMnger:
         return fid
 
     def get_item_info(self, fid):
+        self.reset_authenticate()
         files = self.service.files().get(fileId=fid,
                                          fields='id,name,webContentLink,modifiedTime,mimeType').execute()
         return files
@@ -139,6 +145,7 @@ class GDriveMnger:
         return request, ""
 
     def download_file(self, fid, output='/tmp/raven/cache'):
+        self.reset_authenticate()
         clone = self.get_item_info(fid)
         fname = clone['name']
         fh = io.BytesIO()
@@ -164,6 +171,7 @@ class GDriveMnger:
 
     #
     def update_file(self, path, fid):
+        self.reset_authenticate()
         fileinfo = FileInfo(filepath=path)
         file_mimeType = self.identify_mimetype(fileinfo.filename)
         media = MediaFileUpload(path, mimetype=file_mimeType)
@@ -174,6 +182,7 @@ class GDriveMnger:
 
     def upload_file(self, path, pid):
         try:
+            self.reset_authenticate()
             fileinfo = FileInfo(filepath=path)
             file = self.viewFile(fileinfo.filename, pid)
             if file:
@@ -201,6 +210,7 @@ class GDriveMnger:
             print('error on upload file to drive {}'.format(exp))
 
     def list_out(self, dirname=None, fid=None, mintype=None):
+        self.reset_authenticate()
         if fid is None:
             dirinfo = self.viewFile(dirname)
             query = "'" + dirinfo['id'] + "' in parents"
@@ -228,6 +238,7 @@ class GDriveMnger:
         return resule
 
     def create_dir(self, cwd, pid, name):
+        self.reset_authenticate()
         file_metadata = {
             'name': name,
             'mimeType': 'application/vnd.google-apps.folder',
@@ -248,6 +259,7 @@ class GDriveMnger:
         return False
 
     def push_content(self, cwd, fid):
+        self.reset_authenticate()
         local_lis = os.listdir(cwd)
         for item in local_lis:
             item_path = os.path.join(cwd, item)
@@ -318,5 +330,3 @@ class Test_GoogleFiles(unittest.TestCase):
         all_files = self.gdriver.list_out('storage', id)
         print(all_files)
 
-# GDriveStorage = GDriveMnger.get_instance(False)
-# GdriveCacheStorage = GDriveMnger.get_instance(True)

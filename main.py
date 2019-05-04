@@ -43,6 +43,46 @@ def songcrawler(request):
     pass
 
 
+def colorscheme(request):
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true'
+    }
+    if request.method != 'GET':
+        return abort(405)
+    try:
+        from handler import handler_getcolorscheme
+        fileid = request.args.get('id')
+        color_scheme = handler_getcolorscheme(fileid)
+        response = flask.jsonify(color_scheme)
+        response.headers.set('Access-Control-Allow-Origin', '*')
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST')
+        return response
+    except Exception as exp:
+        return error_msg_handle(exp), 404, headers
+    pass
+
+
+# @app.route('/api/songcrawler')
+def bgeffect(request):
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'true'
+    }
+    if request.method != 'GET':
+        return abort(405)
+    try:
+        from handler import handler_getbgeffects
+        ret = handler_getbgeffects()
+        response = flask.jsonify({'data': ret})
+        response.headers.set('Access-Control-Allow-Origin', '*')
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST')
+        return response
+    except Exception as exp:
+        return error_msg_handle(exp), 404, headers
+    pass
+
+
 # @app.route('/api/video/render', methods=['POST'])
 def render(request: Request):
     """Responds to any HTTP request.
@@ -62,7 +102,10 @@ def render(request: Request):
     try:
         import json
         from render.engine import BackgroundsRender
+        from backend.yclogger import slacklog
         from backend.yclogger import telelog
+        from handler import handler_render
+
         # Set CORS headers for the preflight request
         if request.method == 'OPTIONS':
             # Allows GET requests from any origin with the Content-Type
@@ -80,9 +123,8 @@ def render(request: Request):
             'Access-Control-Allow-Origin': '*'
         }
         body = request.get_json()
-        telelog.debug(body)
-        song_render = BackgroundsRender(body)
-        retval = song_render.run()
+        slacklog.debug(body)
+        retval = handler_render(body)
         response = flask.jsonify(retval)
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -125,7 +167,7 @@ def publish(request: Request):
         # Set CORS headers for the main request
         body = request.get_json()
         slacklog.info(body)
-        publish_vid(body)
+        return publish_vid(body)
     except Exception as exp:
         return error_msg_handle(exp), 404, headers
 

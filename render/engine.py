@@ -223,7 +223,7 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         # self.bgEffect.file = self.bgEffect.file.get()
-        cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file.filename,
+        cached_filename = EffectCachedFile.get_cached_filename(self.bgEffect.file.fileinfo['name'],
                                                                attribute=profile)
         effect_cachedfile: ContentFileInfo = EffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
@@ -295,9 +295,7 @@ class RenderLyric(RenderEngine):
                 #                     self.lrcconf,
                 #                     resolution)
                 # cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
-                slacklog.info('lrcconf {}'.format(toJSON(self.lrcconf)))
                 self.create_songeffect_assfile(cachedfilepath)
-                slacklog.info('lrcconf {}'.format(toJSON(self.lrcconf)))
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
@@ -349,12 +347,14 @@ class RenderLyric(RenderEngine):
 class BackgroundRender(RenderEngine):
 
     def get_cached_backgroundimg(self):
+        self.input: ContentFileInfo
         ffmpegcli = FfmpegCli()
-        cached_filename = BgImgCachedFile.get_cached_filename(self.input,
+        cached_filename = BgImgCachedFile.get_cached_filename(self.input.filename,
                                                               attribute=self.rendertype.configure.resolution)
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
+            self.input = self.input.get()
             ffmpegcli.scale_img_by_width_height(self.input,
                                                 self.rendertype.configure.resolution,
                                                 bg_cachedfile)
@@ -385,7 +385,7 @@ class BackgroundRender(RenderEngine):
     def render_background_full_time_length(self):
         self.file: ContentFileInfo
         timeleng = self.rendertype.configure.duration
-        # self.input = self.file.get()  # initial input by background file
+        self.input = self.file  # initial input by background file
         if self.watermask:
             self.output = self.watermask.run(self.input)
             self.input = self.output
@@ -460,7 +460,8 @@ class BackgroundsRender:
             # TODO for now return for the first background render
             url_ret = bgrender_engine.run(bgrender_engine.input)
         self.config_id = self.backup_config(url_ret.fileinfo['id'])
-        return url_ret
+        self.output = url_ret
+        return url_ret.fileinfo
 
     def generate_render_engine(self):
         if 'publish' in self.songapi.rendertype.type:
@@ -543,18 +544,23 @@ class RenderThread(Thread):
     def run(self) -> None:
         ret = self.song_render.run()
         slacklog.info("RELEASE return ```{}``` ".format(ret))
-        self.outputfile = ret
+        self.outputfile = self.song_render.output
         self.youtube_publish()
 
     def youtube_publish(self):
-        upload_mvfile = self.outputfile.get()
-        songinfo = self.song_render.songapi.song
-        handler = YoutubeUploader(self.channel)
-        status = YtMvConfigStatus(3)
-        snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
-                                                                           songinfo))
-        resp = handler.upload_video(upload_mvfile, snippet, status)
-        print(resp)
+        try:
+            slacklog.info('start upload {}'.format(toJSON(self.song_render.songapi.song)))
+            upload_mvfile = self.outputfile.get()
+            songinfo = self.song_render.songapi.song
+            handler = YoutubeUploader(self.channel)
+            status = YtMvConfigStatus(3)
+            snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
+                                                                               songinfo))
+            resp = handler.upload_video(upload_mvfile, snippet, status)
+            print(resp)
+        except Exception as exp:
+            slacklog.error("error when publish video {}".format(exp))
+            raise exp
 
 
 class RenderThreadQueue(Thread):
@@ -584,7 +590,6 @@ class RenderThreadQueue(Thread):
         self.set_notify()
 
     def run(self) -> None:
-        slacklog.info('start render thread queue')
         while True:
             while len(self.renderqueue):
                 try:
