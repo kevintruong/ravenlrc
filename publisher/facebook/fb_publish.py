@@ -109,7 +109,7 @@ class FbPageAPI:
         else:
             return None
 
-    def post(self, image_file=None, message=None, link=None):
+    def post(self, image_file=None, message=None, link=None, video_file=None):
         """
              Method to post the media and text message to your page you manage.
              :param page_access_token: valid api token
@@ -117,6 +117,9 @@ class FbPageAPI:
              :param message: Text
              :return: None
          """
+        import time
+        next_threedays = 3 * 3600 * 24
+        curtimestamp = int(time.time()) + next_threedays
         try:
             print('Posting .....')
             if image_file:
@@ -128,21 +131,52 @@ class FbPageAPI:
                 else:
                     self.graph.post(path=self.pageid + '/photos',
                                     source=image_file)
+            elif video_file:
+                if message:
+                    self.graph.post(path=self.pageid + '/videos',
+                                    description=message,
+                                    published=False,
+                                    scheduled_publish_time=curtimestamp,
+                                    source=video_file)
+                else:
+                    self.graph.post(path=self.pageid + '/videos',
+                                    source=video_file,
+                                    published=False,
+                                    scheduled_publish_time=curtimestamp)
             else:
                 if not message:
                     message = 'Hello everyone!!'
-                self.graph.post(path=self.pageid + '/feed', message=message, link=link)
+                self.graph.post(path=self.pageid + '/feed',
+                                message=message,
+                                link=link,
+                                published=False,
+                                scheduled_publish_time=curtimestamp)
             print('Posted Successfully !! ..')
         except Exception as error:
             print('Posting failed .. ', str(error))
 
     def post_yt_mv_des(self, mvsnippet: dict, mvid: str):
-        tags = ','.join(mvsnippet['tags'])
-        description = mvsnippet['description']
-        link = "https://www.youtube.com/watch?v={}".format(mvid)
-        post = tags + '\n' + description
-        self.post(message=post, link=link)
-        pass
+        try:
+            description = mvsnippet['description']
+            link = "https://www.youtube.com/watch?v={}".format(mvid)
+            post = description
+            self.post(message=post, link=link)
+            pass
+        except Exception as exp:
+            from backend.yclogger import telelog
+            telelog.error('can not post mvid {}'.format(exp))
+
+    def post_video(self, mvsnippet: dict, id, videofile):
+        try:
+            ytlink = 'https://youtu.be/{}'.format(id)
+            description = mvsnippet['description']
+            post = description + '\n' + ytlink
+            with open(videofile, 'rb') as videofd:
+                self.post(message=post, video_file=videofd)
+            pass
+        except Exception as exp:
+            from backend.yclogger import telelog
+            telelog.error('can not post mvid {}'.format(exp))
 
 
 import unittest
@@ -156,6 +190,32 @@ class Test_Facebook_Page_Api(unittest.TestCase):
         try:
             fbpage = FbPageAPI('timshel')
             fbpage.post(message='hello world , #timshel')
+        except Exception as exp:
+            from backend.yclogger import stacklogger
+            from backend.yclogger import slacklog
+            slacklog.error(stacklogger.format(exp))
+
+    def test_youtube_post(self):
+        from publisher.youtube.youtube_uploader import YtMvConfigStatus
+        from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
+        from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
+        from backend.type import SongInfo
+        from crawler.cmder import CrawlCmder
+        url = 'https://www.nhaccuatui.com/bai-hat/khong-la-cua-nhau-sidie-ft-nho.P6NrlAGU7HSs.html'
+
+        crawlerdict = {'url': url}
+        crawler = CrawlCmder(crawlerdict)
+        self.song: SongInfo = SongInfo(json.loads(crawler.run()))
+
+        status = YtMvConfigStatus(3)
+        snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo('timshel',
+                                                                           self.song))
+
+        try:
+            fbpage = FbPageAPI('timshel')
+            fbpage.post_video(mvsnippet=snippet.to_dict(),
+                              id='YzrSI1LlAv4',
+                              videofile='/mnt/Data/Project/ytcreatorservice/test/sample_data/sub_output.mp4')
         except Exception as exp:
             from backend.yclogger import stacklogger
             from backend.yclogger import slacklog

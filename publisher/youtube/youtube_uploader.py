@@ -161,7 +161,6 @@ class YoutubeUploader:
         )
 
         respond = resumable_upload(insert_request)
-        respond = None
         return respond
 
     def get_video_info_by_id(self, id: str):

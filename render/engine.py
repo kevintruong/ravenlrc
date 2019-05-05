@@ -541,11 +541,9 @@ class RenderThread(Thread):
         self.daemon = True
         self.outputfile = None
         self.channel = channel
-        self.fbpage = FbPageAPI(self.channel)
 
     def run(self) -> None:
         ret = self.song_render.run()
-        slacklog.info("RELEASE ```{}``` ".format(ret))
         self.outputfile = self.song_render.output
         self.youtube_publish()
 
@@ -558,9 +556,23 @@ class RenderThread(Thread):
             snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
                                                                                songinfo))
             resp = handler.upload_video(upload_mvfile, snippet, status)
-            self.fbpage.post_yt_mv_des(resp['snippet'], resp['id'])
+            self.facebook_publish(snippet, resp['id'])
+
         except Exception as exp:
             raise exp
+
+    def facebook_publish(self, snippet, id: str):
+        try:
+            telelog.debug('facebook post {}'.format(id))
+            upload_mvfile = self.outputfile.get()
+            fbpage = FbPageAPI(self.channel)
+            fbpage.post_video(snippet.to_dict(),
+                              id,
+                              upload_mvfile)
+        except Exception as exp:
+            from backend.yclogger import stacklogger
+            from backend.yclogger import slacklog
+            slacklog.error(stacklogger.format(exp))
 
 
 class RenderThreadQueue(Thread):

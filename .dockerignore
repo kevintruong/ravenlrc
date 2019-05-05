@@ -12,6 +12,10 @@ backend/tests
 backend/vendor
 test
 venv_37
+venv
+backend/vendor/lyriceffect/venv
+songcrawlers/venv
+subeffect/venv
 .serverless
 node_modules
 **/__pycache__

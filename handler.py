@@ -81,7 +81,7 @@ import unittest
 
 class test_handlers(unittest.TestCase):
     def test_publish(self):
-        info = {'id': '1GIcyOmRA6sc4XqSLHoZ0KRyPMFU_LBxU'}
+        info = {'id': '17xQwC9SwA1i2iEBbRZkVUrvc9QVb18OY'}
         handler_publish(info)
         while True:
             import time
