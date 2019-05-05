@@ -29,6 +29,47 @@ class Font:
         else:
             self.color: int = int(info['color'], 0)
         self.size = int(info['size'])
+        self.name = self.get_font_name()
+
+    def get_fontfile_byname(self):
+        from config.configure import fontsdir
+        import os
+        fontfiles = os.listdir(fontsdir)
+        for file in fontfiles:
+            if self.name in file:
+                return os.path.join(fontsdir, file)
+        raise FileNotFoundError('Not found {} font file'.format(self.name))
+
+    def get_font_name(self):
+        from fontTools import ttLib
+        """Get the short name from the font's names table"""
+        FONT_SPECIFIER_NAME_ID = 4
+        FONT_SPECIFIER_FAMILY_ID = 1
+        name = ""
+        family = ""
+        fontfile = self.get_fontfile_byname()
+        font = ttLib.TTFont(fontfile)
+        for record in font['name'].names:
+            if b'\x00' in record.string:
+                name_str = record.string.decode('utf-16-be')
+            else:
+                name_str = record.string.decode('utf-8')
+            if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
+                name = name_str
+            if name:
+                break
+        return name
+
+
+import unittest
+
+
+class Test_FontClass(unittest.TestCase):
+
+    def test_fontinit(self):
+        font = {'name': 'VL_Cimochi', 'color': '0xc68f8f', 'size': 60}
+        VL_CimochiFont = Font(font)
+        print(VL_CimochiFont.__dict__)
 
 
 class Lyric:
