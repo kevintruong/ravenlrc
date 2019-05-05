@@ -8,9 +8,9 @@ import requests
 from facepy import GraphAPI
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
-AuthenticateFileDir = os.path.join(CurDir, '../../auth')
+AuthenticateFileDir = os.path.join(CurDir, 'db')
 GetTokenScript = os.path.join(CurDir, 'gettoken.php')
-FacebookDb = os.path.join(CurDir, 'pages.json')
+fbpageinfo = os.path.join(AuthenticateFileDir, 'pages.json')
 
 
 def php(script_path, username, password):
@@ -28,13 +28,16 @@ class PageInfo:
 
 class AccInfo:
     def __init__(self, username, password, token=None):
-        self.username = username
-        self.password = password
-        if token:
-            self.token = token
-        else:
-            self.token = self.gettoken()
-        self.pages = []
+        if not os.path.exists(fbpageinfo):
+            self.username = username
+            self.password = password
+            if token:
+                self.token = token
+            else:
+                self.token = self.gettoken()
+            self.pages = []
+            self.collect_pagesinfo()
+            self.toJSON()
 
     def gettoken(self):
         get_token = php(GetTokenScript, "{}".format(self.username),
@@ -54,7 +57,7 @@ class AccInfo:
             self.pages.append(PageInfo(each_page['id'], each_page['name'], each_page['access_token']))
 
     def toJSON(self):
-        with open(FacebookDb, 'w') as fbdb:
+        with open(fbpageinfo, 'w') as fbdb:
             return json.dump(self, fbdb, default=lambda o: o.__dict__,
                              sort_keys=True, indent=2)
 
@@ -63,10 +66,26 @@ class FbPageAPI:
     fbpage_file = os.path.join(AuthenticateFileDir, 'fbpage.json')
 
     def __init__(self, page_name=None):
-        with open(self.fbpage_file, 'r') as fbpage:
-            accountdata = json.load(fbpage)
-        for account in accountdata['account']:
-            accinfo = AccInfo(account['username'], account['password'])
+        if os.path.exists(fbpageinfo):
+            self.authenticate_page(page_name)
+        else:
+            raise FileNotFoundError
+
+    def authenticate_page(self, page_name):
+        with open(fbpageinfo, 'r') as fbpage:
+            page_autth = json.load(fbpage)
+            for each_page in page_autth['pages']:
+                if page_name.lower() in each_page['name'].lower():
+                    self.page_access_token = each_page['token']
+                    self.pageid = each_page['id']
+            self.graph = GraphAPI(self.page_access_token)
+
+    #
+    # def __init__(self, page_name=None):
+    #     with open(self.fbpage_file, 'r') as fbpage:
+    #         accountdata = json.load(fbpage)
+    #     for account in accountdata['account']:
+    #         accinfo = AccInfo(account['username'], account['password'])
 
     def _get_accounts(self, limit=250):
         self.accounts = self.graph.get('me/accounts?limit=' + str(limit))
@@ -83,7 +102,6 @@ class FbPageAPI:
         for data in self.accounts:
             if _page_id == data['id']:
                 _page_access_token = data['access_token']
-                # print('access_token: ', _page_access_token)
                 print('')
                 print('Page id: ', data['id'])
                 print('Page Name: ', data['name'])
@@ -131,12 +149,17 @@ import unittest
 
 
 class Test_Facebook_Page_Api(unittest.TestCase):
+    def setUp(self) -> None:
+        self.acc = AccInfo(r'vu_spk08117@yahoo.com', r'maidongvu')
 
     def test_page_post(self):
-        fbpage = FbPageAPI('timshel')
-        # data = fbpage._get_accounts()
-        # print(data)
-        # fbpage.post(message='hello world , #timshel')
+        try:
+            fbpage = FbPageAPI('timshel')
+            fbpage.post(message='hello world , #timshel')
+        except Exception as exp:
+            from backend.yclogger import stacklogger
+            from backend.yclogger import slacklog
+            slacklog.error(stacklogger.format(exp))
 
 
 class Test_Account_Info(unittest.TestCase):

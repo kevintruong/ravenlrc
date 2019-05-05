@@ -14,9 +14,8 @@ def handler_getbgeffects():
         for item in allfileitems:
             filename: str = item['name']
             var = filename.split('.')[0]
-            print(var)
             effectfiles.append(var)
-    return effectfiles
+    return sorted(effectfiles)
 
 
 def handler_render(body):

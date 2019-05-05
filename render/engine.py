@@ -7,6 +7,7 @@ from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename, clean_up
 from backend.yclogger import telelog, slacklog
+from publisher.facebook.fb_publish import FbPageAPI
 from render.cache import *
 from render.ffmpegcli import FfmpegCli, FFmpegProfile
 from render.parser import SongApi
@@ -540,6 +541,7 @@ class RenderThread(Thread):
         self.daemon = True
         self.outputfile = None
         self.channel = channel
+        self.fbpage = FbPageAPI(self.channel)
 
     def run(self) -> None:
         ret = self.song_render.run()
@@ -556,6 +558,7 @@ class RenderThread(Thread):
             snippet = YtMvConfigSnippet.create_snippet_from_info(YoutubeMVInfo(self.channel,
                                                                                songinfo))
             resp = handler.upload_video(upload_mvfile, snippet, status)
+            self.fbpage.post_yt_mv_des(resp['snippet'], resp['id'])
         except Exception as exp:
             raise exp
 
