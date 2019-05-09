@@ -14,6 +14,7 @@ class SongApi:
         self.watermask = None
         self.spectrum = None
         self.lyric = None
+        self.autotiming = None
         for keyvalue in jsondata.keys():
             if keyvalue == 'song_url':
                 self.song_url = jsondata[keyvalue]
@@ -27,6 +28,8 @@ class SongApi:
                 self.rendertype = RenderType(jsondata[keyvalue])
             if keyvalue == 'song_effect':
                 self.song_effect = PyJSON(jsondata[keyvalue])
+            if keyvalue == 'autotiming':
+                self.autotiming = jsondata[keyvalue]
         self.get_song_info_from_url()
 
     def toJSON(self):
@@ -39,7 +42,6 @@ class SongApi:
             from crawler.cmder import CrawlCmder
             crawler = CrawlCmder(crawlerdict)
             self.song: SongInfo = SongInfo(json.loads(crawler.run()))
-
 
     def get_list_background(self, info: list):
         backgrounds = []

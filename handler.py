@@ -24,9 +24,9 @@ def handler_render(body):
     :param body: json data (SongAPI)
     :return:
     """
-    from render.engine import BackgroundsRender
+    from render.engine import MvSongRender
     # Set CORS headers for the main request
-    song_render = BackgroundsRender(body)
+    song_render = MvSongRender(body)
     retval = song_render.run()
     retval['id'] = song_render.config_id
     return retval

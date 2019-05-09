@@ -96,7 +96,7 @@ def render(request: Request):
         return abort(405)
     try:
         import json
-        from render.engine import BackgroundsRender
+        from render.engine import MvSongRender
         from backend.yclogger import telelog
         from handler import handler_render
 

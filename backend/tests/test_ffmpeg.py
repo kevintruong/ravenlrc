@@ -115,7 +115,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_add_affect_to_video(self):
         output = os.path.join(test_data_dir, ".mp4")
-        self.ffmpeg.add_affect_to_video(sub_media, bg_effect, output)
+        self.ffmpeg.add_effect_to_bg(sub_media, bg_effect, output)
         inputLeng = self.ffmpeg.get_media_time_length(input_mp4_file)
         outputLeng = self.ffmpeg.get_media_time_length(output)
         self.assertEqual(outputLeng, inputLeng)
@@ -158,7 +158,7 @@ class TestFFmpegCli(unittest.TestCase):
         self.ffmpeg.adding_sub_to_video(ass_out, bg_mv, output)
         # add audio to MV
         self.ffmpeg.mux_audio_to_video(output, audiofile, final_mv)
-        self.ffmpeg.add_affect_to_video(final_mv, bg_effect, 'test.mov')
+        self.ffmpeg.add_effect_to_bg(final_mv, bg_effect, 'test.mov')
         final_length = self.ffmpeg.get_media_time_length('test.mp4')
         self.assertEqual(final_length, audio_length)
 

@@ -263,11 +263,9 @@ class WaterMask(PyJSON):
             self.file = ContentDir.verify_file(ContentDir.WATERMASK_DIR, self.file)
 
 
-class MusicVideoKind(IntEnum):
-    ALBUM_SINGLE_BACKGROUND = 0
-    ALBUM_MULTI_BACKGROUND = 1
-    MV_MULTI_BACKGROUND = 2
-    MV_SINGLE_BACKGROUND = 3
+class SongMvType(IntEnum):
+    SONGMV_MULTI_BACKGROUND = 2
+    SONGMV_SINGLE_BACKGROUND = 3
 
 
 class Background:

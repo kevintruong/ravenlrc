@@ -1,26 +1,24 @@
-import time
 from abc import *
-from threading import Thread, Event
 
-from Api.songeffect import generate_songeffect_for_lrc, toJSON
+import time
+from threading import Thread, Event
+from Api.songeffect import generate_songeffect_for_lrc
+
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import generate_mv_filename, clean_up
 from backend.yclogger import telelog, slacklog
-from publisher.facebook.fb_publish import FbPageAPI
+
 from render.cache import *
 from render.ffmpegcli import FfmpegCli, FFmpegProfile
 from render.parser import SongApi
 from render.type import *
 
-from publisher.youtube.youtube_uploader import YoutubeUploader
-from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
-from publisher.youtube.youtube_uploader import YtMvConfigStatus
+from publisher.facebook.fb_publish import FbPageAPI
 from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
-
-
-# from subeffect.asseditor import create_ass_from_lrc
-# from crawler.nct import SongInfo
+from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
+from publisher.youtube.youtube_uploader import YoutubeUploader
+from publisher.youtube.youtube_uploader import YtMvConfigStatus
 
 
 class RenderEngine(ABC):
@@ -63,6 +61,28 @@ class RenderSong(RenderEngine):
     def __init__(self, songinfo: SongInfo, rendertype=None):
         super().__init__(rendertype)
         self.songinfo = songinfo
+
+
+class RenderTiming:
+    def __init__(self, timing):
+        self.start = int(timing['start'])
+        self.duration = int(timing['duration'])
+        self.caculate_timming()
+
+    @classmethod
+    def format_timing(cls, ms):
+        remainms = ms % 1000
+        s = int(ms / 1000)
+        m, s = divmod(s, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        return h, m, s, remainms
+
+    def caculate_timming(self):
+        curstartime = self.format_timing(self.start)
+        duration = self.format_timing(self.duration)
+        self.start = f'{curstartime[0]}:{curstartime[1]}:{curstartime[2]}.{curstartime[3]}'
+        self.duration = f"{duration[0]}:{duration[1]}:{duration[2]}.{duration[3]}"
 
 
 class RenderSpectrum(RenderEngine):
@@ -180,42 +200,43 @@ class RenderBgEffect(RenderEngine):
         profile = self.rendertype.configure.resolution
         timelength = self.rendertype.configure.duration
 
-        self.bgeffectfile = self.init_bgeffect_by_profile(profile)
-        #
-        # effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
-        #                                                    timelength)
-
+        self.bgeffectfile = self.init_bgeffect_by_profile(profile)  # scale to render resolution
         effectfile_name = EffectCachedFile.get_cached_filename(self.bgeffectfile.filename,
-                                                               attribute=self.rendertype,
+                                                               attribute=[self.rendertype,
+                                                                          self.timing],
                                                                extention='.mp4')
 
         cached_filename = BgEffectCachedFile.get_cached_filename(src.filename,
                                                                  attribute=[effectfile_name,
-                                                                            self.bgEffect.opacity])
-
+                                                                            self.bgEffect.opacity],
+                                                                 extention='.mp4'
+                                                                 )
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
-
         if effect_cachedfile is None:
             ffmpegcli = FfmpegCli()
-
-            effect_file = self.init_bgeffect_video_with_length(self.bgeffectfile,
-                                                               timelength)
-
             effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
-            effect_file = effect_file.get()
+            effect_file = self.bgeffectfile.get()
+            effect_timelength = FfmpegCli().get_media_time_length(effect_file)
             src = src.get()
-            ffmpegcli.add_affect_to_video(effect_file,
-                                          src,
-                                          effect_cachedfile,
-                                          self.bgEffect.opacity)
+            ffmpegcli.add_effect_to_bg(effect_file,
+                                       src,
+                                       effect_cachedfile,
+                                       self.bgEffect.opacity,
+                                       effect_timelength)
             CachedContentDir.gdrive_file_upload(effect_cachedfile)
             effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+
+            effect_cachedfile = self.init_bgeffect_video_with_length(effect_cachedfile,
+                                                                     timelength)
         return effect_cachedfile
 
-    def __init__(self, bgeffect: BgEffect, rendertype=None):
+    def __init__(self, bgeffect: BgEffect,
+                 rendertype=None,
+                 timing=None):
         super().__init__(rendertype)
         self.bgEffect = bgeffect
         self.bgeffectfile = None
+        self.timing = timing
 
     def init_bgeffect_by_profile(self, profile):
         '''
@@ -246,7 +267,8 @@ class RenderBgEffect(RenderEngine):
         :return:
         '''
         cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile.filename,
-                                                               attribute=self.rendertype,
+                                                               attribute=[self.rendertype,
+                                                                          self.timing],
                                                                extention='.mp4')
         effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
@@ -254,9 +276,10 @@ class RenderBgEffect(RenderEngine):
             effectprofilefile = effectprofilefile.get()
             effectmv_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
             ffmpegcli.create_background_affect_with_length(effectprofilefile,
-                                                           length,
-                                                           effectmv_cachedfile)
-            # CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+                                                           effectmv_cachedfile,
+                                                           length
+                                                           )
+            CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
             effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         return effectmv_cachedfile
 
@@ -270,7 +293,8 @@ class RenderLyric(RenderEngine):
                  lyric: Lyric,
                  lyricfile=None,
                  songeffect=None,
-                 rendertype=None):
+                 rendertype=None,
+                 timing=None):
         super().__init__(rendertype)
         self.lyric = lyric
         self.lrcconf = lrcconf
@@ -278,6 +302,7 @@ class RenderLyric(RenderEngine):
         if songeffect:
             self.songeffect = songeffect
         self.assfile = self.generate_lyric_effect_file()
+        self.timing = timing
 
     def generate_lyric_effect_file(self):
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
@@ -305,7 +330,8 @@ class RenderLyric(RenderEngine):
         cached_filename = LyricCachedFile.get_cached_filename(src.filename,
                                                               attribute=[self.assfile.filename,
                                                                          self.lrcconf,
-                                                                         self.rendertype])
+                                                                         self.rendertype,
+                                                                         self.timing])
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
@@ -315,7 +341,8 @@ class RenderLyric(RenderEngine):
             ffmpegcli.adding_sub_to_video(assfile,
                                           src,
                                           cachedfilepath,
-                                          timelength=self.rendertype.configure.duration)
+                                          timelength=self.rendertype.configure.duration,
+                                          timing=self.timing)
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
@@ -345,13 +372,74 @@ class RenderLyric(RenderEngine):
         return ass_file
 
 
-class BackgroundRender(RenderEngine):
+class SongRenderEngine(ABC):
+
+    def __init__(self, rendertype=None):
+        if rendertype is None:
+            self.rendertype = RenderType()
+        else:
+            self.rendertype = rendertype
+        pass
+        pass
+
+    @abstractmethod
+    def run(self, **kwargs):
+        """
+        abstract function to run song render
+        :param kwargs:
+        :return: FileInfo object (google drive file object)
+        """
+        pass
+
+
+class BackgroundItemRender(RenderEngine):
+
+    def __init__(self,
+                 songapi: SongApi,
+                 background_item: Background):
+        super().__init__()
+        self.songapi = songapi
+        self.output = None
+        self.input = None
+        self.watermask = None
+        self.spectrum = None
+        self.effect = None
+        self.lyric = None
+        self.title = None
+        self.timing = None
+        if background_item.timing:
+            self.timing = background_item.timing
+        if self.songapi.rendertype:
+            self.rendertype = self.songapi.rendertype
+        if background_item.file:
+            self.file = background_item.file
+        if background_item.effect:
+            self.effect = RenderBgEffect(background_item.effect,
+                                         self.rendertype)
+        if background_item.title:
+            self.title = RenderTitle(background_item.title,
+                                     rendertype=self.rendertype)
+        if background_item.lyric:
+            lyricfile = self.songapi.song.lyric
+            self.lyric = RenderLyric(background_item.lyric,
+                                     self.songapi.lyric,
+                                     lyricfile,
+                                     self.songapi.song_effect,
+                                     self.rendertype,
+                                     self.timing)
+        if background_item.spectrum:
+            self.spectrum = RenderSpectrum(background_item.spectrum,
+                                           self.rendertype)
+        if background_item.watermask:
+            self.watermask = RenderWaterMask(background_item.watermask,
+                                             self.rendertype)
 
     def get_cached_backgroundimg(self):
         self.input: ContentFileInfo
         ffmpegcli = FfmpegCli()
         cached_filename = BgImgCachedFile.get_cached_filename(self.input.filename,
-                                                              attribute=self.rendertype.configure.resolution)
+                                                              attribute=self.rendertype.configure.resolution,
+                                                              extension='.jpg')
         bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
         if bg_cachedfile is None:
             bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
@@ -380,11 +468,7 @@ class BackgroundRender(RenderEngine):
             bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         return bgvid_cachedfile
 
-    def render_background_based_timming(self):
-        print('not support yet')
-
-    def render_background_full_time_length(self):
-        self.file: ContentFileInfo
+    def run(self, src: str, **kwargs):
         timeleng = self.rendertype.configure.duration
         self.input = self.file  # initial input by background file
         if self.watermask:
@@ -397,110 +481,190 @@ class BackgroundRender(RenderEngine):
             self.input = self.get_cached_backgroundimg()
             self.output = self.get_cached_bgvid(self.input, timeleng)
             self.input = self.output
-        if self.effect:
-            self.output = self.effect.run(self.input)
-            self.input = self.output
+            if self.effect:
+                self.output = self.effect.run(self.input)
+                self.input = self.output
         if self.spectrum:
             self.output = self.spectrum.run(self.input)
             self.input = self.output
         if self.lyric:
             self.output = self.lyric.run(self.input)
-            self.input = self.output
+        return self.output
+
+
+class SongMvSingleBackgroundRender(SongRenderEngine):
+
+    def get_cached_backgroundimg(self):
+        self.input: ContentFileInfo
+        ffmpegcli = FfmpegCli()
+        cached_filename = BgImgCachedFile.get_cached_filename(self.input.filename,
+                                                              attribute=self.rendertype.configure.resolution,
+                                                              extension='.jpg')
+        bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        if bg_cachedfile is None:
+            bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
+            self.input = self.input.get()
+            ffmpegcli.scale_img_by_width_height(self.input,
+                                                self.rendertype.configure.resolution,
+                                                bg_cachedfile)
+
+            CachedContentDir.gdrive_file_upload(bg_cachedfile)
+            bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        return bg_cachedfile
+
+    def get_cached_bgvid(self, bgfile, time_length):
+        cached_filename = BgVidCachedFile.get_cached_filename(bgfile.filename,
+                                                              attribute=self.rendertype.configure,
+                                                              extension='.mp4')
+        bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        if bgvid_cachedfile is None:
+            ffmpegcli = FfmpegCli()
+            bgfile = bgfile.get()
+            bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli.create_media_file_from_img(input_img=bgfile,
+                                                 time_length=time_length,
+                                                 output_video=bgvid_cachedfile)
+            CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
+            bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        return bgvid_cachedfile
+
+    def run(self):
+        output = self.bgitemRender.run(self.bgitemRender.file)
         if self.song:
+            self.input = output
             self.output = self.song.run(self.input)
         return self.output
 
-    def init_background_render(self):
-        return self.get_cached_backgroundimg()
-
-    def run(self, src: str, **kwargs):
-        self.detect_rendertype()
-        # if self.timming:
-        #     TODO need to implement for the new feature
-        # pass
-        # else:
-        return self.render_background_full_time_length()
-        pass
-
-    def __init__(self):
+    def __init__(self, mvsongreq):
         super().__init__()
-        self.profile = None
-        self.song: RenderSong = None
-        self.file = None
-        self.timming: list = None
-        self.effect: RenderBgEffect = None
-        self.title: RenderTitle = None
-        self.watermask: RenderWaterMask = None
-        self.lyric: RenderLyric = None
-        self.spectrum: RenderSpectrum = None
+        self.songapi: SongApi = mvsongreq
+        self.bgitemRender = BackgroundItemRender(self.songapi,
+                                                 self.songapi.backgrounds[0])
         self.redertype: RenderType = None
         self.input = None
         self.output = None
-        self.finalfile = None
+        self.song: RenderSong = None
+        self.init_render_engine()
 
-    def detect_rendertype(self):
-        filename = generate_mv_filename(self.song.songinfo.title)
-        if self.rendertype:
-            if self.rendertype.type == RenderTypeCode.BUILD_PREVIEW.value:
-                self.finalfile = os.path.join(ContentDir.MVPREV_DIR, filename)
-                self.profile = FFmpegProfile.PROFILE_MEDIUM.value
-            else:
-                self.profile = FFmpegProfile.PROFILE_FULLHD
-                self.output = os.path.join(ContentDir.MVRELEASE_DIR, filename)
-        else:
-            self.profile = FFmpegProfile.PROFILE_MEDIUM.value
-
-
-class BackgroundsRender:
-
-    def run(self):
-        self.generate_render_engine()
-        bgrender_engine: BackgroundRender
-        url_ret = ""
-        for bgrender_engine in self.bgrenderengine:
-            # TODO for now return for the first background render
-            url_ret = bgrender_engine.run(bgrender_engine.input)
-        self.config_id = self.backup_config(url_ret.fileinfo['id'])
-        self.output = url_ret
-        return url_ret.fileinfo
-
-    def generate_render_engine(self):
+    def init_render_engine(self):
         if 'publish' in self.songapi.rendertype.type:
             songfile = GDriveMnger(True).download_file(self.songapi.song.songfile)
             self.songapi.rendertype.configure.duration = FfmpegCli().get_media_time_length(songfile)
             pass
-        for index, background_item in enumerate(self.songapi.backgrounds):
-            bgRender = BackgroundRender()
-            if self.songapi.rendertype:
-                bgRender.rendertype = self.songapi.rendertype
-            if background_item.file:
-                bgRender.file = background_item.file
-            if background_item.effect:
-                bgRender.effect = RenderBgEffect(background_item.effect,
-                                                 bgRender.rendertype)
-            if background_item.title:
-                bgRender.title = RenderTitle(background_item.title, rendertype=bgRender.rendertype)
-            if background_item.lyric:
-                lyricfile = self.songapi.song.lyric
-                bgRender.lyric = RenderLyric(background_item.lyric,
-                                             self.songapi.lyric,
-                                             lyricfile,
-                                             self.songapi.song_effect,
-                                             bgRender.rendertype)
-            if background_item.spectrum:
-                bgRender.spectrum = RenderSpectrum(background_item.spectrum,
-                                                   bgRender.rendertype)
-            if background_item.watermask:
-                bgRender.watermask = RenderWaterMask(background_item.watermask,
-                                                     bgRender.rendertype)
-            if self.songapi.song:
-                bgRender.song = RenderSong(self.songapi.song, bgRender.rendertype)
+        if self.songapi.rendertype:
+            self.rendertype = self.songapi.rendertype
+        if self.songapi.song:
+            self.song = RenderSong(self.songapi.song, self.rendertype)
 
-            if background_item.timing:
-                print('not support yet')
 
-            self.bgrenderengine.append(bgRender)
+class SongMvMultiBackground(SongRenderEngine):
+
+    def __init__(self, rendersongreq: SongApi):
+        super().__init__()
+        self.songapi: SongApi = rendersongreq
+        self.timinglist = []
+
+    def generate_timing_list_by_option(self):
+        from asseditor import load_ass_from_lrc
+        lrcfile = ContentDir.GDriveStorage.download_file(self.songapi.song.lyric)
+        songfile = ContentDir.GDriveStorage.download_file(self.songapi.song.songfile)
+        songlength = FfmpegCli().get_media_time_length(songfile)
+
+        asscontext = load_ass_from_lrc(lrcfile)
+        ass_line_count = len(asscontext.events)
+        bgitems_count = len(self.songapi.backgrounds)
+        averave_len = int(ass_line_count / bgitems_count) + (ass_line_count % bgitems_count > 0.6)
+
+        itemindex = list(range(0, ass_line_count, averave_len))
+        itemindex.append(ass_line_count)
+
+        for index, value in enumerate(itemindex):
+            from pysubs2 import SSAEvent
+            cur_assevent: SSAEvent = asscontext.events[itemindex[index]]
+            end_assevent: SSAEvent = asscontext.events[itemindex[index + 1] - 1]
+            timing_start = cur_assevent.start
+            timing_end = end_assevent.end
+            if index == 0:  # start => 0
+                timing_start = 0
+
+            if index == len(itemindex) - 2:  # endtiming -> songlength
+                timing_end = songlength * 1000  # seconds => miliseconds
+            timing = {
+                'start': timing_start,
+                'duration': int(timing_end - timing_start)
+            }
+            self.timinglist.append(RenderTiming(timing))
+            if index == len(itemindex) - 2:  # endtiming -> songlength
+                break
+
+    def render_without_timing(self):
+        bgoutputs = []
+        if self.songapi.autotiming is None:
+            self.songapi.autotiming = 1
+        self.generate_timing_list_by_option()
+        for index, eachbgitem in enumerate(self.songapi.backgrounds):
+            eachbgitem.timing = self.timinglist[index]
+            bgrender = BackgroundItemRender(self.songapi, eachbgitem)
+            bgoutput = bgrender.run(bgrender.file)
+            bgoutputs.append(bgoutput)
+
+        for output in bgoutputs:
+            print("{}".format(output.__dict__))
+
+        # TODO with each option of autotiming =>
+        #  generate timing attribute for each background object
+        # from `songapi` => get lrc => ass => loop in dialog event (list)
+
+        pass
+
+    def render_with_timing(self):
+        pass
+
+    def is_exist_timing(self):
+        return False
+        pass
+
+    def generate_render_engine(self):
+        has_timing = self.is_exist_timing()
+        if has_timing:
             pass
+        else:
+            pass
+
+    def run(self):
+        if self.is_exist_timing():
+            return self.render_with_timing()
+        else:
+            return self.render_without_timing()
+        pass
+
+
+class MvSongRender:
+    def run(self):
+        # TODO analyze render request => return render type:
+        render: SongRenderEngine = self.generate_render_engine()
+        url_ret = render.run()
+        self.config_id = self.backup_config(url_ret.fileinfo['id'])
+        self.output = url_ret
+        return url_ret.fileinfo
+
+    def get_kind_render_req(self):
+        numof_bgs = len(self.songapi.backgrounds)
+        if numof_bgs == 1:
+            return SongMvType.SONGMV_SINGLE_BACKGROUND
+        else:
+            return SongMvType.SONGMV_MULTI_BACKGROUND
+        pass
+
+    def generate_render_engine(self):
+        kindrender = self.get_kind_render_req()
+        kindrender = SongMvType.SONGMV_SINGLE_BACKGROUND
+        if kindrender == SongMvType.SONGMV_MULTI_BACKGROUND:
+            print("render multi-backgorund MV ")
+            return SongMvMultiBackground(self.songapi)
+        if kindrender == SongMvType.SONGMV_SINGLE_BACKGROUND:
+            print('Render single background MV ')
+            return SongMvSingleBackgroundRender(self.songapi)
 
     def backup_config(self, id: str):
         fileconfigname = '{}.json'.format(id)
@@ -527,6 +691,7 @@ class BackgroundsRender:
         self.bgrenderengine = []
         self.songapi = SongApi(renderdata)
         self.config_id = None
+        self.output = None
 
     def set_publish_typte(self, typerender):
         self.songapi.rendertype = RenderType(typerender)
@@ -536,7 +701,7 @@ class RenderThread(Thread):
     def __init__(self, jsondata, typerender, channel='timshel'):
         super().__init__()
         self.config = jsondata
-        self.song_render = BackgroundsRender(jsondata)
+        self.song_render = MvSongRender(jsondata)
         self.song_render.set_publish_typte(typerender)
         self.daemon = True
         self.outputfile = None
@@ -630,3 +795,22 @@ class Test_ThreadRenderQueue(unittest.TestCase):
     def test_renderthreadqueue_run(self):
         threadqueue = RenderThreadQueue.get_renderqueue()
         threadqueue.join()
+
+
+class Test_RenderTiming(unittest.TestCase):
+    def test_caculate_date(self):
+        values = RenderTiming.format_timing(60050)
+        print(values)
+
+    def test_rendertiming(self):
+        timing = RenderTiming({
+            "start": "50000",
+            "end": "40000"
+        })
+        print(timing.__dict__)
+        leng_value = 50
+        reference_len = 5
+        averave_len = int(leng_value / reference_len) + (leng_value % reference_len > 0.6)
+        itemindex = list(range(0, leng_value, averave_len))
+        itemindex.append(leng_value)
+        print(itemindex)

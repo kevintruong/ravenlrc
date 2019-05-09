@@ -28,7 +28,6 @@ class Coordinate(object):
 
     def __init__(self, x, y, w=0, h=0):
         """
-
         :param x:
         :param y:
         :param w:
@@ -67,9 +66,9 @@ class FfmpegCli(object):
             self.ffmpeg_cli.append('-hwaccel')
             self.ffmpeg_cli.append('dxva2')
         elif curPlatform == "Linux":
-            pass
-            # self.ffmpeg_cli.append('-hwaccel')
-            # self.ffmpeg_cli.append('vdpau')
+            # pass
+            self.ffmpeg_cli.append('-hwaccel')
+            self.ffmpeg_cli.append('vaapi')
         else:
             logger.debug('not support yet')
 
@@ -218,7 +217,7 @@ class FfmpegCli(object):
             os.remove(output_video)
             raise exp
 
-    def create_background_affect_with_length(self, input_bg, time_length: int, output):
+    def create_background_affect_with_length(self, input_bg, output, time_length: int, timing=None):
         '''
         the function will create an output backgound effect from input backround image
         render -re -stream_loop -1 -i ${input_bgVid} -c copy -y -t ${input_length} ${output_vid}
@@ -228,32 +227,28 @@ class FfmpegCli(object):
         :return:
         '''
         # loopcount = int(time_length / bg_timeleng) + 1
+        from render.engine import RenderTiming
+        timing: RenderTiming
         try:
             FfmpegCli.check_file_exist(input_bg)
-            (
-                ffmpeg.input(input_bg, stream_loop=-1)
-                    .output(output, t=time_length, framerate=25, c='copy')
-                    .run(cmd=ffmpegpath, overwrite_output=True)
-            )
+            if timing:
+                return (
+                    ffmpeg.input(input_bg, stream_loop=-1)
+                        .output(output, t=timing.duration, framerate=25, c='copy')
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
+                pass
+            else:
+                return (
+                    ffmpeg.input(input_bg, stream_loop=-1)
+                        .output(output, t=time_length, framerate=25, c='copy')
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
         except Exception as exp:
             os.remove(output)
             raise exp
         finally:
             os.remove(input_bg)
-        # self._ffmpeg_input_fill_cmd('-re')
-        # self._ffmpeg_input_fill_cmd('-stream_loop')
-        # self._ffmpeg_input_fill_cmd('{}'.format(-1))
-        # self._ffmpeg_input(input_bg)
-        # self._ffmpeg_input_fill_cmd('-t')
-        # self._ffmpeg_input_fill_cmd('{}'.format(time_length))
-        # self._ffmpeg_input_fill_cmd('-c')
-        # self._ffmpeg_input_fill_cmd('copy')
-        # self.ffmpeg_cli_run(self.ffmpeg_cli, output_bg)
-
-        # ffmpeg_cmd = ["render", "-y", "-re", "-stream_loop", "-1", "-i", "{}".format(input_bg), "-t",
-        #               "{}".format(time_length)]
-        #
-        # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)l l l l
 
     def scale_effect_vid(self, input_effect, resolution, output):
         """
@@ -351,7 +346,7 @@ class FfmpegCli(object):
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)
 
-    def adding_sub_to_video(self, input_sub: str, input_video: str, output_vid: str, timelength=90):
+    def adding_sub_to_video(self, input_sub: str, input_video: str, output_vid: str, timelength=90, timing=None):
         """
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
@@ -366,29 +361,39 @@ class FfmpegCli(object):
         :param output_vid:
         :return:
         """
+        from render.engine import RenderTiming
+        timing: RenderTiming
         try:
-
             FfmpegCli.check_file_exist(input_sub)
             FfmpegCli.check_file_exist(input_video)
             input = ffmpeg.input(input_video)
+
             subvid_stream = input['v'].filter('subtitles',
                                               input_sub,
                                               fontsdir=fontsdir)
-            (
-                ffmpeg
-                    .output(subvid_stream, output_vid, t=timelength)
-                    .global_args('-shortest')
-                    .global_args('-threads', '{}'.format(cpucount))
-                    .global_args("-preset", "ultrafast")
-                    .run(cmd=ffmpegpath, overwrite_output=True)
-            )
+            if timing:
+                (
+                    ffmpeg.output(subvid_stream, output_vid, ss=timing.start, t=timing.duration)
+                        .global_args('-shortest')
+                        .global_args('-threads', '{}'.format(cpucount))
+                        .global_args("-preset", "ultrafast")
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
+            else:
+                (
+                    ffmpeg.output(subvid_stream, output_vid, t=timelength)
+                        .global_args('-shortest')
+                        .global_args('-threads', '{}'.format(cpucount))
+                        .global_args("-preset", "ultrafast")
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
         except Exception as exp:
             os.remove(output_vid)
         finally:
             os.remove(input_sub)
             os.remove(input_video)
 
-    def add_affect_to_video(self, affect_vid: str, video: str, output: str, opacity_val: int):
+    def add_effect_to_bg(self, affect_vid: str, video: str, output: str, opacity_val: int, timelength=10):
         """
         input_bgvid=$1
         input_blendvid=$2
@@ -413,7 +418,7 @@ class FfmpegCli(object):
                 streams_list = [bgvideo_stream, effect_stream]
                 (
                     ffmpeg.filter(streams_list, 'overlay')
-                        .output(output, framerate=25)
+                        .output(output, framerate=25, t=timelength)
                         .global_args('-shortest')
                         .global_args('-threads', '{}'.format(cpucount))
                         .global_args("-preset", "ultrafast")
@@ -431,10 +436,11 @@ class FfmpegCli(object):
             # self._ffmpeg_input_fill_cmd('-shortest')
             # self.ffmpeg_cli_run(self.ffmpeg_cli, output)
         else:
-            self.add_nontransparent_effect_to_video(video, affect_vid, output, opacity_val)
+            self.add_nontransparent_effect_to_video(video, affect_vid, output, opacity_val, timelength)
         pass
 
-    def add_nontransparent_effect_to_video(self, effect_vid: str, video: str, output: str, opacity_val: int):
+    def add_nontransparent_effect_to_video(self, effect_vid: str, video: str, output: str, opacity_val: int,
+                                           timelength=10):
         try:
             FfmpegCli.check_file_exist(effect_vid)
             FfmpegCli.check_file_exist(video)
@@ -452,7 +458,7 @@ class FfmpegCli(object):
                 ffmpeg.filter([effect_stream, video_stream],
                               'blend', all_mode='overlay',
                               all_opacity="{}".format(opacity))
-                    .output(output)
+                    .output(output, t=timelength)
                     .global_args('-shortest')
                     .global_args('-threads', '{}'.format(cpucount))
                     .global_args("-preset", "ultrafast")
@@ -463,20 +469,6 @@ class FfmpegCli(object):
         finally:
             os.remove(effect_vid)
             os.remove(video)
-        # if bg_video_alpha:
-        #     pass
-        # if effect_video_alpha:
-        #     pass
-
-        # self._ffmpeg_input_filter_complex_prefix()
-        # opacity = float(opacity_val / 100)
-        # filter_args = "[1:0]format=rgba[a]; \
-        #                [0:0]format=rgba[b]; \
-        #                [a][b]blend=all_mode='overlay':all_opacity={}".format(opacity)
-        # self._ffmpeg_input_fill_cmd(filter_args)
-        # self._ffmpeg_input_fill_cmd('-shortest')
-        # self.ffmpeg_cli_run(self.ffmpeg_cli, output)
-        pass
 
     def clean_up_mp3_meta_data(self, mp3file, mp3out):
         """
@@ -491,18 +483,9 @@ class FfmpegCli(object):
                 .global_args('-threads', '{}'.format(cpucount))
                 .run(cmd=ffmpegpath, overwrite_output=True)
         )
-        # FfmpegCli.check_file_exist(mp3file)
-        # self._ffmpeg_input(mp3file)
-        # self._ffmpeg_input_fill_cmd('-map')
-        # self._ffmpeg_input_fill_cmd('0:a')
-        # self._ffmpeg_input_fill_cmd('-codec:a')
-        # self._ffmpeg_input_fill_cmd('copy')
-        # self._ffmpeg_input_fill_cmd('-map_metadata')
-        # self._ffmpeg_input_fill_cmd('-1')
-        # self.ffmpeg_cli_run(self.ffmpeg_cli, mp3out)
         pass
 
-    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str, timelength=90):
+    def mux_audio_to_video(self, input_vid: str, input_audio: str, output_vid: str, timelength=90, timing=None):
         '''
         render -i ${input_vid} -i $input_aud -map 0:v -map 1:a -c copy -shortest ${output_mv}
         :param input_vid:
@@ -511,20 +494,36 @@ class FfmpegCli(object):
         :return:
         '''
         try:
+            from render.engine import RenderTiming
+            timing: RenderTiming
             FfmpegCli.check_file_exist(input_vid)
             FfmpegCli.check_file_exist(input_audio)
             from backend.utility.TempFileMnger import Mp3TempFile
             tempaudiofile = Mp3TempFile().getfullpath()
             self.clean_up_mp3_meta_data(input_audio, tempaudiofile)
-            (
-                ffmpeg.output(ffmpeg.input(input_vid)['v'],
-                              ffmpeg.input(tempaudiofile)['a']
-                              , output_vid, acodec='copy', vcodec='copy', t=timelength)
-                    .global_args('-shortest')
-                    .global_args('-threads', '{}'.format(cpucount))
-                    .global_args("-preset", "ultrafast")
-                    .run(cmd=ffmpegpath, overwrite_output=True)
-            )
+            if timing:
+                (
+                    ffmpeg.output(ffmpeg.input(input_vid)['v'],
+                                  ffmpeg.input(tempaudiofile)['a']
+                                  , output_vid, acodec='copy', vcodec='copy',
+                                  ss=timing.start,
+                                  t=timing.duration)
+                        .global_args('-shortest')
+                        .global_args('-threads', '{}'.format(cpucount))
+                        .global_args("-preset", "ultrafast")
+                        .run(cmd=ffmpegpath, overwrite_output=True))
+                pass
+            else:
+                (
+                    ffmpeg.output(ffmpeg.input(input_vid)['v'],
+                                  ffmpeg.input(tempaudiofile)['a']
+                                  , output_vid, acodec='copy', vcodec='copy',
+                                  t=timelength)
+                        .global_args('-shortest')
+                        .global_args('-threads', '{}'.format(cpucount))
+                        .global_args("-preset", "ultrafast")
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
         except Exception as exp:
             os.remove(output_vid)
         finally:
