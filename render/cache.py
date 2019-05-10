@@ -45,7 +45,9 @@ class ContentFileInfo:
         if self.filepath:
             return self.filepath
         else:
-            return self.storage.download_file(self.fileinfo['id'], self.dirname)
+
+            self.filepath = self.storage.download_file(self.fileinfo['id'], self.dirname)
+            return self.filepath
 
 
 class ContentDir:

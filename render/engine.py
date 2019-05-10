@@ -1,24 +1,22 @@
 from abc import *
-
-import time
 from threading import Thread, Event
+import time
 from Api.songeffect import generate_songeffect_for_lrc
-
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
-from backend.utility.Utility import generate_mv_filename, clean_up
+from backend.utility.Utility import clean_up
 from backend.yclogger import telelog, slacklog
-
-from render.cache import *
-from render.ffmpegcli import FfmpegCli, FFmpegProfile
-from render.parser import SongApi
-from render.type import *
-
 from publisher.facebook.fb_publish import FbPageAPI
 from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
 from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
 from publisher.youtube.youtube_uploader import YoutubeUploader
 from publisher.youtube.youtube_uploader import YtMvConfigStatus
+from render.cache import *
+from render.ffmpegcli import FfmpegCli
+from render.parser import SongApi
+from render.type import *
+
+import filetype
 
 
 class RenderEngine(ABC):
@@ -67,6 +65,8 @@ class RenderTiming:
     def __init__(self, timing):
         self.start = int(timing['start'])
         self.duration = int(timing['duration'])
+        self.duration_ms = self.duration
+        self.start_ms = self.start
         self.caculate_timming()
 
     @classmethod
@@ -338,6 +338,8 @@ class RenderLyric(RenderEngine):
             ffmpegcli = FfmpegCli()
             assfile = self.assfile.get()
             src = src.get()
+            if self.timing:
+                medialength = FfmpegCli().get_media_time_length(src)
             ffmpegcli.adding_sub_to_video(assfile,
                                           src,
                                           cachedfilepath,
@@ -392,6 +394,121 @@ class SongRenderEngine(ABC):
         pass
 
 
+class BackgroundRender(RenderEngine):
+    # TODO what if the background file is video
+    # need another render object here.
+    # 1. if img => return resolution video with timing (duration length)
+    # 2. if video => format to render resolution, and scale timing by duration (timing)
+
+    def __init__(self, file: ContentFileInfo, rendertype: RenderType, timing: RenderTiming):
+        super().__init__()
+        self.input = file
+        self.rendertype = rendertype
+        self.timing = None
+        if timing:
+            self.timing = timing
+            self.timelength = int(timing.duration_ms / 100)  # ms => sec
+        else:
+            self.timelength = rendertype.configure.duration
+
+    def is_video_mediafile(self, filepath):
+        filetype.guess(filepath)
+        return False
+        pass
+        # media_info = MediaInfo.parse('my_video_file.mov')
+
+    def get_cached_background(self):
+        self.input: ContentFileInfo
+        cached_filename = BgImgCachedFile.get_cached_filename(self.input.fileinfo.filename,
+                                                              attribute=self.rendertype.configure.resolution)
+        bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        if bg_cachedfile is None:
+            bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli = FfmpegCli()
+            self.input = self.input.get()
+            ffmpegcli.scale_img_by_width_height(self.input,
+                                                self.rendertype.configure.resolution,
+                                                bg_cachedfile)
+            CachedContentDir.gdrive_file_upload(bg_cachedfile)
+            bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        return bg_cachedfile
+
+    def get_cached_bgvid(self, bgfile, time_length):
+        cached_filename = BgVidCachedFile.get_cached_filename(bgfile.filename,
+                                                              attribute=self.rendertype.configure,
+                                                              extension='.mp4')
+        bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        if bgvid_cachedfile is None:
+            ffmpegcli = FfmpegCli()
+            bgfile = bgfile.get()
+            bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli.create_media_file(input_img=bgfile,
+                                        time_length=time_length,
+                                        output_video=bgvid_cachedfile)
+            CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
+            bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        return bgvid_cachedfile
+
+    def format_bginput(self, inputfilepath):
+        """
+        from input file path => detect is video or image
+        if image => convert to jpeg and scale to render resolution
+        if video => scale to render resolution
+        :param inputfilepath:
+        :return:
+        """
+        isvideo = self.is_video_mediafile(inputfilepath.get())
+        self.input: ContentFileInfo = inputfilepath
+        if isvideo:
+            cached_filename = BgImgCachedFile.get_cached_filename(self.input.fileinfo['name'],
+                                                                  attribute=self.rendertype.configure.resolution)
+        else:
+            cached_filename = BgImgCachedFile.get_cached_filename(self.input.fileinfo['name'],
+                                                                  attribute=self.rendertype.configure.resolution,
+                                                                  extension='.jpg')
+
+        bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        if bg_cachedfile is None:
+            bg_cachedfile = BgImgCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli = FfmpegCli()
+            self.input = self.input.get()
+            ffmpegcli.scale_img_by_width_height(self.input,
+                                                self.rendertype.configure.resolution,
+                                                bg_cachedfile)
+            CachedContentDir.gdrive_file_upload(bg_cachedfile)
+            bg_cachedfile = BgImgCachedFile.get_cachedfile(cached_filename)
+        return bg_cachedfile
+
+        pass
+
+    def run(self, src, **kwargs):
+        """
+        Scale to src to render resolution and scale live time to `timing.duration`
+        :param src:
+        :param kwargs:
+        :return:
+        """
+        bgfile: ContentFileInfo = src
+        cached_filename = BgVidCachedFile.get_cached_filename(bgfile.filename,
+                                                              attribute=[self.rendertype.configure,
+                                                                         self.timing],
+                                                              extension='.mp4')
+        bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        if bgvid_cachedfile is None:
+            bgfile = self.format_bginput(bgfile)
+            bgfile = bgfile.get()
+            ffmpegcli = FfmpegCli()
+            bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli.create_media_file(input_img=bgfile,
+                                        time_length=self.timelength,
+                                        output_video=bgvid_cachedfile)
+            CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
+            bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
+        return bgvid_cachedfile
+
+        pass
+
+
 class BackgroundItemRender(RenderEngine):
 
     def __init__(self,
@@ -413,6 +530,9 @@ class BackgroundItemRender(RenderEngine):
             self.rendertype = self.songapi.rendertype
         if background_item.file:
             self.file = background_item.file
+            self.background = BackgroundRender(self.file,
+                                               self.rendertype,
+                                               self.timing)
         if background_item.effect:
             self.effect = RenderBgEffect(background_item.effect,
                                          self.rendertype)
@@ -461,9 +581,9 @@ class BackgroundItemRender(RenderEngine):
             ffmpegcli = FfmpegCli()
             bgfile = bgfile.get()
             bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-            ffmpegcli.create_media_file_from_img(input_img=bgfile,
-                                                 time_length=time_length,
-                                                 output_video=bgvid_cachedfile)
+            ffmpegcli.create_media_file(input_img=bgfile,
+                                        time_length=time_length,
+                                        output_video=bgvid_cachedfile)
             CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
             bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         return bgvid_cachedfile
@@ -478,12 +598,17 @@ class BackgroundItemRender(RenderEngine):
             self.output = self.title.run(self.input)
             self.input = self.output
         if self.file:
-            self.input = self.get_cached_backgroundimg()
-            self.output = self.get_cached_bgvid(self.input, timeleng)
+            # TODO what if the background file is video
+            # need another render object here.
+            # 1. if img => return resolution video with timing (duration length)
+            # 2. if video => format to render resolution, and scale timing by duration (timing)
+            self.output = self.background.run(self.input)
+            # self.input = self.get_cached_backgroundimg()
+            # self.output = self.get_cached_bgvid(self.input, timeleng)
             self.input = self.output
-            if self.effect:
-                self.output = self.effect.run(self.input)
-                self.input = self.output
+        if self.effect:
+            self.output = self.effect.run(self.input)
+            self.input = self.output
         if self.spectrum:
             self.output = self.spectrum.run(self.input)
             self.input = self.output
@@ -521,9 +646,9 @@ class SongMvSingleBackgroundRender(SongRenderEngine):
             ffmpegcli = FfmpegCli()
             bgfile = bgfile.get()
             bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-            ffmpegcli.create_media_file_from_img(input_img=bgfile,
-                                                 time_length=time_length,
-                                                 output_video=bgvid_cachedfile)
+            ffmpegcli.create_media_file(input_img=bgfile,
+                                        time_length=time_length,
+                                        output_video=bgvid_cachedfile)
             CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
             bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         return bgvid_cachedfile

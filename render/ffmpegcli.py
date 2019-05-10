@@ -164,7 +164,6 @@ class FfmpegCli(object):
             cmd += self.bitrate_configure
 
         cmd.append(output)
-        # print(' '.join(cmd))
         try:
             p = subprocess.Popen(cmd,
                                  # stdout=subprocess.PIPE,
@@ -199,7 +198,7 @@ class FfmpegCli(object):
         format = self._ffprobe_file_format(mediafile)
         return format
 
-    def create_media_file_from_img(self, input_img: str, time_length: int, output_video: str):
+    def create_media_file(self, input_img: str, time_length: int, output_video: str):
         '''
         render -loop 1 -i $input_img -c:v libx264 -t $length -pix_fmt yuvj422p -vf scale=$fullhd $output_mp4
         :param output_video:

@@ -5,7 +5,7 @@ import unittest
 import requests
 
 from Api.publish import publish_vid
-from render.engine import BackgroundsRender
+from render.engine import MvSongRender
 from render.parser import SongApi
 from backend.utility.TempFileMnger import *
 
@@ -285,23 +285,36 @@ class Test_RenderCmder(unittest.TestCase):
 
     def test_load_render_api(self):
         from handler import handler_render
-        retval = handler_render(self.data)
-        print(retval)
+        retval = ""
+        try:
+            retval = handler_render(self.data)
+        except Exception as exp:
+            from backend.yclogger import slacklog
+            from backend.yclogger import stacklogger
+            print(stacklogger.format(exp))
+            # slacklog.error(stacklogger.format(exp))
+        finally:
+            print(retval)
 
     def test_handler_publish(self):
         from handler import handler_render
         from handler import handler_publish
         retval = handler_render(self.data)
         print(retval)
-        body = {
-            'id': '{}'.format(retval['id'])
-        }
-        ret = handler_publish(body)
-        while True:
-            import time
-            time.sleep(1)
-
-
+        body = {'id': '1iyvAl5hMN-kwTEHiTJzymZt65Vn7mCGu'}
+        handler_publish()
+        #
+        # test = {'id': '1L0vK-3dOg7RroqrSDA-7UyR5WcEXI7bz'}
+        #
+        # rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/publish'
+        # response = requests.post(rest_api,
+        #                          json=test)
+        #
+        # print(response.headers)
+        # print(response.content)
+        # # while True:
+        #     import time
+        #     time.sleep(1)
 
     def test_server_send_render_api(self):
         rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/render'
@@ -332,6 +345,17 @@ class Test_RenderCmder(unittest.TestCase):
         self.url = r'http://127.0.0.1:5000/songcrawler?url={}'.format(nct_url)
         r = requests.get(self.url)
         print(r.text)
+
+    def test_publish(self):
+        info = {'id': '1msM3spgPW0qIcD-wcqZ6C0lsxjVDwV_c'}
+        ret = publish_vid(info)
+        print("{}".format(ret))
+
+        # rest_api = 'https://us-central1-ytcreator.cloudfunctions.net/publish'
+        # response = requests.post(rest_api,
+        #                          json=info)
+        # print(response.headers)
+        # print(response.content)
 
 
 if __name__ == '__main__':

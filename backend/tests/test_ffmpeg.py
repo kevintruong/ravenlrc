@@ -61,7 +61,7 @@ class TestFFmpegCli(unittest.TestCase):
 
     def test_create_media_file_from_img(self):
         media_output = os.path.join(test_data_dir, "media_out.mp4")
-        self.ffmpeg.create_media_file_from_img(bg_img00, 20, media_output)
+        self.ffmpeg.create_media_file(bg_img00, 20, media_output)
         length_output = self.ffmpeg.get_media_time_length(media_output)
         self.assertEqual(length_output, 20)
 
@@ -147,7 +147,7 @@ class TestFFmpegCli(unittest.TestCase):
         lyricfile = audiofile['lyric']
         audio_length = self.ffmpeg.get_media_time_length(audiofile)
         self.ffmpeg.add_logo_to_bg_img(bg_img00, logo00, bg_img)
-        self.ffmpeg.create_media_file_from_img(bg_img, audio_length, bg_mv)
+        self.ffmpeg.create_media_file(bg_img, audio_length, bg_mv)
         self.ffmpeg.create_background_affect_with_length(bg_effect, audio_length, bg_effect_extend)
         # add sub to MV
         subinfo = LyricConfigInfo({'rectangle': [100, 100, 200, 300],
