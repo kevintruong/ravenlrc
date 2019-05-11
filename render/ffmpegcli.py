@@ -66,9 +66,9 @@ class FfmpegCli(object):
             self.ffmpeg_cli.append('-hwaccel')
             self.ffmpeg_cli.append('dxva2')
         elif curPlatform == "Linux":
-            # pass
-            self.ffmpeg_cli.append('-hwaccel')
-            self.ffmpeg_cli.append('vaapi')
+            pass
+            # self.ffmpeg_cli.append('-hwaccel')
+            # self.ffmpeg_cli.append('vaapi')
         else:
             logger.debug('not support yet')
 
@@ -300,6 +300,8 @@ class FfmpegCli(object):
             self._ffmpeg_input_fill_cmd(cmd)
             self.ffmpeg_cli_run(self.ffmpeg_cli, output)
         except Exception as exp:
+            import stackprinter
+            print(stackprinter.format(exp))
             os.remove(output)
             raise exp
         finally:

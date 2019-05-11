@@ -1,5 +1,6 @@
 from abc import *
 from threading import Thread, Event
+
 import time
 from Api.songeffect import generate_songeffect_for_lrc
 from backend.type import SongInfo
@@ -16,7 +17,7 @@ from render.ffmpegcli import FfmpegCli
 from render.parser import SongApi
 from render.type import *
 
-import filetype
+from vidpy import Clip, Composition
 
 
 class RenderEngine(ABC):
@@ -38,22 +39,19 @@ class RenderSong(RenderEngine):
         cached_filename = CachedFile.get_cached_filename(src.filename,
                                                          attribute=[self.rendertype,
                                                                     self.songinfo])
-        effectmv_cachedfile = self.get_cached_file(cached_filename)
+        effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
             self.songinfo.songfile = GDriveMnger(True).download_file(self.songinfo.songfile)
             src = src.get()
-            ffmpegcli = FfmpegCli()
+            leng = FfmpegCli().get_media_time_length(src)
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
+            ffmpegcli = FfmpegCli()
             ffmpegcli.mux_audio_to_video(src,
                                          self.songinfo.songfile,
                                          effectmv_cachedfile,
-                                         self.rendertype.configure.duration)
+                                         leng)
             CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
-            effectmv_cachedfile = self.get_cached_file(cached_filename)
-        return effectmv_cachedfile
-
-    def get_cached_file(self, cached_filename):
-        effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
+            effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
         return effectmv_cachedfile
 
     def __init__(self, songinfo: SongInfo, rendertype=None):
@@ -302,11 +300,12 @@ class RenderLyric(RenderEngine):
         if songeffect:
             self.songeffect = songeffect
         self.assfile = self.generate_lyric_effect_file()
-        self.timing = timing
+        self.timing: RenderTiming = timing
 
     def generate_lyric_effect_file(self):
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
         self.lrcconf.scale_font_size_by_factor(scale_factor)
+        print(self.lyricfile)
         cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile,
                                                               attribute=[self.lrcconf,
                                                                          self.rendertype,
@@ -327,19 +326,20 @@ class RenderLyric(RenderEngine):
         return cachedfilepath
 
     def run(self, src: ContentFileInfo, **kwargs):
-        cached_filename = LyricCachedFile.get_cached_filename(src.filename,
+        cached_filename = LyricCachedFile.get_cached_filename(src.fileinfo['name'],
                                                               attribute=[self.assfile.filename,
                                                                          self.lrcconf,
                                                                          self.rendertype,
                                                                          self.timing])
         cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         if cachedfilepath is None:
+            if self.timing:
+                return self.render_lyrics_by_timing(src, cached_filename)
+
             cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
             ffmpegcli = FfmpegCli()
             assfile = self.assfile.get()
             src = src.get()
-            if self.timing:
-                medialength = FfmpegCli().get_media_time_length(src)
             ffmpegcli.adding_sub_to_video(assfile,
                                           src,
                                           cachedfilepath,
@@ -348,6 +348,28 @@ class RenderLyric(RenderEngine):
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
+
+    def render_lyrics_by_timing(self, src: ContentFileInfo, cached_filename):
+        cachedfilepath = LyricCachedFile.create_cachedfile(cached_filename)
+        ffmpegcli = FfmpegCli()
+        assfile = self.assfile.get()
+        src = src.get()
+        src_lenth = FfmpegCli().get_media_time_length(src)
+        lyric_end = (self.timing.start_ms + self.timing.duration_ms) / 1000
+        if src_lenth < lyric_end:
+            newsrcfile = BgMvTemplateFile().getfullpath()
+            FfmpegCli().create_background_affect_with_length(src, newsrcfile, lyric_end)
+            src = newsrcfile
+            pass
+        ffmpegcli.adding_sub_to_video(assfile,
+                                      src,
+                                      cachedfilepath,
+                                      timelength=self.rendertype.configure.duration,
+                                      timing=self.timing)
+        CachedContentDir.gdrive_file_upload(cachedfilepath)
+        cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
+        return cachedfilepath
+        pass
 
     def create_songeffect_assfile(self, output):
         with open(output, 'w') as ass_songeffect:
@@ -412,9 +434,14 @@ class BackgroundRender(RenderEngine):
             self.timelength = rendertype.configure.duration
 
     def is_video_mediafile(self, filepath):
-        filetype.guess(filepath)
-        return False
-        pass
+        fileinfo = FileInfo(filepath)
+        if fileinfo.ext.lower() in [".mp4", ".mov"]:
+            return True
+        elif fileinfo.ext.lower() in ['.jpg', '.png']:
+            return False
+        else:
+            return False
+
         # media_info = MediaInfo.parse('my_video_file.mov')
 
     def get_cached_background(self):
@@ -457,8 +484,8 @@ class BackgroundRender(RenderEngine):
         :param inputfilepath:
         :return:
         """
-        isvideo = self.is_video_mediafile(inputfilepath.get())
         self.input: ContentFileInfo = inputfilepath
+        isvideo = self.is_video_mediafile(self.input.fileinfo['name'])
         if isvideo:
             cached_filename = BgImgCachedFile.get_cached_filename(self.input.fileinfo['name'],
                                                                   attribute=self.rendertype.configure.resolution)
@@ -499,9 +526,13 @@ class BackgroundRender(RenderEngine):
             bgfile = bgfile.get()
             ffmpegcli = FfmpegCli()
             bgvid_cachedfile = BgVidCachedFile.create_cachedfile(cached_filename)
-            ffmpegcli.create_media_file(input_img=bgfile,
-                                        time_length=self.timelength,
-                                        output_video=bgvid_cachedfile)
+            isvideo = self.is_video_mediafile(bgfile)
+            if isvideo:
+                ffmpegcli.create_background_affect_with_length(bgfile, bgvid_cachedfile, self.timelength)
+            else:
+                ffmpegcli.create_media_file(input_img=bgfile,
+                                            time_length=self.timelength,
+                                            output_video=bgvid_cachedfile)
             CachedContentDir.gdrive_file_upload(bgvid_cachedfile)
             bgvid_cachedfile = BgVidCachedFile.get_cachedfile(cached_filename)
         return bgvid_cachedfile
@@ -598,13 +629,7 @@ class BackgroundItemRender(RenderEngine):
             self.output = self.title.run(self.input)
             self.input = self.output
         if self.file:
-            # TODO what if the background file is video
-            # need another render object here.
-            # 1. if img => return resolution video with timing (duration length)
-            # 2. if video => format to render resolution, and scale timing by duration (timing)
             self.output = self.background.run(self.input)
-            # self.input = self.get_cached_backgroundimg()
-            # self.output = self.get_cached_bgvid(self.input, timeleng)
             self.input = self.output
         if self.effect:
             self.output = self.effect.run(self.input)
@@ -688,6 +713,8 @@ class SongMvMultiBackground(SongRenderEngine):
         super().__init__()
         self.songapi: SongApi = rendersongreq
         self.timinglist = []
+        if self.songapi.song:
+            self.song = RenderSong(self.songapi.song, self.rendertype)
 
     def generate_timing_list_by_option(self):
         from asseditor import load_ass_from_lrc
@@ -700,15 +727,15 @@ class SongMvMultiBackground(SongRenderEngine):
         bgitems_count = len(self.songapi.backgrounds)
         averave_len = int(ass_line_count / bgitems_count) + (ass_line_count % bgitems_count > 0.6)
 
-        itemindex = list(range(0, ass_line_count, averave_len))
-        itemindex.append(ass_line_count)
+        itemindex = list(range(0, ass_line_count - 1, averave_len))
+        itemindex.append(ass_line_count - 1)
 
         for index, value in enumerate(itemindex):
             from pysubs2 import SSAEvent
             cur_assevent: SSAEvent = asscontext.events[itemindex[index]]
-            end_assevent: SSAEvent = asscontext.events[itemindex[index + 1] - 1]
+            end_assevent: SSAEvent = asscontext.events[itemindex[index + 1]]
             timing_start = cur_assevent.start
-            timing_end = end_assevent.end
+            timing_end = end_assevent.start - 1
             if index == 0:  # start => 0
                 timing_start = 0
 
@@ -722,6 +749,30 @@ class SongMvMultiBackground(SongRenderEngine):
             if index == len(itemindex) - 2:  # endtiming -> songlength
                 break
 
+    def render(self, bgoutputs):
+        clips = []
+        filenames = []
+        fade_in = 4
+        fade_out = 2.5
+        for output in bgoutputs:
+            filenames.append(output.filename)
+        filename = CachedFile.get_cached_filename(filenames[0],
+                                                  attribute=[filenames,fade_in,fade_out],
+                                                  extension='.mp4')
+        effectmv_cachedfile = BgVidCachedFile.get_cachedfile(filename)
+        if effectmv_cachedfile is None:
+            effectmv_cachedfile = BgVidCachedFile.create_cachedfile(filename)
+            for output in bgoutputs:
+                bgoutput_filepath = output.get()
+                thisclip = Clip(bgoutput_filepath).fadeout(fade_out)
+                thisclip.fadeout(fade_in)
+                clips.append(thisclip)
+            composition = Composition(clips, singletrack=True)
+            composition.save(effectmv_cachedfile)
+            CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+            effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(filename)
+        return self.song.run(effectmv_cachedfile)
+
     def render_without_timing(self):
         bgoutputs = []
         if self.songapi.autotiming is None:
@@ -732,9 +783,7 @@ class SongMvMultiBackground(SongRenderEngine):
             bgrender = BackgroundItemRender(self.songapi, eachbgitem)
             bgoutput = bgrender.run(bgrender.file)
             bgoutputs.append(bgoutput)
-
-        for output in bgoutputs:
-            print("{}".format(output.__dict__))
+        return self.render(bgoutputs)
 
         # TODO with each option of autotiming =>
         #  generate timing attribute for each background object
@@ -783,7 +832,7 @@ class MvSongRender:
 
     def generate_render_engine(self):
         kindrender = self.get_kind_render_req()
-        kindrender = SongMvType.SONGMV_SINGLE_BACKGROUND
+        # kindrender = SongMvType.SONGMV_SINGLE_BACKGROUND
         if kindrender == SongMvType.SONGMV_MULTI_BACKGROUND:
             print("render multi-backgorund MV ")
             return SongMvMultiBackground(self.songapi)
