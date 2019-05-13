@@ -1,22 +1,12 @@
 import hashlib
 import json
 import os
-from enum import Enum
+
 from threading import Lock
 
+from backend.storage.content import cachedcontentdir, contentDir
 from backend.storage.gdrive import GDriveMnger
 from backend.utility.Utility import FileInfo, only_latin_string
-from config.configure import BackendConfigure
-
-config: BackendConfigure = BackendConfigure.get_config()
-if config is None:
-    CurDir = os.path.dirname(os.path.realpath(__file__))
-    contentDir = os.path.join(CurDir, '../content')
-    contentDir = os.path.abspath(contentDir)
-    cachedcontentdir = contentDir
-else:
-    contentDir = os.path.join(config.StorageMountPoint, 'content')
-    cachedcontentdir = os.path.join(config.CacheStorageMountPoint, 'cache')
 
 
 class StorageInfo:
@@ -358,22 +348,6 @@ class CachedFile:
         if not added_ext:
             cachedfilename = cachedfilename + ext
         return cls.generate_hash_from_filename(cachedfilename)
-
-
-class SongFile:
-    SongDir = CachedContentDir.SONG_DIR
-
-    @classmethod
-    def get_fullpath(cls, filename):
-        listfiles = os.listdir(cls.SongDir)
-        for file in listfiles:
-            if filename in file:
-                return os.path.join(cls.SongDir, file)
-        return None
-
-    @classmethod
-    def get_cachedfile(cls, filename):
-        return CachedContentDir.verify_file(cls.SongDir, filename)
 
 
 class LyricMvCachedFile(CachedFile):

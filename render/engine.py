@@ -38,16 +38,17 @@ class RenderSong(RenderEngine):
     def run(self, src: ContentFileInfo, **kwargs):
         cached_filename = CachedFile.get_cached_filename(src.filename,
                                                          attribute=[self.rendertype,
-                                                                    self.songinfo])
+                                                                    self.songinfo.songfile.fileinfo['name']])
         effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
-            self.songinfo.songfile = GDriveMnger(True).download_file(self.songinfo.songfile)
+            # self.songinfo.songfile = GDriveMnger(True).download_file(self.songinfo.songfile)
+            songfile = self.songinfo.songfile.get()
             src = src.get()
             leng = FfmpegCli().get_media_time_length(src)
             effectmv_cachedfile = MuxAudioVidCachedFile.create_cachedfile(cached_filename)
             ffmpegcli = FfmpegCli()
             ffmpegcli.mux_audio_to_video(src,
-                                         self.songinfo.songfile,
+                                         songfile,
                                          effectmv_cachedfile,
                                          leng)
             CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
@@ -306,7 +307,7 @@ class RenderLyric(RenderEngine):
         scale_factor = self.rendertype.configure.resolution.width / self.reference_resolution_width
         self.lrcconf.scale_font_size_by_factor(scale_factor)
         print(self.lyricfile)
-        cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile,
+        cached_filename = LyricCachedFile.get_cached_filename(self.lyricfile.fileinfo['name'],
                                                               attribute=[self.lrcconf,
                                                                          self.rendertype,
                                                                          self.songeffect],
@@ -321,6 +322,9 @@ class RenderLyric(RenderEngine):
                 #                     resolution)
                 # cachedfilepath = self.create_effect_lyric_file(cachedfilepath)
                 self.create_songeffect_assfile(cachedfilepath)
+            else:
+                # TODO process non song effect
+                pass
             CachedContentDir.gdrive_file_upload(cachedfilepath)
             cachedfilepath = LyricCachedFile.get_cachedfile(cached_filename)
         return cachedfilepath
@@ -373,7 +377,7 @@ class RenderLyric(RenderEngine):
 
     def create_songeffect_assfile(self, output):
         with open(output, 'w') as ass_songeffect:
-            self.lyricfile = GDriveMnger(True).download_file(self.lyricfile)
+            self.lyricfile = self.lyricfile.get()
             with open(self.lyricfile, 'r') as lrcfile:
                 lrcdata = lrcfile.read()
             data = generate_songeffect_for_lrc(self.songeffect.name,
@@ -698,9 +702,8 @@ class SongMvSingleBackgroundRender(SongRenderEngine):
 
     def init_render_engine(self):
         if 'publish' in self.songapi.rendertype.type:
-            songfile = GDriveMnger(True).download_file(self.songapi.song.songfile)
+            songfile = self.songapi.song.songfile.get()
             self.songapi.rendertype.configure.duration = FfmpegCli().get_media_time_length(songfile)
-            pass
         if self.songapi.rendertype:
             self.rendertype = self.songapi.rendertype
         if self.songapi.song:
@@ -718,8 +721,8 @@ class SongMvMultiBackground(SongRenderEngine):
 
     def generate_timing_list_by_option(self):
         from asseditor import load_ass_from_lrc
-        lrcfile = ContentDir.GDriveStorage.download_file(self.songapi.song.lyric)
-        songfile = ContentDir.GDriveStorage.download_file(self.songapi.song.songfile)
+        lrcfile = self.songapi.song.lyric.get()
+        songfile = self.songapi.song.songfile.get()
         songlength = FfmpegCli().get_media_time_length(songfile)
 
         asscontext = load_ass_from_lrc(lrcfile)
@@ -733,9 +736,17 @@ class SongMvMultiBackground(SongRenderEngine):
         for index, value in enumerate(itemindex):
             from pysubs2 import SSAEvent
             cur_assevent: SSAEvent = asscontext.events[itemindex[index]]
+            stop_assevent: SSAEvent = asscontext.events[itemindex[index + 1] - 1]
             end_assevent: SSAEvent = asscontext.events[itemindex[index + 1]]
+            timing_nextstop = stop_assevent.end
             timing_start = cur_assevent.start
-            timing_end = end_assevent.start - 1
+            timing_end = (end_assevent.start + timing_nextstop) / 2
+            if index >= 1:
+                stop_assevent: SSAEvent = asscontext.events[itemindex[index] - 1]
+                cur_assevent: SSAEvent = asscontext.events[itemindex[index]]
+                idle_duration = cur_assevent.start - stop_assevent.end
+                timing_start = int(stop_assevent.end + idle_duration / 4)
+
             if index == 0:  # start => 0
                 timing_start = 0
 
@@ -752,24 +763,35 @@ class SongMvMultiBackground(SongRenderEngine):
     def render(self, bgoutputs):
         clips = []
         filenames = []
-        fade_in = 4
-        fade_out = 2.5
+        fade_in = 3
+        fade_out = 2
         for output in bgoutputs:
             filenames.append(output.filename)
         filename = CachedFile.get_cached_filename(filenames[0],
-                                                  attribute=[filenames,fade_in,fade_out],
+                                                  attribute=[filenames, fade_in, fade_out],
                                                   extension='.mp4')
         effectmv_cachedfile = BgVidCachedFile.get_cachedfile(filename)
         if effectmv_cachedfile is None:
             effectmv_cachedfile = BgVidCachedFile.create_cachedfile(filename)
             for output in bgoutputs:
+                from moviepy.editor import VideoFileClip
+                from moviepy.video.fx.fadein import fadein
+                from moviepy.video.fx.fadeout import fadeout
                 bgoutput_filepath = output.get()
-                thisclip = Clip(bgoutput_filepath).fadeout(fade_out)
-                thisclip.fadeout(fade_in)
+                thisclip = VideoFileClip(bgoutput_filepath)
+                # crossfadein(fade_in). \
+                # crossfadeout(fade_out)
+                thisclip = fadein(thisclip, duration=fade_in)
+                thisclip = fadeout(thisclip, duration=fade_out)
                 clips.append(thisclip)
-            composition = Composition(clips, singletrack=True)
-            composition.save(effectmv_cachedfile)
-            CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+            import moviepy.editor as mp
+            composite = mp.concatenate_videoclips(clips)
+            # from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+            # composite = CompositeVideoClip(clips)
+            composite.write_videofile(effectmv_cachedfile)
+            # composition = Composition(clips, singletrack=True)
+            # composition.save(effectmv_cachedfile)
+            # CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
             effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(filename)
         return self.song.run(effectmv_cachedfile)
 

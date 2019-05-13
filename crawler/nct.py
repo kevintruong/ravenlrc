@@ -10,6 +10,7 @@ from backend.utility.Utility import only_latin_string
 from crawler.db.helper import GdriveSongInfoDb
 from crawler.rc4_py3 import decrypt
 from render.cache import CachedContentDir
+from backend.storage.content import SongFile
 
 
 class Crawler(abc.ABC):
@@ -86,8 +87,8 @@ class NctCrawler(Crawler):
             self.mobileNctWmUrl = ncturl
             songid = ncturl.split(".")[3]
         items = self.localdb.get_info_by_id(songid)
-        if len(items):
-            self.songinfo: SongInfo = SongInfo(items[0])
+        if items:
+            self.songinfo: SongInfo = SongInfo(items)
             self.iscached = True
             if self.songinfo.songfile is None:
                 print('[WARMING] Song file is null,re-check')
@@ -182,15 +183,13 @@ class NctCrawler(Crawler):
         if not self.iscached:
             try:
                 localmp3file = self.get_mp3file(outputdir)
-                fileinfo = CachedContentDir.gdrive_file_upload(localmp3file)
-                songinfo.songfile = fileinfo['id']
+                songinfo.songfile = localmp3file
             except Exception as exp:
                 print('[ERROR] can not down load mp3 file : {}'.format(exp))
                 songinfo.songfile = None
             try:
                 locallyricfile = self.get_lyric(outputdir)
-                fileinfo = CachedContentDir.gdrive_file_upload(locallyricfile)
-                songinfo.lyric = fileinfo['id']
+                songinfo.lyric = locallyricfile
             except Exception as exp:
                 songinfo.lyric = None
             # self.localdb.insert_song(songinfo.__dict__)
@@ -198,26 +197,25 @@ class NctCrawler(Crawler):
 
     def get_mp3file(self, outputdir: str):
         retry = 0
-        retry_max = 20
+        retry_max = 5
         while True:
             try:
                 songinfo: SongInfo = self.songinfo
                 mp3filename = only_latin_string('{}_{}_{}'.format(songinfo.title,
                                                                   songinfo.singer,
                                                                   songinfo.id))
-                localmp3file = os.path.join(outputdir, '{}.mp3'.format(mp3filename)).encode('utf-8')
-                SongFile
-
-
-                mp3file = requests.get(songinfo.songfile,
-                                       allow_redirects=True,
-                                       timeout=60,
-                                       headers=self.vipcookies)
-
-                with open(localmp3file, 'wb') as mp3filefd:
-                    mp3filefd.write(mp3file.content)
-                    mp3filefd.close()
-                return localmp3file.decode('utf8')
+                mp3file = SongFile.get_cachedfile(mp3filename)
+                if mp3file is None:
+                    localmp3file = os.path.join(outputdir, '{}.mp3'.format(mp3filename))
+                    mp3file = requests.get(songinfo.songfile,
+                                           allow_redirects=True,
+                                           timeout=60,
+                                           headers=self.vipcookies)
+                    with open(localmp3file, 'wb') as mp3filefd:
+                        mp3filefd.write(mp3file.content)
+                    CachedContentDir.gdrive_file_upload(localmp3file)
+                    mp3file = SongFile.get_cachedfile(mp3filename)
+                return mp3file
             except Exception as exp:
                 retry = retry + 1
                 if retry > retry_max:
@@ -229,12 +227,17 @@ class NctCrawler(Crawler):
     def get_lyric(self, outputdir: str):
         try:
             songinfo: SongInfo = self.songinfo
-            locallyricfile = os.path.join(outputdir, '{}_{}.lrc'.format(songinfo.title, songinfo.id)).encode('utf-8')
-            lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
-            returndata = decrypt(NctCrawler.key, lyricfile.content)
-            with codecs.open(locallyricfile, 'w', "utf-8") as f:
-                f.write(returndata)
-            return locallyricfile.decode('utf-8')
+            filename = '{}_{}.lrc'.format(songinfo.title, songinfo.id)
+            lyricfile = SongFile.get_cachedfile(filename)
+            if not lyricfile:
+                locallyricfile = os.path.join(outputdir, '{}_{}.lrc'.format(songinfo.title, songinfo.id))
+                lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
+                returndata = decrypt(NctCrawler.key, lyricfile.content)
+                with codecs.open(locallyricfile, 'w', "utf-8") as f:
+                    f.write(returndata)
+                CachedContentDir.gdrive_file_upload(locallyricfile)
+                lyricfile = SongFile.get_cachedfile(filename)
+            return lyricfile
         except Exception as exp:
             raise Exception('can not get lyric file from the url {}'.format(self.songinfo.info))
 

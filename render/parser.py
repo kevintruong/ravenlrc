@@ -41,7 +41,7 @@ class SongApi:
             crawlerdict = {'url': self.song_url}
             from crawler.cmder import CrawlCmder
             crawler = CrawlCmder(crawlerdict)
-            self.song: SongInfo = SongInfo(json.loads(crawler.run()))
+            self.song: SongInfo = crawler.run()
 
     def get_list_background(self, info: list):
         backgrounds = []

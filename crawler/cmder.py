@@ -63,10 +63,10 @@ class CrawlCmder(Thread):
                 return songinfo
             else:
                 crawler = self.get_parser()
-                statuas = crawler.getdownload(self.output)
+                songinfo = crawler.getdownload(self.output)
                 if not self.readonly:
-                    self.localdb.insert_song(statuas)
-                return statuas.toJSON()
+                    self.localdb.insert_song(songinfo)
+                return songinfo
         except Exception as exp:
             print('ignore the exceptiion {}'.format(exp))
 

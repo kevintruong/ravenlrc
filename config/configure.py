@@ -26,6 +26,8 @@ class BackendConfigure:
             self.create_config_dir()
             self.fontsdir = fontsdir
             BackendConfigure.configfile = self
+            from ffmpegbin import ffmpegbin
+            os.environ['FFMPEG_BINARY'] = os.path.join(ffmpegbin.ffmpegpath, 'ffmpeg')
 
     def create_dir(self, path):
         try:
