@@ -202,10 +202,18 @@ class NctCrawler(Crawler):
         while True:
             try:
                 songinfo: SongInfo = self.songinfo
-                # mp3file = ProxyRequests.get_ins().get(songinfo.songfile,allow_redirects=True, timeout=60, headers=self.vipcookies)
-                mp3file = requests.get(songinfo.songfile, allow_redirects=True, timeout=60, headers=self.vipcookies)
-                mp3filename = only_latin_string('{}_{}_{}'.format(songinfo.title, songinfo.singer, songinfo.id))
+                mp3filename = only_latin_string('{}_{}_{}'.format(songinfo.title,
+                                                                  songinfo.singer,
+                                                                  songinfo.id))
                 localmp3file = os.path.join(outputdir, '{}.mp3'.format(mp3filename)).encode('utf-8')
+                SongFile
+
+
+                mp3file = requests.get(songinfo.songfile,
+                                       allow_redirects=True,
+                                       timeout=60,
+                                       headers=self.vipcookies)
+
                 with open(localmp3file, 'wb') as mp3filefd:
                     mp3filefd.write(mp3file.content)
                     mp3filefd.close()

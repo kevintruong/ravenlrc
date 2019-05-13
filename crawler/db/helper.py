@@ -155,7 +155,7 @@ class GdriveSongInfoDb(SongInfoDb):
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM tbl_songs WHERE id='{}'"
                        .format(id))
-        iteminfo = cursor.fetchall()
+        iteminfo = cursor.fetchone()
         return iteminfo
         pass
 

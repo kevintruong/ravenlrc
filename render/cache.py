@@ -45,7 +45,6 @@ class ContentFileInfo:
         if self.filepath:
             return self.filepath
         else:
-
             self.filepath = self.storage.download_file(self.fileinfo['id'], self.dirname)
             return self.filepath
 
@@ -314,20 +313,20 @@ class CachedContentDir:
     #     return None
 
 
-class CachedContentGdriveDir(Enum):
-
-    def __init__(self):
-        self.SONG_DIR = os.path.join(cachedcontentdir, 'Song')
-        self.EFFECT_DIR = os.path.join(cachedcontentdir, 'Effect')
-        self.BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
-
-    @classmethod
-    def get_file_path(cls, dir: str, filename: str):
-        listfiles = os.listdir(dir)
-        for file in listfiles:
-            if filename in file:
-                return os.path.join(dir, file)
-        return None
+# class CachedContentGdriveDir(Enum):
+#
+#     def __init__(self):
+#         self.SONG_DIR = os.path.join(cachedcontentdir, 'Song')
+#         self.EFFECT_DIR = os.path.join(cachedcontentdir, 'Effect')
+#         self.BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
+#
+#     @classmethod
+#     def get_file_path(cls, dir: str, filename: str):
+#         listfiles = os.listdir(dir)
+#         for file in listfiles:
+#             if filename in file:
+#                 return os.path.join(dir, file)
+#         return None
 
 
 class CachedFile:
@@ -362,7 +361,7 @@ class CachedFile:
 
 
 class SongFile:
-    SongDir = ContentDir.SONG_DIR
+    SongDir = CachedContentDir.SONG_DIR
 
     @classmethod
     def get_fullpath(cls, filename):
@@ -374,7 +373,7 @@ class SongFile:
 
     @classmethod
     def get_cachedfile(cls, filename):
-        return CachedContentDir.get_file_path(cls.SongDir, filename)
+        return CachedContentDir.verify_file(cls.SongDir, filename)
 
 
 class LyricMvCachedFile(CachedFile):
