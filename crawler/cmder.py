@@ -25,13 +25,13 @@ class CrawlCmder(Thread):
 
     def crawl_parser(self):
         if 'nhaccuatui' in self.url:
-            songid = NctCrawler.get_nct_songid(self.url)
-            songitem = GdriveSongInfoDb.get_gdrivesonginfodb(True).get_info_by_id(songid)
-            if songitem:
-                songinfo = SongInfo(songitem).toJSON()
-                return songinfo
-            else:
-                return None
+            # songid = NctCrawler.get_nct_songid(self.url)
+            # songitem = GdriveSongInfoDb.get_gdrivesonginfodb(True).get_info_by_id(songid)
+            # if songitem:
+            #     songinfo = SongInfo(songitem)
+            #     return songinfo
+            # else:
+            #     return None
             return NctCrawler(self.url)
 
     def get_parser(self):

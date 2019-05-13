@@ -17,8 +17,6 @@ from render.ffmpegcli import FfmpegCli
 from render.parser import SongApi
 from render.type import *
 
-from vidpy import Clip, Composition
-
 
 class RenderEngine(ABC):
     def __init__(self, rendertype=None):
