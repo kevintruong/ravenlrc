@@ -234,11 +234,13 @@ class NctCrawler(Crawler):
     def get_lyric(self, outputdir: str):
         try:
             songinfo: SongInfo = self.songinfo
-            filename = '{}_{}.lrc'.format(songinfo.title, songinfo.id)
+            filename = '{}_{}'.format(songinfo.title, songinfo.id)
+            filename = only_latin_string(filename)
+            filename = "{}.lrc".format(filename)
             lyricfile = SongFile.get_cachedfile(filename)
             if not lyricfile:
-                locallyricfile = os.path.join(outputdir, '{}_{}.lrc'.format(songinfo.title, songinfo.id))
-                lyricfile = requests.get(songinfo.lyric, allow_redirects=True)
+                locallyricfile = os.path.join(outputdir, filename)
+                lyricfile = requests.get(songinfo.lyric, allow_redirects=True, proxies=self.proxies)
                 returndata = decrypt(NctCrawler.key, lyricfile.content)
                 with codecs.open(locallyricfile, 'w', "utf-8") as f:
                     f.write(returndata)
@@ -266,13 +268,7 @@ class testnctcrawler(unittest.TestCase):
         print('end')
 
     def test_download_file(self):
-        jsondat = self.nct.getdownload('/tmp/raven/cache/Song')
-        print("{}".format(jsondat.toJSON()))
-        self.nct.db_update_song_meta_info()
-
-        print(jsondat)
-
-        self.url = r'https://www.nhaccuatui.com/bai-hat/cafe-thuoc-la-va-nhung-ngay-vui-the-bao.WVjiaoIWTaAl.html'
+        self.url = r'https://www.nhaccuatui.com/bai-hat/it-aint-me-kygo-ft-selena-gomez.PPYMmjs8AgOU.html'
         self.nct = NctCrawler(self.url)
         jsondat = self.nct.getdownload('/tmp/raven/cache/Song')
         print("{}".format(jsondat.toJSON()))

@@ -4,6 +4,7 @@ import re
 
 import unidecode
 
+from backend.utility.TempFileMnger import SrtTempfile
 from backend.yclogger import slacklog
 
 
@@ -54,6 +55,24 @@ def only_latin_string(strtags):
     remove_accent = non_accent_convert(strtags).replace(" ", "").lower()
     remove_special_char = re.sub('[^A-Za-z0-9]+', '', remove_accent)
     return remove_special_char
+
+
+def lrf_to_srt(lrccontent: str, output=SrtTempfile().getfullpath()):
+    from backend.vendor import pylrc
+    subs = pylrc.parse(lrccontent)
+    subs.toSRT()  # convert lrc to srt string
+    subs.save_to_file(output)
+    return output
+
+
+def load_ass_from_lrc(lrcfile: str):
+    from backend.vendor.pysubs2 import SSAFile
+    srttempfile = SrtTempfile().getfullpath()
+    with open(lrcfile, 'r') as filelrc:
+        lrccontent = filelrc.read()
+        outputfile = lrf_to_srt(lrccontent, srttempfile)
+    subs = SSAFile.load(outputfile, encoding='utf-8')  # create ass file
+    return subs
 
 
 def generate_mv_filename(title: str):
@@ -163,8 +182,6 @@ def clean_up(dirpath='/tmp/raven'):
             os.remove(full_path)
         else:
             clean_up(full_path)
-
-
 
 
 class PyJSON(object):

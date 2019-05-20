@@ -7,7 +7,7 @@ from Api.songeffect import generate_songeffect_for_lrc
 from backend.storage.content import ContentFileInfo
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
-from backend.utility.Utility import clean_up
+from backend.utility.Utility import clean_up, load_ass_from_lrc
 from backend.yclogger import telelog, slacklog
 
 from render.cache import *
@@ -721,20 +721,17 @@ class SongMvMultiBackground(SongRenderEngine):
             self.song = RenderSong(self.songapi.song, self.rendertype)
 
     def generate_timing_list_by_option(self):
-        from asseditor import load_ass_from_lrc
         lrcfile = self.songapi.song.lyric.get()
         songlength = self.songapi.song.timeleng
-
         asscontext = load_ass_from_lrc(lrcfile)
         ass_line_count = len(asscontext.events)
         bgitems_count = len(self.songapi.backgrounds)
         averave_len = int(ass_line_count / bgitems_count) + (ass_line_count % bgitems_count > 0.6)
-
         itemindex = list(range(0, ass_line_count - 1, averave_len))
         itemindex.append(ass_line_count - 1)
 
         for index, value in enumerate(itemindex):
-            from pysubs2 import SSAEvent
+            from backend.vendor.pysubs2 import SSAEvent
             cur_assevent: SSAEvent = asscontext.events[itemindex[index]]
             stop_assevent: SSAEvent = asscontext.events[itemindex[index + 1] - 1]
             end_assevent: SSAEvent = asscontext.events[itemindex[index + 1]]

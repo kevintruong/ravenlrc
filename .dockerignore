@@ -5,7 +5,7 @@ songcrawlers/
 Docs/
 docker/
 backend/tests
-#crawler/**/*.db
+crawler/**/*.db
 #crawler/**/*.sql
 #crawler/test
 #backend/.idea

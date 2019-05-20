@@ -21,6 +21,29 @@ plugins:
 # package should be excluded (and not the whole node_modules directory)
 package:
   exclude:
+    - heroku/**
+    - venv_37/**
+    - venv/**
+    - log/**
+    - docker/**
+    - .idea/**
+    - subeffect/venv/**
+    - subeffect/test/**
+    - crawler/db/**.db
+    - backend/tests/**
+    - backend/vendor/lyriceffect/**
+    - backend/subeffect/test/**
+    - ffmpeg/**
+    - backend/**/test/**
+    - Docs/**
+    - songcrawlers/
+    - Docs/
+    - docker/
+    - backend/tests
+    - crawler/**/*.db
+    - songcrawlers/venv
+    - subeffect/venv
+    - .serverless
     - node_modules/**
     - .gitignore
     - .git/**
@@ -31,13 +54,9 @@ package:
     - .idea/**
     - test/**
     - backend/tests/**
-    - backend/vendor/**
     - backend/subeffect/test/**
     - songcrawlers/**
-    - subeffect/**
-    #    - .songinfo.db
     - crawler/song.txt
-    #    - crawler/.songinfo.db
     - crawler/test/**
     - backend/**/test/**
     - Docs/**

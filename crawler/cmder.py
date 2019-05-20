@@ -63,6 +63,7 @@ class CrawlCmder(Thread):
                 return songinfo
         except Exception as exp:
             print('ignore the exceptiion {}'.format(exp))
+            raise exp
 
 
 import unittest

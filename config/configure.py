@@ -1,11 +1,15 @@
 import json
 import os
+import sys
 
 from config.foldergenerator import SchemmaGenerator
 
 curdir = os.path.dirname(os.path.realpath(__file__))
 configfile = os.path.join(curdir, 'config.json')
 fontsdir = os.path.abspath(os.path.join(curdir, '../.fonts'))
+rootdir = os.path.abspath(os.path.join(curdir, '..'))
+vendordir = os.path.join(rootdir, 'backend/vendor')
+sys.path.append(vendordir)
 
 
 class BackendConfigure:
