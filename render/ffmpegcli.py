@@ -190,7 +190,7 @@ class FfmpegCli(object):
     def get_media_time_length(self, media_file_name: str):
         FfmpegCli.check_file_exist(media_file_name)
         format = self._ffprobe_file_format(media_file_name)
-        duration = int(round(float(format['duration'])))
+        duration = float(format['duration'])
         return duration
 
     def get_media_info(self, mediafile: str):

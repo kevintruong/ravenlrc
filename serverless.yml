@@ -39,25 +39,24 @@ package:
     - crawler/song.txt
     #    - crawler/.songinfo.db
     - crawler/test/**
-    - ffmpeg/**
     - backend/**/test/**
     - Docs/**
     - venv/**
 
 functions:
-  first:
+  songcrawler:
     handler: songcrawler
     events:
       - http: path
     environment:
       DEPLOY_ENV: GOOGLE
-  second:
+  render:
     handler: render
     events:
       - http: path
     environment:
       DEPLOY_ENV: GOOGLE
-  third:
+  publish:
     handler: publish
     events:
       - http: path

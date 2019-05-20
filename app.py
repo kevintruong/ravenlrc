@@ -42,7 +42,8 @@ def song(url):
         from backend.type import Cmder
         telelog.debug('```{}```'.format(url))
         cmder: Cmder = CrawlCmder({'url': url})
-        return cmder.run()
+        songinfo = cmder.run()
+        return songinfo.toJSON()
     except Exception as exp:
         return error_msg_handle(exp)
 

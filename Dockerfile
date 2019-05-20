@@ -3,6 +3,7 @@ FROM ubuntu:18.04
 #RUN sed -i 's/http\:\/\/archive\.ubuntu\.com\/ubuntu/http\:\/\/free\.nchc\.org\.tw\/ubuntu\//g' /etc/apt/sources.list && \
 RUN	apt-get update && apt-get upgrade --yes
 RUN apt-get install -y --no-install-recommends python3 python3-pip python3-setuptools gcc python3-dev locales
+RUN apt-get install -y libmediainfo-dev
 RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 RUN pip3 install --upgrade pip wheel

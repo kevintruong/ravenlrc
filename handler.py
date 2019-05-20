@@ -1,12 +1,10 @@
 import json
 
-effectfiles = []
-
 
 def handler_getbgeffects():
-    from render.cache import ContentDir
-    from render.cache import StorageInfo
-    global effectfiles
+    from backend.storage.content import ContentDir
+    from backend.storage.content import StorageInfo
+    effectfiles = []
     if len(effectfiles) == 0:
         storeinfo: StorageInfo = ContentDir().CacheGDriveMappingDictCls['Effect']
         dir_fid = storeinfo.id

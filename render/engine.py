@@ -1,21 +1,25 @@
 from abc import *
-from threading import Thread, Event
-
+from threading import Thread, Event, Lock
 import time
+
 from Api.songeffect import generate_songeffect_for_lrc
+
+from backend.storage.content import ContentFileInfo
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import clean_up
 from backend.yclogger import telelog, slacklog
+
+from render.cache import *
+from render.ffmpegcli import FfmpegCli
+from render.parser import SongApi
+from render.type import *
+
 from publisher.facebook.fb_publish import FbPageAPI
 from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
 from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
 from publisher.youtube.youtube_uploader import YoutubeUploader
 from publisher.youtube.youtube_uploader import YtMvConfigStatus
-from render.cache import *
-from render.ffmpegcli import FfmpegCli
-from render.parser import SongApi
-from render.type import *
 
 
 class RenderEngine(ABC):
@@ -39,7 +43,6 @@ class RenderSong(RenderEngine):
                                                                     self.songinfo.songfile.fileinfo['name']])
         effectmv_cachedfile = MuxAudioVidCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:
-            # self.songinfo.songfile = GDriveMnger(True).download_file(self.songinfo.songfile)
             songfile = self.songinfo.songfile.get()
             src = src.get()
             leng = FfmpegCli().get_media_time_length(src)
@@ -720,8 +723,7 @@ class SongMvMultiBackground(SongRenderEngine):
     def generate_timing_list_by_option(self):
         from asseditor import load_ass_from_lrc
         lrcfile = self.songapi.song.lyric.get()
-        songfile = self.songapi.song.songfile.get()
-        songlength = FfmpegCli().get_media_time_length(songfile)
+        songlength = self.songapi.song.timeleng
 
         asscontext = load_ass_from_lrc(lrcfile)
         ass_line_count = len(asscontext.events)
@@ -749,7 +751,7 @@ class SongMvMultiBackground(SongRenderEngine):
                 timing_start = 0
 
             if index == len(itemindex) - 2:  # endtiming -> songlength
-                timing_end = songlength * 1000  # seconds => miliseconds
+                timing_end = songlength  # seconds => miliseconds
             timing = {
                 'start': timing_start,
                 'duration': int(timing_end - timing_start)

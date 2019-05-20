@@ -1,3 +1,4 @@
+from backend.storage.content import SongFile
 from backend.type import SongInfo
 from backend.utility.Utility import *
 from render.type import *
@@ -38,10 +39,16 @@ class SongApi:
 
     def get_song_info_from_url(self):
         if self.song is None and self.song_url:
-            crawlerdict = {'url': self.song_url}
-            from crawler.cmder import CrawlCmder
-            crawler = CrawlCmder(crawlerdict)
-            self.song: SongInfo = crawler.run()
+            from Api.crawler import get_song_info
+            songinfo = get_song_info(self.song_url)
+            songinfo_dict = json.loads(songinfo)
+            self.song = SongInfo(songinfo_dict)
+            # crawlerdict = {'url': self.song_url}
+            # from crawler.cmder import CrawlCmder
+            # crawler = CrawlCmder(crawlerdict)
+            # self.song: SongInfo = crawler.run()
+            self.song.songfile = SongFile.get_cachedfile(fid=self.song.songfile)
+            self.song.lyric = SongFile.get_cachedfile(fid=self.song.lyric)
 
     def get_list_background(self, info: list):
         backgrounds = []

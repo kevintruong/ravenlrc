@@ -1,16 +1,15 @@
 import os
 
-from time import sleep
+from threading import Thread
 
-from backend.type import Cmder, SongInfo
-from crawler.db.helper import GdriveSongInfoDb
+from backend.db.ravdb import RavSongDb
+from backend.type import SongInfo
 from crawler.nct import NctCrawler
 from render.cache import CachedContentDir
-from threading import Thread
 
 
 class CrawlCmder(Thread):
-    def __init__(self, crawlcmd: dict, readonly=True):
+    def __init__(self, crawlcmd: dict):
         super().__init__()
         self.output = None
         for key in crawlcmd.keys():
@@ -20,39 +19,35 @@ class CrawlCmder(Thread):
                 self.output = crawlcmd['output']
         if self.output is None:
             self.output = CachedContentDir.SONG_DIR
-        self.localdb = GdriveSongInfoDb.get_gdrivesonginfodb(readonly)
-        self.readonly = readonly
 
     def crawl_parser(self):
         if 'nhaccuatui' in self.url:
-            # songid = NctCrawler.get_nct_songid(self.url)
-            # songitem = GdriveSongInfoDb.get_gdrivesonginfodb(True).get_info_by_id(songid)
-            # if songitem:
-            #     songinfo = SongInfo(songitem)
-            #     return songinfo
-            # else:
-            #     return None
-            return NctCrawler(self.url)
+            songid = NctCrawler.get_nct_songid(self.url)
+            songitem = RavSongDb().get_info_by_id(songid)
+            if songitem:
+                songinfo = SongInfo(songitem)
+                return songinfo
+            else:
+                return None
 
     def get_parser(self):
         if 'nhaccuatui' in self.url:
             return NctCrawler(self.url)
 
     @classmethod
-    def get_link(cls, link, readonly=True):
+    def get_link(cls, link):
         if 'nhaccuatui' in link:
             if 'bai-hat-moi.html' in link:
                 return None
             if 'top-20.nhac-viet.html' in link:
                 return None
             songid = NctCrawler.get_nct_songid(link)
-            isexists = GdriveSongInfoDb.get_gdrivesonginfodb(True).get_info_by_id(songid)
-            if isexists:
-                songitem = GdriveSongInfoDb.get_gdrivesonginfodb(True).get_info_by_id(songid)[0]
-                songinfo = SongInfo(songitem).toJSON()
+            songitem = RavSongDb().get_info_by_id(songid)
+            if songitem:
+                songinfo = SongInfo(songitem)
                 return songinfo
             else:
-                crawlerthread = CrawlCmder({'url': link}, readonly)
+                crawlerthread = CrawlCmder({'url': link})
                 crawlerthread.start()
                 return crawlerthread
 
@@ -64,14 +59,24 @@ class CrawlCmder(Thread):
             else:
                 crawler = self.get_parser()
                 songinfo = crawler.getdownload(self.output)
-                if not self.readonly:
-                    self.localdb.insert_song(songinfo)
+                RavSongDb().insert_song(songinfo.__dict__)
                 return songinfo
         except Exception as exp:
             print('ignore the exceptiion {}'.format(exp))
 
 
 import unittest
+
+
+class Test_SongCrawler(unittest.TestCase):
+
+    def test_crawl_newsong(self):
+        song_url = {
+            'url': r'https://www.nhaccuatui.com/bai-hat/on-my-way-alan-walker-ft-sabrina-carpenter-ft-farruko.4mS3RM4QWrvb.html'
+        }
+        crawlercmd = CrawlCmder(song_url)
+        crawlercmd.run()
+        pass
 
 
 class Test_Crawler(unittest.TestCase):
@@ -85,7 +90,7 @@ class Test_Crawler(unittest.TestCase):
         enable = False
         for cnt, line in enumerate(self.songfiles):
             try:
-                crawler = CrawlCmder.get_link(line.rstrip(), True)
+                crawler = CrawlCmder.get_link(line.rstrip())
                 if crawler is None:
                     continue
                 if type(crawler) is not str:

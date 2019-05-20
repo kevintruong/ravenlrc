@@ -5,12 +5,11 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
+from backend.db.ravdb import RavSongDb
+from backend.storage.content import SongFile, CachedContentDir
 from backend.type import SongInfo
-from backend.utility.Utility import only_latin_string
-from crawler.db.helper import GdriveSongInfoDb
+from backend.utility.Utility import only_latin_string, get_media_info
 from crawler.rc4_py3 import decrypt
-from render.cache import CachedContentDir
-from backend.storage.content import SongFile
 
 
 class Crawler(abc.ABC):
@@ -52,11 +51,16 @@ class NctSongInfo(SongInfo):
                 self.lyrictext = nctsonginfo[keyvalue]
             if keyvalue == 'lyric':
                 self.lyric = nctsonginfo[keyvalue]
+            if keyvalue == 'timelength()':
+                self.timeleng = nctsonginfo[keyvalue]
         self.id = self.get_nct_id(self.info)
 
     def get_nct_id(self, ncturl: str):
         nct_url = ncturl.split('.')
         return nct_url[3]
+
+    def verify_info(self):
+        self.songfile = SongFile.get_cachedfile(fid=self.songfile)
 
 
 class NctCrawler(Crawler):
@@ -76,9 +80,9 @@ class NctCrawler(Crawler):
             'accept-language': 'en-US,en;q=0.9',
             'cookie': 'nctads_ck=g49j2tu1f2il4w4w6x64fhof_1554856256954; fbm_414296278689656=base_domain=.nhaccuatui.com; NCT_BALLOON_INDEX=true; __utma=157020004.1165531668.1554856257.1554856257.1555640036.2; __utmc=157020004; __utmz=157020004.1555640036.2.2.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); autoPlayNext=true; NCT_AUTH_JWT=eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NTgyMzQyMjMsImxvZ2luTWV0aG9kIjoiMiIsInVzZXJJZCI6IjM1MDA3NTY2IiwibmJmIjoxNTU1NjQyMjIzLCJpYXQiOjE1NTU2NDIyMjMsImRldmljZUlkIjoiMzI2RjQyNjE2RjFFNDUwN0FGOURDQzI0NjUwQzA2MEQifQ.HkrSQiVikuH7-Ap3uziLGILkBm-VvLACQy2bQ6LGMBQ; NCT_BALLOON_INDEX-kevinraven=true; PaymentPageATM=49000; NCT_PAYMENT_DISCOUNT=; NCT_PAYMENT_DISCOUNT_A=; NCT_PAYMENT_AUTORENEW=new; NCT_ONOFF_ADV=1; __utmt=1; NCTNPLP=a32c585f6e8f316dc3d76e6edc2443b538d4ac2314425454f9a6135c898177dc; NCTNPLS=58e5801f60974d1267f8898b44c0af16; NCTCRLS=fb30d00ae64a520529006004e982a291c977687b0ec71b995d9b3d1825eec529cab3d7adcee90884af916eb9193e1849a885b80bafbcae99849cdd6f25e8953d03f50587f73a6f8075f424d7283129c4664d563f2e3c2f19f34f35e0d98e1d84cf83f3eda9c2cd35fd9df68a92e890b0ed4cb2c8721131fa1f94214cc3d24c11f03efe89190478615b3b70a50bb3a32b262d592b918d40527c17a70549b4d3662173ab5acb841066cb2296ad0f92a6c1bc7df478c155dfac51c4a4df8a017f98a6c5d9e220fdd0e44df40b5ea314929853d760c0d412c0dcb0dfbbdb502be6fb8a9f53d395d63df48f091d379d3349eb; 80085=401d10668d97dffa38c487e85e9; JSESSIONID=1s40xulznm0gi1x28vfwijgodk; __utmb=157020004.61.9.1555642662756',
         }
-        self.localdb = GdriveSongInfoDb.get_gdrivesonginfodb()
-        songid = ""
-        self.iscached = False
+        self.proxies = {
+            "http": "http://kevin:ravtech@103.56.157.63:8899"
+        }
         if self.nctWmUrl not in ncturl:
             songinfos = ncturl.split("/")
             songid = songinfos[4]
@@ -86,19 +90,18 @@ class NctCrawler(Crawler):
         else:
             self.mobileNctWmUrl = ncturl
             songid = ncturl.split(".")[3]
-        items = self.localdb.get_info_by_id(songid)
+        items = RavSongDb().get_info_by_id(songid)
+        self.iscached = False
         if items:
             self.songinfo: SongInfo = SongInfo(items)
             self.iscached = True
-            if self.songinfo.songfile is None:
-                print('[WARMING] Song file is null,re-check')
-                self.songinfo: NctSongInfo = self.parser()
-                self.iscached = False
-            else:
-                print('[WARMING] reuse info in DB ')
         else:
             print('[Warning] crawl data {}'.format(self.mobileNctWmUrl))
-            self.songinfo: NctSongInfo = self.parser()
+            self.songinfo = self.parser()
+
+    def db_update_song_meta_info(self):
+        if self.songinfo:
+            RavSongDb().insert_song(self.songinfo.__dict__)
 
     @classmethod
     def get_nct_songid(cls, ncturl: str):
@@ -163,10 +166,10 @@ class NctCrawler(Crawler):
         return songinfo
 
     def parser(self):
-        crawler = requests.get(self.mobileNctWmUrl)
+        crawler = requests.get(self.mobileNctWmUrl, proxies=self.proxies)
         song_xml = self.get_song_xml_file(crawler.text)
         # Get song_xml -> parse
-        song_info = requests.get(song_xml, headers=self.vipcookies)
+        song_info = requests.get(song_xml, headers=self.vipcookies, proxies=self.proxies)
         # song_info = ProxyRequests.get_ins().get(song_xml, headers=self.vipcookies)
         soup = BeautifulSoup(crawler.text, 'html')
         lyric_text = soup.find(attrs={'class': 'pd_lyric trans', 'id': 'divLyric'}).text
@@ -192,7 +195,6 @@ class NctCrawler(Crawler):
                 songinfo.lyric = locallyricfile
             except Exception as exp:
                 songinfo.lyric = None
-            # self.localdb.insert_song(songinfo.__dict__)
         return songinfo
 
     def get_mp3file(self, outputdir: str):
@@ -210,12 +212,17 @@ class NctCrawler(Crawler):
                     mp3file = requests.get(songinfo.songfile,
                                            allow_redirects=True,
                                            timeout=60,
-                                           headers=self.vipcookies)
+                                           headers=self.vipcookies,
+                                           proxies=self.proxies)
                     with open(localmp3file, 'wb') as mp3filefd:
                         mp3filefd.write(mp3file.content)
-                    CachedContentDir.gdrive_file_upload(localmp3file)
-                    mp3file = SongFile.get_cachedfile(mp3filename)
-                return mp3file
+                    self.songinfo.timeleng = get_media_info(localmp3file)
+                    fileid = CachedContentDir.gdrive_file_upload(localmp3file)
+                    return fileid['id']
+                if self.songinfo.timeleng is None:
+                    songfile = mp3file.get()
+                    self.songinfo.timeleng = get_media_info(songfile)
+                return mp3file.fileinfo['id']
             except Exception as exp:
                 retry = retry + 1
                 if retry > retry_max:
@@ -235,15 +242,11 @@ class NctCrawler(Crawler):
                 returndata = decrypt(NctCrawler.key, lyricfile.content)
                 with codecs.open(locallyricfile, 'w', "utf-8") as f:
                     f.write(returndata)
-                CachedContentDir.gdrive_file_upload(locallyricfile)
-                lyricfile = SongFile.get_cachedfile(filename)
-            return lyricfile
+                fileid = CachedContentDir.gdrive_file_upload(locallyricfile)
+                return fileid['id']
+            return lyricfile.fileinfo['id']
         except Exception as exp:
-            raise Exception('can not get lyric file from the url {}'.format(self.songinfo.info))
-
-
-# class NctCrawler_fix():
-#     def __init__(self):
+            raise Exception('can not get lyric file from the url {} exp {} '.format(self.songinfo.info, exp))
 
 
 import unittest
@@ -251,7 +254,7 @@ import unittest
 
 class testnctcrawler(unittest.TestCase):
     def setUp(self):
-        self.url = r'https://www.nhaccuatui.com/bai-hat/giu-cho-em-mot-the-gioi-trang-ft-khoa-vu.yuJlBrY4KIqO.html'
+        self.url = r'https://www.nhaccuatui.com/bai-hat/on-my-way-alan-walker-ft-sabrina-carpenter-ft-farruko.4mS3RM4QWrvb.html'
         self.nct = NctCrawler(self.url)
 
     def test_init(self):
@@ -259,17 +262,24 @@ class testnctcrawler(unittest.TestCase):
                          NctCrawler.nctWmUrl + "nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
 
     def test_parse(self):
-        # self.assertEqual(self.nct.mobileNctWmUrl,
-        #                  NctCrawler.nctWmUrl + "nham-mat-thay-mua-he-nham-mat-thay-mua-he-ost-nguyen-ha.btmm6eYyZzW4.html")
         print(self.nct.get_songinfo())
         print('end')
 
     def test_download_file(self):
-        jsondat = self.nct.getdownload('./test/')
+        jsondat = self.nct.getdownload('/tmp/raven/cache/Song')
+        print("{}".format(jsondat.toJSON()))
+        self.nct.db_update_song_meta_info()
+
         print(jsondat)
 
+        self.url = r'https://www.nhaccuatui.com/bai-hat/cafe-thuoc-la-va-nhung-ngay-vui-the-bao.WVjiaoIWTaAl.html'
+        self.nct = NctCrawler(self.url)
+        jsondat = self.nct.getdownload('/tmp/raven/cache/Song')
+        print("{}".format(jsondat.toJSON()))
+        self.nct.db_update_song_meta_info()
+
     def test_get_lyric(self):
-        jsonfile = self.nct.get_lyric('./test/')
+        jsonfile = self.nct.get_lyric()
         print(jsonfile)
 
     def test_get_mp3file(self):
@@ -280,3 +290,13 @@ class testnctcrawler(unittest.TestCase):
         songinfo = self.nct.songinfo
         info = [songinfo.id, songinfo.title, songinfo.singer, songinfo.info]
         print(info)
+
+    def test_request_proxy(self):
+        proxies = {
+            "http": "http://kevin:ravtech@103.56.157.63:8899"
+        }
+        # auth = HTTPProxyDigestAuth("kevin", "ravtech")
+        ret = requests.get('http://www.google.com',
+                           proxies=proxies)
+        print(ret.status_code)
+        pass

@@ -1,3 +1,5 @@
+pymediainfo
+psycopg2-binary
 moviepy
 fontTools
 stackprinter

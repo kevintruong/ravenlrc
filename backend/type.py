@@ -15,6 +15,7 @@ class SongInfo:
         self.lyrictext = None
         self.lyric = None
         self.id = None
+        self.timeleng = None
         inputtype = type(nctsonginfo)
         if type(nctsonginfo) is dict:
             for keyvalue in nctsonginfo.keys():
@@ -32,6 +33,8 @@ class SongInfo:
                     self.lyrictext = nctsonginfo[keyvalue]
                 if keyvalue == 'lyric':
                     self.lyric = nctsonginfo[keyvalue]
+                if keyvalue == 'timeleng':
+                    self.timeleng = nctsonginfo[keyvalue]
         elif type(nctsonginfo) is tuple:
             self.id = nctsonginfo[0]
             self.singer = nctsonginfo[1]
@@ -40,6 +43,8 @@ class SongInfo:
             self.lyrictext = nctsonginfo[4]
             self.lyric = nctsonginfo[5]
             self.info = nctsonginfo[6]
+            if len(nctsonginfo) > 7:
+                self.timeleng = nctsonginfo[7]
 
 
 class Cmder:

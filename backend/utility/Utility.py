@@ -1,9 +1,10 @@
+import json
 import os
 import re
 
 import unidecode
 
-from backend.yclogger import telelog, slacklog
+from backend.yclogger import slacklog
 
 
 def get_filepath_info(filepath: str):
@@ -121,7 +122,6 @@ def generate_song_hashtags(songname: str):
 
 
 def generate_singer_song_hash_combine(singerhashtags: list, songname_hashtags: list):
-    from datetime import datetime
     combine_hashtags = []
     for singer_hashtag in singerhashtags:
         length = 0
@@ -147,6 +147,15 @@ def generate_singer_song_hashtags(singers: str, songname: str):
     return final_hashtags
 
 
+def get_media_info(filepath):
+    from pymediainfo import MediaInfo
+    media_info = MediaInfo.parse(filepath)
+    for track in media_info.tracks:
+        if track.track_type == 'Audio':
+            print('duration: {}'.format(track.duration))
+            return track.duration
+
+
 def clean_up(dirpath='/tmp/raven'):
     for path in os.listdir(dirpath):
         full_path = os.path.join(dirpath, path)
@@ -156,15 +165,6 @@ def clean_up(dirpath='/tmp/raven'):
             clean_up(full_path)
 
 
-def telegram_send_previewlink(url: str):
-    markdown = '''[![Audi R8](http://img.youtube.com/vi/KOxbO0EI4MA/0.jpg)](https://www.youtube.com/watch?v=KOxbO0EI4MA "Audi R8")'''
-    test_markdown = '''<iframe  title="YouTube video player" width="480" height="390" src="{}" frameborder="0" allowfullscreen></iframe>'''.format(
-        url)
-    htmlvideo = r'''<a href="{}">preview link</a>'''.format(url)
-    telelog.debug(test_markdown)
-
-
-import json
 
 
 class PyJSON(object):

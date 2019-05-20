@@ -273,32 +273,41 @@ class CachedContentDir:
             # raise FileNotFoundError('Not found {} in {}'.format(filename, dir))
 
     @classmethod
-    def verify_file(cls, dir=None, filename=None):
+    def verify_file(cls, dir=None, filename=None, fid=None):
         dir = os.path.basename(dir)
         if cls.CacheGDriveMappingDictCls is None:
             cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
         storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dir]
-        is_exists = cls.GdriveCacheStorage.is_file_exists_at_local(filename)
         filepath = None
-        fileinfo = None
-        if is_exists:
-            listfiles = os.listdir(storeinfo.path)
-            if filename in listfiles:
-                filepath = os.path.join(storeinfo.path, filename)
+        if filename:
+            is_exists = cls.GdriveCacheStorage.is_file_exists_at_local(filename)
+            if is_exists:
+                listfiles = os.listdir(storeinfo.path)
+                if filename in listfiles:
+                    filepath = os.path.join(storeinfo.path, filename)
+            else:
+                listfiles = os.listdir(storeinfo.path)
+                if filename in listfiles:
+                    filepath = os.path.join(storeinfo.path, filename)
             parent_id = storeinfo.id
             fileinfo = cls.GdriveCacheStorage.viewFile(filename, parent_id)
-        else:
-            listfiles = os.listdir(storeinfo.path)
-            if filename in listfiles:
-                filepath = os.path.join(storeinfo.path, filename)
-            parent_id = storeinfo.id
-            fileinfo = cls.GdriveCacheStorage.viewFile(filename, parent_id)
-        if filepath or fileinfo:
+            if filepath or fileinfo:
+                return ContentFileInfo(filename,
+                                       fileinfo,
+                                       storeinfo.path,
+                                       filepath,
+                                       cls.GdriveCacheStorage)
+        elif fid:
+            fileinfo = cls.GdriveCacheStorage.get_item_info(fid)
+            if fileinfo is None:
+                return None
+            filename = fileinfo['name']
             return ContentFileInfo(filename,
                                    fileinfo,
                                    storeinfo.path,
                                    filepath,
-                                   cls.GdriveCacheStorage)
+                                   cls.GdriveCacheStorage
+                                   )
         else:
             return None
 
@@ -372,5 +381,5 @@ class SongFile:
         return None
 
     @classmethod
-    def get_cachedfile(cls, filename):
-        return CachedContentDir.verify_file(cls.SongDir, filename)
+    def get_cachedfile(cls, filename=None, fid=None):
+        return CachedContentDir.verify_file(cls.SongDir, filename, fid)
