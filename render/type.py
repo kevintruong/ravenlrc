@@ -53,16 +53,17 @@ class Font:
         font = ttLib.TTFont(fontfile)
         for record in font['name'].names:
             try:
-                if b'\x00' in record.string:
-                    name_str = record.string.decode('utf-16-be')
-                else:
-                    name_str = record.string.decode('utf-8')
-                if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
+                if record.nameID == FONT_SPECIFIER_NAME_ID:
+                    if b'\x00' in record.string:
+                        name_str = record.string.decode('utf-16-be')
+                    else:
+                        name_str = record.string.decode('utf-8')
                     name = name_str
                 if name:
                     break
             except Exception as exp:
                 print('ignore the error {}'.format(exp))
+                continue
         return name
 
 

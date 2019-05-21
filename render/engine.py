@@ -214,21 +214,33 @@ class RenderBgEffect(RenderEngine):
                                                                  )
         effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
         if effect_cachedfile is None:
-            ffmpegcli = FfmpegCli()
-            effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
             effect_file = self.bgeffectfile.get()
             effect_timelength = FfmpegCli().get_media_time_length(effect_file)
-            src = src.get()
-            ffmpegcli.add_effect_to_bg(effect_file,
-                                       src,
-                                       effect_cachedfile,
-                                       self.bgEffect.opacity,
-                                       effect_timelength)
-            CachedContentDir.gdrive_file_upload(effect_cachedfile)
-            effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
+            bg_effect_cached_filename = BgEffectCachedFile.get_cached_filename(src.filename,
+                                                                               attribute=[effectfile_name,
+                                                                                          self.bgEffect.opacity,
+                                                                                          effect_timelength],
+                                                                               extention='.mp4'
+                                                                               )
+            bg_effect_cachedfile = self.mux_bgvid_with_bgeffect(bg_effect_cached_filename, src)
 
-            effect_cachedfile = self.init_bgeffect_video_with_length(effect_cachedfile,
-                                                                     timelength)
+            effect_cachedfile = self.init_bgeffect_video_with_length(bg_effect_cachedfile, cached_filename, timelength)
+        return effect_cachedfile
+
+    def mux_bgvid_with_bgeffect(self, cached_filename, src):
+
+        ffmpegcli = FfmpegCli()
+        effect_cachedfile = BgEffectCachedFile.create_cachedfile(cached_filename)
+        effect_file = self.bgeffectfile.get()
+        effect_timelength = FfmpegCli().get_media_time_length(effect_file)
+        src = src.get()
+        ffmpegcli.add_effect_to_bg(effect_file,
+                                   src,
+                                   effect_cachedfile,
+                                   self.bgEffect.opacity,
+                                   effect_timelength)
+        CachedContentDir.gdrive_file_upload(effect_cachedfile)
+        effect_cachedfile = BgEffectCachedFile.get_cachedfile(cached_filename)
         return effect_cachedfile
 
     def __init__(self, bgeffect: BgEffect,
@@ -260,29 +272,31 @@ class RenderBgEffect(RenderEngine):
             effect_cachedfile: ContentFileInfo = EffectCachedFile.get_cachedfile(cached_filename)
         return effect_cachedfile
 
-    def init_bgeffect_video_with_length(self, effectprofilefile, length):
+    def init_bgeffect_video_with_length(self, effectprofilefile, effectbg_filename, length):
         '''
         loop the current file effect_profile_file with time length is length
+        :param effectbg_filename:
         :param effectprofilefile:
         :param length:
         :return:
         '''
-        cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile.filename,
-                                                               attribute=[self.rendertype,
-                                                                          self.timing,
-                                                                          length],
-                                                               extention='.mp4')
-        effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
-        if effectmv_cachedfile is None:
-            ffmpegcli = FfmpegCli()
-            effectprofilefile = effectprofilefile.get()
-            effectmv_cachedfile = EffectCachedFile.create_cachedfile(cached_filename)
-            ffmpegcli.create_background_affect_with_length(effectprofilefile,
-                                                           effectmv_cachedfile,
-                                                           length
-                                                           )
-            CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
-            effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
+        # cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile.filename,
+        #                                                        attribute=[self.rendertype,
+        #                                                                   self.timing,
+        #                                                                   length],
+        #                                                        extention='.mp4')
+        # effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
+        # if effectmv_cachedfile is None:
+        ffmpegcli = FfmpegCli()
+        effectprofilefile = effectprofilefile.get()
+        effectmv_cachedfile = EffectCachedFile.create_cachedfile(effectbg_filename)
+
+        ffmpegcli.create_background_affect_with_length(effectprofilefile,
+                                                       effectmv_cachedfile,
+                                                       length
+                                                       )
+        CachedContentDir.gdrive_file_upload(effectmv_cachedfile)
+        effectmv_cachedfile = EffectCachedFile.get_cachedfile(effectbg_filename)
         return effectmv_cachedfile
 
 

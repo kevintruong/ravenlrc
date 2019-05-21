@@ -1,5 +1,3 @@
-import traceback
-
 import hug
 
 api = hug.API(__name__)
@@ -25,9 +23,10 @@ def CORS(request, response, resource):
 
 
 def error_msg_handle(exp):
-    from backend.yclogger import telelog
-    tracebackmsg = traceback.format_exc()
-    telelog.error("{}".format(exp) + '\n' + '```{}```'.format(tracebackmsg))
+    from backend.yclogger import slacklog
+    from backend.yclogger import stacklogger
+    tracebackmsg = stacklogger.format(exp)
+    slacklog.error("{}".format(tracebackmsg))
     return {'status': 'error',
             'message': "{}".format(exp),
             'traceback': "{}".format(tracebackmsg)
@@ -41,7 +40,7 @@ def song(url):
         from crawler.cmder import CrawlCmder
         from backend.type import Cmder
         telelog.debug('```{}```'.format(url))
-        cmder: Cmder = CrawlCmder({'url': url})
+        cmder = CrawlCmder({'url': url})
         songinfo = cmder.run()
         return songinfo.toJSON()
     except Exception as exp:

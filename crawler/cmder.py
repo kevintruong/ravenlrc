@@ -33,6 +33,8 @@ class CrawlCmder(Thread):
     def get_parser(self):
         if 'nhaccuatui' in self.url:
             return NctCrawler(self.url)
+        else:
+            raise NotImplementedError('not support the {}'.format(self.url))
 
     @classmethod
     def get_link(cls, link):

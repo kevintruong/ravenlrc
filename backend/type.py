@@ -17,6 +17,8 @@ class SongInfo:
         self.id = None
         self.timeleng = None
         inputtype = type(nctsonginfo)
+        if inputtype is str:
+            nctsonginfo = json.loads(nctsonginfo)
         if type(nctsonginfo) is dict:
             for keyvalue in nctsonginfo.keys():
                 if keyvalue == 'singer':
