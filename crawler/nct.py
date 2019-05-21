@@ -166,17 +166,24 @@ class NctCrawler(Crawler):
         return songinfo
 
     def parser(self):
-        crawler = requests.get(self.mobileNctWmUrl, proxies=self.proxies)
-        song_xml = self.get_song_xml_file(crawler.text)
-        # Get song_xml -> parse
-        song_info = requests.get(song_xml, headers=self.vipcookies, proxies=self.proxies)
-        # song_info = ProxyRequests.get_ins().get(song_xml, headers=self.vipcookies)
-        soup = BeautifulSoup(crawler.text, 'html')
-        lyric_text = soup.find(attrs={'class': 'pd_lyric trans', 'id': 'divLyric'}).text
-        formatlyric = self.reformat_lyric(lyric_text)
-        songinf = self.song_info_xml_parser(song_info.text)
-        songinf.lyrictext = formatlyric
-        return songinf
+        try_count = 0
+        while True:
+            try:
+                crawler = requests.get(self.mobileNctWmUrl, proxies=self.proxies)
+                song_xml = self.get_song_xml_file(crawler.text)
+                song_info = requests.get(song_xml, headers=self.vipcookies, proxies=self.proxies)
+                soup = BeautifulSoup(crawler.text, 'html')
+                lyric_text = soup.find(attrs={'class': 'pd_lyric trans', 'id': 'divLyric'}).text
+                formatlyric = self.reformat_lyric(lyric_text)
+                songinf = self.song_info_xml_parser(song_info.text)
+                songinf.lyrictext = formatlyric
+                return songinf
+            except Exception as exp:
+                if try_count < 5:
+                    try_count = + 1
+                    continue
+                else:
+                    raise ConnectionError('Error when when crawler data')
 
     def get_songinfo(self):
         return self.songinfo.toJSON()
@@ -268,7 +275,7 @@ class testnctcrawler(unittest.TestCase):
         print('end')
 
     def test_download_file(self):
-        self.url = r'https://www.nhaccuatui.com/bai-hat/it-aint-me-kygo-ft-selena-gomez.PPYMmjs8AgOU.html'
+        self.url = r'https://www.nhaccuatui.com/bai-hat/all-falls-down-alan-walker-ft-noah-cyrus-ft-digital-farm-animals-ft-juliander.lmjlz0UwtE5d.html'
         self.nct = NctCrawler(self.url)
         jsondat = self.nct.getdownload('/tmp/raven/cache/Song')
         print("{}".format(jsondat.toJSON()))

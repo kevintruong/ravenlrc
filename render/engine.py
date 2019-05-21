@@ -201,6 +201,7 @@ class RenderBgEffect(RenderEngine):
         timelength = self.rendertype.configure.duration
 
         self.bgeffectfile = self.init_bgeffect_by_profile(profile)  # scale to render resolution
+
         effectfile_name = EffectCachedFile.get_cached_filename(self.bgeffectfile.filename,
                                                                attribute=[self.rendertype,
                                                                           self.timing],
@@ -268,7 +269,8 @@ class RenderBgEffect(RenderEngine):
         '''
         cached_filename = EffectCachedFile.get_cached_filename(effectprofilefile.filename,
                                                                attribute=[self.rendertype,
-                                                                          self.timing],
+                                                                          self.timing,
+                                                                          length],
                                                                extention='.mp4')
         effectmv_cachedfile = EffectCachedFile.get_cachedfile(cached_filename)
         if effectmv_cachedfile is None:

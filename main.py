@@ -24,11 +24,9 @@ def songcrawler(request):
         return abort(405)
     try:
         from backend.yclogger import telelog
-        from crawler.cmder import CrawlCmder
-        from backend.type import Cmder
         url = request.args.get('url')
-        cmder: Cmder = CrawlCmder({'url': url})
-        songinfo = cmder.run()
+        from Api.crawler import get_song_info
+        songinfo = get_song_info(url)
         response = flask.jsonify(songinfo)
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.set('Access-Control-Allow-Methods', 'GET, POST')

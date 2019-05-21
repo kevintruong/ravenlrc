@@ -29,35 +29,40 @@ class Font:
         else:
             self.color: int = int(info['color'], 0)
         self.size = int(info['size'])
-        self.name = self.get_font_name()
+        self.name = self.get_fontname_from_file()
 
-    def get_fontfile_byname(self):
+    def get_fontname_from_file(self):
         from config.configure import fontsdir
         import os
         fontfiles = os.listdir(fontsdir)
         for file in fontfiles:
             if self.name in file:
-                return os.path.join(fontsdir, file)
+                fontpath = os.path.join(fontsdir, file)
+                try:
+                    fontname = self.get_font_name(fontpath)
+                    return fontname
+                except Exception as exp:
+                    print('ignore this {}'.format(exp))
         raise FileNotFoundError('Not found {} font file'.format(self.name))
 
-    def get_font_name(self):
+    def get_font_name(self, fontfile):
         from fontTools import ttLib
         """Get the short name from the font's names table"""
         FONT_SPECIFIER_NAME_ID = 4
-        FONT_SPECIFIER_FAMILY_ID = 1
         name = ""
-        family = ""
-        fontfile = self.get_fontfile_byname()
         font = ttLib.TTFont(fontfile)
         for record in font['name'].names:
-            if b'\x00' in record.string:
-                name_str = record.string.decode('utf-16-be')
-            else:
-                name_str = record.string.decode('utf-8')
-            if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
-                name = name_str
-            if name:
-                break
+            try:
+                if b'\x00' in record.string:
+                    name_str = record.string.decode('utf-16-be')
+                else:
+                    name_str = record.string.decode('utf-8')
+                if record.nameID == FONT_SPECIFIER_NAME_ID and not name:
+                    name = name_str
+                if name:
+                    break
+            except Exception as exp:
+                print('ignore the error {}'.format(exp))
         return name
 
 
