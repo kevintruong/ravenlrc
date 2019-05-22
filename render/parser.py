@@ -43,12 +43,9 @@ class SongApi:
             songinfo = get_song_info(self.song_url)
             songinfo_dict = json.loads(songinfo)
             self.song = SongInfo(songinfo_dict)
-            # crawlerdict = {'url': self.song_url}
-            # from crawler.cmder import CrawlCmder
-            # crawler = CrawlCmder(crawlerdict)
-            # self.song: SongInfo = crawler.run()
-            self.song.songfile = SongFile.get_cachedfile(fid=self.song.songfile)
-            self.song.lyric = SongFile.get_cachedfile(fid=self.song.lyric)
+            self.song.songinfo_retry_file()
+            # self.song.songfile = SongFile.get_cachedfile(fid=self.song.songfile)
+            # self.song.lyric = SongFile.get_cachedfile(fid=self.song.lyric)
 
     def get_list_background(self, info: list):
         backgrounds = []
