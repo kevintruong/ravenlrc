@@ -8,7 +8,9 @@ RUN locale-gen en_US.UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 RUN pip3 install --upgrade pip wheel
 RUN mkdir -p /usr/share/render
+ARG deploy_env='product'
 COPY requirements.txt /tmp/
+ENV DEPLOY_ENV=$deploy_env
 EXPOSE 5000/tcp
 RUN pip3 install -r /tmp/requirements.txt --upgrade
 COPY . /usr/share/render

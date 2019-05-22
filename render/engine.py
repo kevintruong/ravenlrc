@@ -917,9 +917,14 @@ class RenderThread(Thread):
         self.channel = channel
 
     def run(self) -> None:
-        ret = self.song_render.run()
-        self.outputfile = self.song_render.output
-        self.youtube_publish()
+        try:
+            ret = self.song_render.run()
+            self.outputfile = self.song_render.output
+            self.youtube_publish()
+        except Exception as exp:
+            from backend.yclogger import stacklogger
+            stackerr = stacklogger.format(exp)
+            slacklog.error(stackerr)
 
     def youtube_publish(self):
         try:
@@ -931,7 +936,6 @@ class RenderThread(Thread):
                                                                                songinfo))
             resp = handler.upload_video(upload_mvfile, snippet, status)
             self.facebook_publish(snippet, resp['id'])
-
         except Exception as exp:
             raise exp
 

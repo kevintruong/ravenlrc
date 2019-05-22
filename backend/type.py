@@ -1,6 +1,8 @@
 import abc
 import json
 
+from backend.storage.content import SongFile
+
 
 class SongInfo:
     def toJSON(self):
@@ -47,6 +49,12 @@ class SongInfo:
             self.info = nctsonginfo[6]
             if len(nctsonginfo) > 7:
                 self.timeleng = nctsonginfo[7]
+
+    def verify_songinfo(self):
+        self.songfile = SongFile.get_cachedfile(fid=self.songfile)
+        self.lyric = SongFile.get_cachedfile(fid=self.lyric)
+        if self.timeleng == 0:
+            raise Exception('Timelength return error')
 
 
 class Cmder:

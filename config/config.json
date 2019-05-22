@@ -1,5 +1,6 @@
 {
   "StorageMountPoint": "/tmp/raven/",
   "CacheStorageMountPoint": "/tmp/raven/",
-  "TmpDir": "/tmp/raven"
+  "TmpDir": "/tmp/raven",
+  "EndPoint": "http://35.197.57.162:5000/"
 }

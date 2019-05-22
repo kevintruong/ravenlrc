@@ -42,10 +42,10 @@ class ContentFileInfo:
 
     def get(self):
         if self.filepath:
-            return self.filepath
-        else:
-            self.filepath = self.storage.download_file(self.fileinfo['id'], self.dirname)
-            return self.filepath
+            if os.path.exists(self.filepath):
+                return self.filepath
+        self.filepath = self.storage.download_file(self.fileinfo['id'], self.dirname)
+        return self.filepath
 
 
 class ContentDir:

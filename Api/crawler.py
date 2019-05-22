@@ -1,7 +1,12 @@
 import json
 import requests
 
-SONGCRAWLER__ENDPOINT = 'http://35.197.57.162:5000/'
+from config.configure import BackendConfigure
+
+# SONGCRAWLER__ENDPOINT = 'http://35.197.57.162:5000/'
+
+configure: BackendConfigure = BackendConfigure.get_config()
+SONGCRAWLER__ENDPOINT = configure.EndPoint
 
 
 # SONGCRAWLER__ENDPOINT = 'http://localhost:5000/'

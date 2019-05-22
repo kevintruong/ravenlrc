@@ -51,7 +51,7 @@ class NctSongInfo(SongInfo):
                 self.lyrictext = nctsonginfo[keyvalue]
             if keyvalue == 'lyric':
                 self.lyric = nctsonginfo[keyvalue]
-            if keyvalue == 'timelength()':
+            if keyvalue == 'timeleng':
                 self.timeleng = nctsonginfo[keyvalue]
         self.id = self.get_nct_id(self.info)
 
@@ -223,6 +223,7 @@ class NctCrawler(Crawler):
     def get_mp3file(self, outputdir: str):
         retry = 0
         retry_max = 5
+        force_redownload = False
         while True:
             try:
                 songinfo: SongInfo = self.songinfo
@@ -230,7 +231,7 @@ class NctCrawler(Crawler):
                                                                   songinfo.singer,
                                                                   songinfo.id))
                 mp3file = SongFile.get_cachedfile(mp3filename)
-                if mp3file is None:
+                if mp3file is None or force_redownload:
                     localmp3file = os.path.join(outputdir, '{}.mp3'.format(mp3filename))
                     mp3file = requests.get(songinfo.songfile,
                                            allow_redirects=True,
@@ -240,13 +241,19 @@ class NctCrawler(Crawler):
                                            verify=False)
                     with open(localmp3file, 'wb') as mp3filefd:
                         mp3filefd.write(mp3file.content)
-                    self.songinfo.timeleng = get_media_info(localmp3file)
-                    fileid = CachedContentDir.gdrive_file_upload(localmp3file)
-                    return fileid['id']
+                    fileinfo = CachedContentDir.gdrive_file_upload(localmp3file)
+                    mp3file = SongFile.get_cachedfile(mp3filename)
+                    fileid = fileinfo['id']
+                else:
+                    fileid = mp3file.fileinfo['id']
+
                 if self.songinfo.timeleng is None:
                     songfile = mp3file.get()
                     self.songinfo.timeleng = get_media_info(songfile)
-                return mp3file.fileinfo['id']
+                if self.songinfo.timeleng is None or self.songinfo.timeleng == 0:
+                    force_redownload = True
+                    continue
+                return fileid
             except Exception as exp:
                 retry = retry + 1
                 if retry > retry_max:
