@@ -98,7 +98,10 @@ class NctCrawler(Crawler):
         self.iscached = False
         if items:
             self.songinfo: SongInfo = SongInfo(items)
-            self.iscached = True
+            if self.songinfo.verify_info():
+                self.iscached = True
+            else:
+                self.songinfo = self.parser()
         else:
             print('[Warning] crawl data {}'.format(self.mobileNctWmUrl))
             self.songinfo = self.parser()

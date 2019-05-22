@@ -9,7 +9,6 @@ import requests
 
 from config.configure import BackendConfigure
 
-
 configure: BackendConfigure = BackendConfigure.get_config()
 RENDER_ENDPOINT = configure.EndPoint
 
@@ -21,4 +20,9 @@ def toJSON(objinfo):
 
 def publish_vid(body):
     r = requests.post(RENDER_ENDPOINT + '/api/video/publish', json=body)
-    return r.text, r.status_code
+    return r
+
+
+def render_preview_song(body):
+    r = requests.post(RENDER_ENDPOINT + '/api/video/render', json=body)
+    return r

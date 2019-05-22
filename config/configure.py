@@ -5,11 +5,14 @@ import sys
 from config.foldergenerator import SchemmaGenerator
 
 curdir = os.path.dirname(os.path.realpath(__file__))
+
 configfile = os.path.join(curdir, 'config.json')
 fontsdir = os.path.abspath(os.path.join(curdir, '../.fonts'))
 rootdir = os.path.abspath(os.path.join(curdir, '..'))
 vendordir = os.path.join(rootdir, 'backend/vendor')
 sys.path.append(vendordir)
+
+default_endpoint = 'http://localhost:5000/'
 
 
 class BackendConfigure:
@@ -20,6 +23,7 @@ class BackendConfigure:
             self.StorageMountPoint = None
             self.CacheStorageMountPoint = None
             self.TmpDir = None
+            self.EndPoint = None
             for key, value in info.items():
                 if key == 'StorageMountPoint':
                     self.StorageMountPoint = value
@@ -27,13 +31,18 @@ class BackendConfigure:
                     self.CacheStorageMountPoint = value
                 if key == 'TmpDir':
                     self.TmpDir = value
+                if key == 'EndPoint':
+                    self.EndPoint = value
             self.create_config_dir()
             self.fontsdir = fontsdir
             BackendConfigure.configfile = self
             from ffmpegbin import ffmpegbin
             os.environ['FFMPEG_BINARY'] = os.path.join(ffmpegbin.ffmpegpath, 'ffmpeg')
+            if 'DEPLOY_ENV' not in os.environ:
+                self.EndPoint = default_endpoint
 
-    def create_dir(self, path):
+    @staticmethod
+    def create_dir(path):
         try:
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -68,10 +77,12 @@ class BackendConfigure:
             return cls.configfile
 
 
+Configuration = BackendConfigure.get_config()
+
 import unittest
 
 
-class Test_Configure(unittest.TestCase):
+class TestConfigure(unittest.TestCase):
     def setUp(self) -> None:
         pass
 

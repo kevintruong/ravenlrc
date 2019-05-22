@@ -26,7 +26,10 @@ class CrawlCmder(Thread):
             songitem = RavSongDb().get_info_by_id(songid)
             if songitem:
                 songinfo = SongInfo(songitem)
-                return songinfo
+                isvalid = songinfo.verify_info()
+                if isvalid:
+                    return songinfo
+                return None
             else:
                 return None
 

@@ -50,11 +50,21 @@ class SongInfo:
             if len(nctsonginfo) > 7:
                 self.timeleng = nctsonginfo[7]
 
-    def verify_songinfo(self):
+    def songinfo_retry_file(self):
         self.songfile = SongFile.get_cachedfile(fid=self.songfile)
         self.lyric = SongFile.get_cachedfile(fid=self.lyric)
-        if self.timeleng == 0:
+        if self.timeleng == 0: 
             raise Exception('Timelength return error')
+
+    def verify_info(self):
+        for value in self.__dict__.values():
+            if value is None:
+                return False
+        return True
+
+
+
+
 
 
 class Cmder:

@@ -47,6 +47,21 @@ def song(url):
         return error_msg_handle(exp)
 
 
+@hug.post('/api/video/render')
+def publish(body):
+    try:
+        from Api.publish import publish_vid
+        from handler import handler_publish
+        from handler import handler_render
+        from backend.yclogger import telelog
+        telelog.info(body)
+        status = handler_render(body)
+        return status
+    except Exception as exp:
+        return error_msg_handle(exp)
+    return {'url': 'render started'}
+
+
 #
 #
 @hug.post('/api/video/publish')
@@ -54,8 +69,8 @@ def publish(body):
     try:
         from Api.publish import publish_vid
         from handler import handler_publish
-        from backend.yclogger import slacklog
-        slacklog.info('RELEASE: {}'.format(body))
+        from backend.yclogger import telelog
+        telelog.info('RELEASE: {}'.format(body))
         status = handler_publish(body)
         return status
     except Exception as exp:

@@ -186,11 +186,11 @@ class GDriveMnger:
             fileinfo = FileInfo(filepath=path)
             file = self.viewFile(fileinfo.filename, pid)
             if file:
-                # if self.push_needed(file, item_path=path):
-                #     new_file = self.update_file(path, file['id'])
-                # else:
-                print('file not change => reuse the exist remote file')
-                new_file = file
+                if self.push_needed(file, item_path=path):
+                    new_file = self.update_file(path, file['id'])
+                else:
+                    print('file not change => reuse the exist remote file')
+                    new_file = file
             else:
                 print('upload new file')
                 file_mimeType = self.identify_mimetype(fileinfo.filename)
