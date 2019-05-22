@@ -44,6 +44,10 @@ class ContentFileInfo:
         if self.filepath:
             if os.path.exists(self.filepath):
                 return self.filepath
+        filepath = os.path.join(self.dirname,self.filename)
+        if os.path.exists(filepath):
+            self.filepath = filepath
+            return self.filepath
         self.filepath = self.storage.download_file(self.fileinfo['id'], self.dirname)
         return self.filepath
 
@@ -187,6 +191,7 @@ class CachedContentDir:
     EFFECT_DIR = os.path.join(cachedcontentdir, 'Effect')
     BGIMG_DIR = os.path.join(cachedcontentdir, 'BgImage')
     RENDER_DIR = os.path.join(cachedcontentdir, 'Render')  # contain all render cached file
+    FILM_DIR = os.path.join(cachedcontentdir, 'Film')  # contain all render cached file
     MV_DIR = os.path.join(cachedcontentdir, 'MV')  # contain all render cached file
     CacheGDriveMappingDictCls = None
     GdriveCacheStorage = GDriveMnger.get_instance(True)
@@ -218,6 +223,10 @@ class CachedContentDir:
                     self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
                                                                                 each_dir['id'],
                                                                                 self.MV_DIR)
+                if each_dir['name'] == 'Film':
+                    self.CacheGDriveMappingDict[each_dir['name']] = StorageInfo(each_dir['name'],
+                                                                                each_dir['id'],
+                                                                                self.FILM_DIR)
 
             CachedContentDir.CacheGDriveMappingDictCls = self.CacheGDriveMappingDict
         pass
@@ -345,6 +354,13 @@ class CachedFile:
         return hashfile + ".{}".format(ext)
 
     @classmethod
+    def get_hash_string(cls, object_dict: dict):
+        import json
+        str_attributes = json.dumps(object_dict, default=lambda o: o.__dict__, sort_keys=True)
+        hashfile = hashlib.md5(str_attributes.encode('utf-8')).hexdigest()
+        return hashfile
+
+    @classmethod
     def get_cached_filename(cls, filepath: str,
                             **kwargs):
         fileinfo = FileInfo(filepath)
@@ -383,3 +399,22 @@ class SongFile:
     @classmethod
     def get_cachedfile(cls, filename=None, fid=None):
         return CachedContentDir.verify_file(cls.SongDir, filename, fid)
+
+
+class FilmFile(CachedFile):
+    FilmDir = CachedContentDir.FILM_DIR
+
+    @classmethod
+    def get_cachedfile(cls, filename=None, fid=None):
+        return CachedContentDir.verify_file(cls.FilmDir, filename, fid)
+
+    @classmethod
+    def create_cachedfile(cls, filename):
+        return os.path.join(cls.FilmDir, filename)
+
+    @classmethod
+    def get_output_filename(cls, attibute_dict: dict, ext):
+        filename = cls.get_hash_string(attibute_dict)
+        filename = '{}{}'.format(filename,ext)
+        return filename
+

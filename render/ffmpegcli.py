@@ -347,7 +347,14 @@ class FfmpegCli(object):
         #
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_bg)
 
-    def adding_sub_to_video(self, input_sub: str, input_video: str, output_vid: str, timelength=90, timing=None):
+    def adding_sub_to_video(self,
+                            input_sub: str,
+                            input_video: str,
+                            output_vid: str,
+                            timelength=90,
+                            timing=None,
+                            cleanup=True,
+                            audio=False):
         """
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
@@ -372,9 +379,18 @@ class FfmpegCli(object):
             subvid_stream = input['v'].filter('subtitles',
                                               input_sub,
                                               fontsdir=fontsdir)
-            if timing:
+            audio = input['a']
+            if timing and not audio:
                 (
                     ffmpeg.output(subvid_stream, output_vid, ss=timing.start, t=timing.duration)
+                        .global_args('-shortest')
+                        .global_args('-threads', '{}'.format(cpucount))
+                        .global_args("-preset", "ultrafast")
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
+            if timing and audio:
+                (
+                    ffmpeg.output(subvid_stream, audio, output_vid, ss=timing.start, t=timing.duration)
                         .global_args('-shortest')
                         .global_args('-threads', '{}'.format(cpucount))
                         .global_args("-preset", "ultrafast")
@@ -391,8 +407,9 @@ class FfmpegCli(object):
         except Exception as exp:
             os.remove(output_vid)
         finally:
-            os.remove(input_sub)
-            os.remove(input_video)
+            if cleanup:
+                os.remove(input_sub)
+                os.remove(input_video)
 
     def add_effect_to_bg(self, affect_vid: str, video: str, output: str, opacity_val: int, timelength=10):
         """
@@ -541,6 +558,35 @@ class FfmpegCli(object):
         # self._ffmpeg_input_fill_cmd('-c')
         # self._ffmpeg_input_fill_cmd('copy')
         # self.ffmpeg_cli_run(ffmpeg_cmd, output_vid, superfast=1)
+
+    def concat_media_files(self, output, mediafile: list):
+        try:
+            video_stream_input = []
+            for elem in mediafile:
+                FfmpegCli.check_file_exist(elem)
+                video_stream_v = ffmpeg.input(elem)['v']
+                video_stream_input.append(video_stream_v)
+                video_stream_a = ffmpeg.input(elem)['a']
+                video_stream_input.append(video_stream_a)
+
+            joined = ffmpeg.concat(*video_stream_input, v=1, a=1).node
+            joined_v = joined[0]
+            joined_a = joined[1]
+            compile = (
+                ffmpeg.output(joined_v, joined_a, output).
+                    global_args('-shortest')
+                    .global_args('-threads', '{}'.format(cpucount))
+                    .global_args("-preset", "ultrafast")
+                    # .compile()
+                    .run(cmd=ffmpegpath, overwrite_output=True)
+            )
+            print(compile)
+            return output
+        except Exception as exp:
+            if os.path.exists(output):
+                os.remove(output)
+            raise exp
+        pass
 
     def add_logo_to_bg_img(self, input_bg: str,
                            input_logo: str,

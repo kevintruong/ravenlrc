@@ -1,0 +1,21 @@
+{
+  "films": [
+    {
+      "file": "UUID",
+      "subtitle": "UUID_subtitle",
+      "timing": [
+        {
+          "start": 0,
+          "duration": 1000
+        },
+        {
+          "start": 10000,
+          "duration": 50000
+        }
+      ]
+    }
+  ],
+  "renderType": {
+    "type": "preview"
+  }
+}

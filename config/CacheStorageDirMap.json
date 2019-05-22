@@ -26,6 +26,10 @@
             "type": "folder"
           },
           {
+            "name": "Film",
+            "type": "folder"
+          },
+          {
             "name": "Render",
             "type": "folder"
           },
