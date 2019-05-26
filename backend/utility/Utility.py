@@ -7,6 +7,8 @@ import unidecode
 from backend.utility.TempFileMnger import SrtTempfile
 from backend.yclogger import slacklog
 
+DISK_USED_LIMIT = 70  # percent
+
 
 def get_filepath_info(filepath: str):
     try:
@@ -176,12 +178,44 @@ def get_media_info(filepath):
 
 
 def clean_up(dirpath='/tmp/raven'):
-    for path in os.listdir(dirpath):
-        full_path = os.path.join(dirpath, path)
-        if os.path.isfile(full_path):
-            os.remove(full_path)
-        else:
-            clean_up(full_path)
+    diskinfo = get_drive_usage(dirpath)
+    if diskinfo['used_percent'] > DISK_USED_LIMIT:
+        for path in os.listdir(dirpath):
+            full_path = os.path.join(dirpath, path)
+            if os.path.isfile(full_path):
+                os.remove(full_path)
+            else:
+                clean_up(full_path)
+
+
+def get_drive_usage(path):
+    """
+    Use Python libraries to get drive space/usage statistics. Prior to v3.3, use `os.statvfs`;
+    on v3.3+, use the more accurate `shutil.disk_usage`.
+    """
+    import sys
+    import shutil
+
+    if sys.version_info >= (3, 3):
+        usage = shutil.disk_usage(path)
+        return {
+            "total": usage.total,
+            "used": usage.used,
+            "free": usage.free,
+            "used_percent": int(usage.used / usage.total * 100)
+        }
+    else:
+        # with os.statvfs, we need to multiple block sizes by block counts to get bytes
+        stats = os.statvfs(path)
+        total = stats.f_frsize * stats.f_blocks
+        free = stats.f_frsize * stats.f_bavail
+        used = total - free
+        return {
+            "total": total,
+            "free": free,
+            "used": used,
+            "used_percent": int(used / total * 100)
+        }
 
 
 class PyJSON(object):
@@ -268,3 +302,7 @@ class TestUnility(unittest.TestCase):
     def test_file_info(self):
         file = FileInfo(__file__)
         print(file.toJSON())
+
+    def test_disk_usage(self):
+        ret = get_drive_usage('/tmp')
+        print(ret)

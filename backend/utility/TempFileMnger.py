@@ -93,6 +93,12 @@ class SrtTempfile(YtTempFile):
         super().__init__(pre, sub, autodel)
 
 
+class AssTempfile(YtTempFile):
+
+    def __init__(self, pre='sub', sub='.ass', autodel=False) -> None:
+        super().__init__(pre, sub, autodel)
+
+
 class Mp3TempFile(YtTempFile):
     def __init__(self, pre='audio', sub='.mp3', autodel=False) -> None:
         super().__init__(pre, sub, autodel)

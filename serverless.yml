@@ -57,6 +57,7 @@ package:
     - backend/subeffect/test/**
     - songcrawlers/**
     - crawler/song.txt
+    - FilmMaker/**
     - crawler/test/**
     - backend/**/test/**
     - Docs/**

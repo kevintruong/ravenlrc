@@ -173,6 +173,10 @@ class TestFFmpegCli(unittest.TestCase):
         not_alpha = ffmpeg.check_alpha_channel(r'/mnt/Data/Project/ytcreatorservice/test/sample_data/affect_file.mp4')
         self.assertFalse(not_alpha)
 
+    def test_scale_padding(self):
+        inputfile = '/mnt/Data/Project/ytcreatorservice/backend/tests/hello.mp4'
+        FfmpegCli().scale_square_ratio_paddingblack(inputfile, 1280, 1280, 'test_1280.mp4')
+
 
 if __name__ == '__main__':
     unittest.main()

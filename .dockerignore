@@ -18,6 +18,7 @@ songcrawlers/venv
 subeffect/venv
 .serverless
 node_modules
+FilmMaker/**
 **/__pycache__
 
 

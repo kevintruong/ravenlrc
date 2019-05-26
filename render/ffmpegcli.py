@@ -164,6 +164,7 @@ class FfmpegCli(object):
             cmd += self.bitrate_configure
 
         cmd.append(output)
+        print(" ".join(cmd))
         try:
             p = subprocess.Popen(cmd,
                                  # stdout=subprocess.PIPE,
@@ -197,6 +198,63 @@ class FfmpegCli(object):
         FfmpegCli.check_file_exist(mediafile)
         format = self._ffprobe_file_format(mediafile)
         return format
+
+    def get_video_resolution(self, media_file: str):
+        FfmpegCli.check_file_exist(media_file)
+        # ffprobe - v quiet - print_format json - show_format
+
+        ffproble_cmd = ['{}'.format(ffprobepath),
+                        '-loglevel', 'error',
+                        '-select_streams', "v",
+                        '-show_entries', 'stream=width,height',
+                        # '-of', 'csv=p=0',
+                        '-print_format', 'json',
+                        "{}".format(media_file)]
+        output, err = self.run_cmd(ffproble_cmd)
+        data = json.loads(output)['streams'][0]
+        return data
+
+    def get_subtitle_list(self, video_file):
+        # ffprobe -loglevel error -select_streams s -show_entries stream=index:stream_tags=language -of csv=p=0
+        # -loglevel error -select_streams s -show_entries stream=index:stream_tags=language
+        FfmpegCli.check_file_exist(video_file)
+        ffproble_cmd = ['{}'.format(ffprobepath),
+                        '-loglevel', 'error',
+                        '-select_streams', "s",
+                        '-show_entries', 'stream=index:stream_tags=language',
+                        '-of', 'csv=p=0',
+                        '-print_format', 'json',
+                        "{}".format(video_file)]
+        output, err = self.run_cmd(ffproble_cmd)
+        data = json.loads(output)
+        return data
+
+    def get_subtitlefile_by_stream_inde(self, video_file, index, output):
+        FfmpegCli.check_file_exist(video_file)
+        try:
+            (
+                ffmpeg.input(video_file)
+                    .output(output, map='0:{}'.format(index)).run(cmd=ffmpegpath, overwrite_output=True)
+            )
+        except Exception as exp:
+            os.remove(output)
+            raise exp
+
+    def get_audio_stream_list(self, video_file):
+
+        # ffprobe -loglevel error -select_streams s -show_entries stream=index:stream_tags=language -of csv=p=0
+        # -loglevel error -select_streams s -show_entries stream=index:stream_tags=language
+        FfmpegCli.check_file_exist(video_file)
+        ffproble_cmd = ['{}'.format(ffprobepath),
+                        '-loglevel', 'error',
+                        '-select_streams', "a",
+                        '-show_entries', 'stream=index:stream_tags=language',
+                        '-of', 'csv=p=0',
+                        '-print_format', 'json',
+                        "{}".format(video_file)]
+        output, err = self.run_cmd(ffproble_cmd)
+        data = json.loads(output)
+        return data
 
     def create_media_file(self, input_img: str, time_length: int, output_video: str):
         '''
@@ -354,7 +412,8 @@ class FfmpegCli(object):
                             timelength=90,
                             timing=None,
                             cleanup=True,
-                            audio=False):
+                            audio=False,
+                            audio_stream=None):
         """
         ffmpeg_sub_cmd="f=$(pwd)/${input_sub}:force_style="
         ffmpeg_font_att="FontName=$input_font,FontSize=$font_size,PrimaryColour=&H${opacity}${font_colour_1},BorderStyle=0"
@@ -375,11 +434,10 @@ class FfmpegCli(object):
             FfmpegCli.check_file_exist(input_sub)
             FfmpegCli.check_file_exist(input_video)
             input = ffmpeg.input(input_video)
-
             subvid_stream = input['v'].filter('subtitles',
                                               input_sub,
                                               fontsdir=fontsdir)
-            audio = input['a']
+
             if timing and not audio:
                 (
                     ffmpeg.output(subvid_stream, output_vid, ss=timing.start, t=timing.duration)
@@ -389,13 +447,27 @@ class FfmpegCli(object):
                         .run(cmd=ffmpegpath, overwrite_output=True)
                 )
             if timing and audio:
+                if audio_stream is not None:
+                    audio_stream = input['{}'.format(audio_stream)]
+                else:
+                    audio_stream = input['a']
                 (
-                    ffmpeg.output(subvid_stream, audio, output_vid, ss=timing.start, t=timing.duration)
+                    ffmpeg.output(subvid_stream, audio_stream, output_vid, ss=timing.start, t=timing.duration)
                         .global_args('-shortest')
                         .global_args('-threads', '{}'.format(cpucount))
                         .global_args("-preset", "ultrafast")
                         .run(cmd=ffmpegpath, overwrite_output=True)
                 )
+            if audio:
+                audio_stream = input['a']
+                (
+                    ffmpeg.output(subvid_stream, audio_stream, output_vid)
+                        .global_args('-shortest')
+                        .global_args('-threads', '{}'.format(cpucount))
+                        .global_args("-preset", "ultrafast")
+                        .run(cmd=ffmpegpath, overwrite_output=True)
+                )
+
             else:
                 (
                     ffmpeg.output(subvid_stream, output_vid, t=timelength)
@@ -611,7 +683,6 @@ class FfmpegCli(object):
             FfmpegCli.check_file_exist(input_bg)
             FfmpegCli.check_file_exist(input_logo)
             streams_list = [ffmpeg.input(input_bg), ffmpeg.input(input_logo)]
-
             (
                 ffmpeg.filter(streams_list, 'overlay', coordinate.x, coordinate.y)
                     .output(output)
@@ -634,6 +705,37 @@ class FfmpegCli(object):
         # logger.debug('{}'.format(self.ffmpeg_cli))
         # self.run(self.ffmpeg_cli, output)
         # self.reset_ffmpeg_cmd()
+
+    def scale_square_ratio_paddingblack(self, video_input, width, heigh, video_output):
+        try:
+            FfmpegCli.check_file_exist(video_input)
+            self._ffmpeg_input(video_input)
+            self._ffmpeg_input_filter_complex_prefix()
+            pad = f"pad={width}:{heigh}:({width}-iw*min({width}/iw\,{heigh}/ih))/2:" \
+                f"({heigh}-ih*min({width}/iw\,{heigh}/ih))/2"
+
+            cmd = 'scale={}:{},{}'.format("iw*min({}/iw\,{}/ih)".format(width, heigh),
+                                           "ih*min({}/iw\,{}/ih)".format(width, heigh),
+                                           pad)
+            self._ffmpeg_input_fill_cmd(cmd)
+            self.ffmpeg_cli_run(self.ffmpeg_cli, video_output)
+        except Exception as exp:
+            import stackprinter
+            print(stackprinter.format(exp))
+            os.remove(video_output)
+            raise exp
+        finally:
+            pass
+
+            # os.remove(video_input)
+        # ffmpeg -i in.mp4 -filter:v "scale=iw*min($width/iw\,$height/ih):
+        #                                   ih*min($width/iw\,$height/ih),
+        # pad=$width:$height:
+        #     ($width-iw*min($width/iw\,$height/ih))/2:
+        #     ($height-ih*min($width/iw\,$height/ih))/2"
+        # out.mp4
+
+        pass
 
     def add_affect_overlay_in_sub(self, input_src: str, affect: str, subframe: Coordinate,
                                   outdir=os.path.dirname(__file__)):

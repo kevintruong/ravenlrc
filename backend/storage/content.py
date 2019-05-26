@@ -44,7 +44,7 @@ class ContentFileInfo:
         if self.filepath:
             if os.path.exists(self.filepath):
                 return self.filepath
-        filepath = os.path.join(self.dirname,self.filename)
+        filepath = os.path.join(self.dirname, self.filename)
         if os.path.exists(filepath):
             self.filepath = filepath
             return self.filepath
@@ -272,6 +272,19 @@ class CachedContentDir:
             return fileinfo
 
     @classmethod
+    def gdrive_file_upload_to_dir(cls,dir, filepath):
+        fileinfo = None
+        if cls.CacheGDriveMappingDictCls is None:
+            cls.CacheGDriveMappingDictCls = CachedContentDir().CacheGDriveMappingDict
+        dirname = os.path.basename(dir)
+        storeinfo: StorageInfo = cls.CacheGDriveMappingDictCls[dirname]
+        try:
+            fileinfo = GDriveMnger(True).upload_file(filepath, storeinfo.id)
+        finally:
+            return fileinfo
+    @classmethod
+
+    @classmethod
     def get_file_path(cls, dir: str, filename: str):
         dir = os.path.basename(dir)
         try:
@@ -415,6 +428,5 @@ class FilmFile(CachedFile):
     @classmethod
     def get_output_filename(cls, attibute_dict: dict, ext):
         filename = cls.get_hash_string(attibute_dict)
-        filename = '{}{}'.format(filename,ext)
+        filename = '{}{}'.format(filename, ext)
         return filename
-

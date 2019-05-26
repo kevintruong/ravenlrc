@@ -57,6 +57,24 @@ def handler_publish(body):
         raise exp
 
 
+def handler_filmmaker(body):
+    """
+    handler publish endpoint
+    :param body:  {'id': config_id}
+    :return:
+    """
+    from render.film import FilmsRender
+    from render.engine import RenderThreadQueue
+    try:
+        from backend.storage.gdrive import GDriveMnger
+        body = json.loads(body)
+        filmrender = FilmsRender(body)
+        RenderThreadQueue.get_renderqueue().add(filmrender)
+        return {'status', 'Render Req Added'}
+    except Exception as exp:
+        raise exp
+
+
 def handler_getcolorscheme(fileid):
     from backend.storage.gdrive import GDriveMnger
     from backend.colorz.colorz import colorz

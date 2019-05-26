@@ -191,6 +191,7 @@ class GDriveMnger:
                 else:
                     print('file not change => reuse the exist remote file')
                     new_file = file
+                return new_file
             else:
                 print('upload new file')
                 file_mimeType = self.identify_mimetype(fileinfo.filename)
@@ -199,13 +200,19 @@ class GDriveMnger:
                     'parents': [pid],
                     'mimeType': file_mimeType
                 }
-                media = MediaFileUpload(path, mimetype=file_mimeType)
-                new_file = self.service.files().create(body=file_metadata,
-                                                       media_body=media,
-                                                       fields='id,name,webContentLink,modifiedTime,mimeType').execute()
+                media = MediaFileUpload(path, mimetype=file_mimeType, resumable=True)
+                request = self.service.files().create(body=file_metadata,
+                                                      media_body=media,
+                                                      fields='id,name,webContentLink,modifiedTime,mimeType')
+                # .execute()
+                response = None
+                while response is None:
+                    status, response = request.next_chunk()
+                    if status:
+                        print("Uploaded %d%%." % int(status.progress() * 100))
+                return response
 
             # self.localdb.insert_file(new_file)
-            return new_file
         except Exception as exp:
             print('error on upload file to drive {}'.format(exp))
 
@@ -329,4 +336,3 @@ class Test_GoogleFiles(unittest.TestCase):
         self.gdriver.push_content('/mnt/Data/Project/ytcreatorservice/backend/storage', id)
         all_files = self.gdriver.list_out('storage', id)
         print(all_files)
-

@@ -73,8 +73,7 @@ class YoutubeMVInfo:
         self.channelinfo = ChannelInfoManger(channelname)
         self.title = '{}\n'.format(self.songinfo.title + ' || ' +
                                    self.songinfo.singer + ' || ' +
-                                   self.channelinfo.header.channel + ' || ' +
-                                   ' [Lyrics Video] ')
+                                   'Lyrics MV')
         self.hashtags = self.create_hashtags() + self.channelinfo.footer.hashtags
         self.tags = self.create_yt_tags()
         self.description = self.description_formatter()

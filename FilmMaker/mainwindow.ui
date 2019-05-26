@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>817</width>
+    <height>1107</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Failamp</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="media_slidebar">
+      <item>
+       <widget class="QLabel" name="currentTimeLabel">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>0:00</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="timeSlider">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="totalTimeLabel">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>0:00</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_header">
+      <property name="text">
+       <string>Header</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QListView" name="playlistView">
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>true</bool>
+      </property>
+      <property name="dragDropMode">
+       <enum>QAbstractItemView::DropOnly</enum>
+      </property>
+      <property name="defaultDropAction">
+       <enum>Qt::CopyAction</enum>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="uniformItemSizes">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="0">
+     <widget class="QPushButton" name="button_loadsub">
+      <property name="text">
+       <string>Manual Load subtitle</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="3">
+       <widget class="QLabel" name="resolution_value">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>sub list</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QListView" name="audio_list"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QListView" name="sub_list"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_resolution">
+        <property name="text">
+         <string>Resolution</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_sublist">
+        <property name="text">
+         <string>audio list</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="media_info">
+      <item>
+       <widget class="QPushButton" name="previousButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>images/control-skip-180.png</normaloff>images/control-skip-180.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="playButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>images/control.png</normaloff>images/control.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pauseButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>images/control-pause.png</normaloff>images/control-pause.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="stopButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>images/control-stop-square.png</normaloff>images/control-stop-square.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="back1s">
+        <property name="text">
+         <string>&lt;&lt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="next1s">
+        <property name="text">
+         <string>&gt;&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="nextButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>images/control-skip.png</normaloff>images/control-skip.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="viewButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>images/application-image.png</normaloff>images/application-image.png</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap>images/speaker-volume.png</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="volumeSlider">
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="13" column="0">
+     <widget class="QLineEdit" name="text_header"/>
+    </item>
+    <item row="14" column="0">
+     <widget class="QLabel" name="label_footer">
+      <property name="text">
+       <string>Footer</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="finalizeButton">
+        <property name="text">
+         <string>Finalize</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="resetButton">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="15" column="0">
+     <widget class="QLineEdit" name="text_footer"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>817</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFIle">
+    <property name="title">
+     <string>FI&amp;le</string>
+    </property>
+    <addaction name="open_file_action"/>
+    <addaction name="actionmask_in"/>
+    <addaction name="actionMask_Out"/>
+    <addaction name="actionAdd_Masks"/>
+    <addaction name="action_back5s"/>
+    <addaction name="action_next5s"/>
+    <addaction name="actionRemove_selected"/>
+   </widget>
+   <addaction name="menuFIle"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="open_file_action">
+   <property name="text">
+    <string>&amp;Open file...</string>
+   </property>
+  </action>
+  <action name="actionmask_in">
+   <property name="text">
+    <string>&amp;Mask In</string>
+   </property>
+  </action>
+  <action name="actionMask_Out">
+   <property name="text">
+    <string>Ma&amp;sk Out</string>
+   </property>
+  </action>
+  <action name="actionAdd_Masks">
+   <property name="text">
+    <string>&amp;Add Masks</string>
+   </property>
+  </action>
+  <action name="action_back5s">
+   <property name="text">
+    <string>&amp;back 5s</string>
+   </property>
+  </action>
+  <action name="action_next5s">
+   <property name="text">
+    <string>&amp;Next 5s</string>
+   </property>
+  </action>
+  <action name="actionRemove_selected">
+   <property name="text">
+    <string>Remove selected</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

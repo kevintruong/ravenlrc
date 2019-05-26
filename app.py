@@ -76,3 +76,20 @@ def publish(body):
     except Exception as exp:
         return error_msg_handle(exp)
     return {'url': 'render started'}
+
+
+
+#
+#
+@hug.post('/api/video/filmrecap')
+def film_recap(body):
+    try:
+        from Api.publish import publish_vid
+        from handler import handler_filmmaker
+        from backend.yclogger import telelog
+        telelog.info('RELEASE: {}'.format(body))
+        status = handler_filmmaker(body)
+        return status
+    except Exception as exp:
+        return error_msg_handle(exp)
+    return {'url': 'render started'}

@@ -5,7 +5,6 @@ import requests
 # RENDER_ENDPOINT = 'https://ravpublish.herokuapp.com/'
 #
 # RENDER_ENDPOINT = 'http://localhost:5000'
-# RENDER_ENDPOINT = 'http://35.197.57.162:5000'
 
 from config.configure import BackendConfigure
 
@@ -25,4 +24,9 @@ def publish_vid(body):
 
 def render_preview_song(body):
     r = requests.post(RENDER_ENDPOINT + '/api/video/render', json=body)
+    return r
+
+
+def render_filmrecap(body):
+    r = requests.post(RENDER_ENDPOINT + '/api/video/filmrecap', json=body)
     return r
