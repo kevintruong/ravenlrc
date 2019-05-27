@@ -22,6 +22,20 @@ class RavDataBase:
         posgres_url = 'postgres://{}:{}@{}/{}'.format(USERNAME, PASSWORD, HOST_URL, DBNAME)
         self.conn = psycopg2.connect(posgres_url)
 
+    def close(self):
+        if self.conn:
+            self.conn.close()
+
+    def destroy(self, tb_name: str):
+        try:
+            self.connect()
+            cursor = self.conn.cursor()
+            cursor.execute("delete from {}".format(tb_name))
+            cursor.close()
+            self.conn.commit()
+        finally:
+            self.close()
+
 
 class RavSongDb(RavDataBase):
     def __init__(self):
@@ -191,6 +205,7 @@ class UpdateThread(Thread):
 if __name__ == '__main__':
     from crawler.db.helper import GdriveSongInfoDb
     from backend.type import SongInfo
+
     songdb = GdriveSongInfoDb.get_gdrivesonginfodb()
     infos = songdb.list_all()
     for songitem in infos:

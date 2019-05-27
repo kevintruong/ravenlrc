@@ -2,64 +2,15 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-import subprocess
 
-import requests
 from facepy import GraphAPI
+
+from publisher.facebook.account import AccInfo
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 AuthenticateFileDir = os.path.join(CurDir, 'db')
-GetTokenScript = os.path.join(CurDir, 'gettoken.php')
+
 fbpageinfo = os.path.join(AuthenticateFileDir, 'pages.json')
-
-
-def php(script_path, username, password):
-    p = subprocess.Popen(['php', '-f', script_path, username, password], stdout=subprocess.PIPE)
-    result = p.communicate()[0]
-    return result
-
-
-class PageInfo:
-    def __init__(self, id, name, token):
-        self.id = id
-        self.name = name
-        self.token = token
-
-
-class AccInfo:
-    def __init__(self, username, password, token=None):
-        if not os.path.exists(fbpageinfo):
-            self.username = username
-            self.password = password
-            if token:
-                self.token = token
-            else:
-                self.token = self.gettoken()
-            self.pages = []
-            self.collect_pagesinfo()
-            self.toJSON()
-
-    def gettoken(self):
-        get_token = php(GetTokenScript, "{}".format(self.username),
-                        "{}".format(self.password)).decode('utf-8')
-        userinfo = json.loads(get_token)
-        token = userinfo['access_token']
-        return token
-
-    def get_account_info(self):
-        payload = {'method': 'get', 'access_token': self.token}
-        fbrsp = requests.get('https://graph.facebook.com/v2.8/me/accounts?limit=1000', payload).json()
-        return fbrsp['data']
-
-    def collect_pagesinfo(self):
-        account_info = self.get_account_info()
-        for each_page in account_info:
-            self.pages.append(PageInfo(each_page['id'], each_page['name'], each_page['access_token']))
-
-    def toJSON(self):
-        with open(fbpageinfo, 'w') as fbdb:
-            return json.dump(self, fbdb, default=lambda o: o.__dict__,
-                             sort_keys=True, indent=2)
 
 
 class FbPageAPI:
@@ -232,5 +183,5 @@ class Test_Account_Info(unittest.TestCase):
         print(accinfo)
 
     def test_collect_page_info(self):
-        self.acc.collect_pagesinfo()
+        self.acc.get_pages_info()
         print(self.acc.toJSON())

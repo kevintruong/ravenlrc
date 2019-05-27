@@ -147,24 +147,33 @@ class Header(TextInsert):
 
 class FilmsRender(FilmRenderEngine):
     def run(self, **kwargs):
-        from backend.yclogger import telelog
-        joined_output = None
-        if self.cachedoutput is None:
-            films_output = []
-            for each_film_render in self.films:
-                each_film_render: FilmRender
-                film_output = each_film_render.run()
-                films_output.append(film_output.get())
-            self.join_films(films_output)
-        self.cachedoutput: ContentFileInfo
-        telelog.info(self.cachedoutput.fileinfo)
-        return self.cachedoutput.fileinfo
+        try:
+            from backend.yclogger import telelog
+            joined_output = None
+            if self.cachedoutput is None:
+                films_output = []
+                for each_film_render in self.films:
+                    each_film_render: FilmRender
+                    film_output = each_film_render.run()
+                    films_output.append(film_output.get())
+                self.join_films(films_output)
+            self.cachedoutput: ContentFileInfo
+            telelog.info(self.cachedoutput.fileinfo)
+            fileinfo = self.insert_header_footer()
+            telelog.info(fileinfo)
+            return fileinfo
+        except Exception as exp:
+            from backend.yclogger import stacklogger, slacklog
+            slacklog.error(stacklogger.format(exp))
+            print(stacklogger.format(exp))
 
     def insert_header_footer(self):
         if self.header or self.footer:
-            output = FilmFile.get_output_filename({'footer': self.footer.__dict__,
-                                                   'header': self.header.__dict__},
-                                                  '.mp4')
+            output = FilmFile.get_output_filename(
+                {'input': self.cachedoutput.filename,
+                 'footer': self.footer.__dict__,
+                 'header': self.header.__dict__},
+                '.mp4')
             output_file = FilmFile.get_cachedfile(output)
             if output_file is None:
                 output_file = FilmFile.create_cachedfile(output)
@@ -185,6 +194,8 @@ class FilmsRender(FilmRenderEngine):
                 from backend.yclogger import telelog
                 telelog.info(self.cachedoutput.fileinfo)
                 return self.cachedoutput.fileinfo
+            return output_file.fileinfo
+        return self.cachedoutput.fileinfo
 
     def join_films(self, film_list):
         output = FilmFile.create_cachedfile(self.output)
@@ -225,51 +236,37 @@ class TestFilmsRender(unittest.TestCase):
         self.films_info = {
             "films": [
                 {
-                    "file": "[Erai-raws] One Punch Man (2019) - 06 [1080p][Multiple Subtitle].mkv",
-                    "subtitle": "[Erai-raws] One Punch Man (2019) - 06 [1080p][Multiple Subtitle]_track3_[eng].ass",
+                    "audio_lang": "eng",
+                    "file": "Wonder.Woman.2017.mHD.BluRay.DD5.1.x264-TRiM.mkv",
+                    "sub_lang": "vie",
+                    "subtitle": "WonderWoman2017mHDBluRayDD51x264-TRiM_vie.ass",
                     "timing": [
                         {
-                            "start": 600000,
-                            "duration": 10000,
+                            "duration": 70805,
+                            "start": 50000
                         },
                         {
-                            "start": 20000,
-                            "duration": 50000
-                        }
-                    ]
-                }, {
-                    "file": "[Erai-raws] One Punch Man (2019) - 06 [1080p][Multiple Subtitle].mkv",
-                    "subtitle": "[Erai-raws] One Punch Man (2019) - 06 [1080p][Multiple Subtitle]_track3_[eng].ass",
-                    "timing": [
-                        {
-                            "start": 600000,
-                            "duration": 10000
-                        },
-                        {
-                            "start": 20000,
-                            "duration": 50000
+                            "duration": 16000,
+                            "start": 882096
                         }
                     ]
                 }
             ],
             "footer": {
-                'text': 'this is my first mv',
-                'font': {
-                    "name": "SVN-Futura Light",
-                    "color": "0xfffff2",
-                    "size": 100
-                }
+                "font": {
+                    "color": "0xffffff",
+                    "name": "Source Sans Pro",
+                    "size": 80
+                },
+                "text": "footer wonder woman "
             },
             "header": {
-                'text': 'this is header kevinelg',
-                'font': {
-                    "name": "SVN-Futura Light",
-                    "color": "0xfffff2",
-                    "size": 100
-                }
-            },
-            "renderType": {
-                "type": "publish"
+                "font": {
+                    "color": "0xffffff",
+                    "name": "Source Sans Pro",
+                    "size": 80
+                },
+                "text": "this is wonder woman "
             }
         }
 
@@ -277,8 +274,7 @@ class TestFilmsRender(unittest.TestCase):
         films_render = FilmsRender(self.films_info)
         films_render.start()
         films_render.join()
-        films_render.insert_header_footer()
-        print(films_render.cachedoutput.get())
+        # films_render.insert_header_footer()
 
     def test_send_filmrecap_req(self):
         import Api.publish
