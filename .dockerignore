@@ -9,11 +9,10 @@ crawler/**/*.db
 #crawler/**/*.sql
 #crawler/test
 #backend/.idea
-backend/vendor
+backend/vendor/lyriceffect
 test
 venv_37
 venv
-backend/vendor/lyriceffect/venv
 songcrawlers/venv
 subeffect/venv
 .serverless
