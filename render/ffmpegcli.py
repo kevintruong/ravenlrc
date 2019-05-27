@@ -446,6 +446,7 @@ class FfmpegCli(object):
                         .global_args("-preset", "ultrafast")
                         .run(cmd=ffmpegpath, overwrite_output=True)
                 )
+                return
             if timing and audio:
                 if audio_stream is not None:
                     audio_stream = input['{}'.format(audio_stream)]
@@ -458,6 +459,7 @@ class FfmpegCli(object):
                         .global_args("-preset", "ultrafast")
                         .run(cmd=ffmpegpath, overwrite_output=True)
                 )
+                return
             if audio:
                 audio_stream = input['a']
                 (
@@ -467,7 +469,7 @@ class FfmpegCli(object):
                         .global_args("-preset", "ultrafast")
                         .run(cmd=ffmpegpath, overwrite_output=True)
                 )
-
+                return
             else:
                 (
                     ffmpeg.output(subvid_stream, output_vid, t=timelength)
@@ -476,6 +478,7 @@ class FfmpegCli(object):
                         .global_args("-preset", "ultrafast")
                         .run(cmd=ffmpegpath, overwrite_output=True)
                 )
+                return
         except Exception as exp:
             os.remove(output_vid)
         finally:

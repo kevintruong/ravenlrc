@@ -123,13 +123,13 @@ class VideoMask:
                 if 'language' in tags:
                     language = each_sub_stream['tags']['language']
                     # substreams_lang.append([index, language])
-                    subtitle_file = self.extract_subtitle_from_movie_by_stream_index(index, language)
+                    subtitle_file = self.get_subtitle_from_movie(language)
                     substreams_lang.append([language, subtitle_file])
         return substreams_lang
 
     def extract_subtitle_from_movie_by_stream_index(self, index, langselect):
         fileinfo = FileInfo(self.file)
-        subtitlefile = os.path.join(fileinfo.dir, "{}_{}.ass".format(fileinfo.name, langselect))
+        subtitlefile = os.path.join(fileinfo.dir, "{}__{}.ass".format(fileinfo.name, langselect))
         if not os.path.exists(subtitlefile):
             FfmpegCli().get_subtitlefile_by_stream_inde(self.file, index, subtitlefile)
         return subtitlefile
@@ -137,17 +137,16 @@ class VideoMask:
 
     def get_subtitle_from_movie(self, lang_select):
         index = self.get_substream_index_by_lang(lang_select)
-        subtitlefiel = self.extract_subtitle_from_movie_by_stream_index(index, lang_select)
-        if subtitlefiel:
-            self.subtitle = subtitlefiel
+        sub_file = self.extract_subtitle_from_movie_by_stream_index(index, lang_select)
+        if sub_file:
             from pysubs2 import SSAFile
-            subs = SSAFile.load(self.subtitle, encoding='utf-8')  # create ass file
+            subs = SSAFile.load(sub_file, encoding='utf-8')  # create ass file
             for key, value in subs.styles.items():
                 default_style = subs.styles[key]
                 default_style.fontsize = 24
                 default_style.fontname = 'Source Sans Pro'
-            subs.save(self.subtitle)
-            return self.subtitle
+            subs.save(sub_file)
+            return sub_file
         return None
 
     def set_subtitle_uri(self, subtitle_uri=None):
@@ -250,7 +249,11 @@ class FilmRenderReqMaker(Thread):
         self.upload_file()
         print(self.films)
         from Api.publish import render_filmrecap
+        from handler import handler_filmmaker
+        from render.engine import RenderThreadQueue
         ret = render_filmrecap(VideoMask.toJSON(self.films))
+        # ret = handler_filmmaker(VideoMask.toJSON(self.films))
+        # RenderThreadQueue.get_renderqueue().join()
         return ret
 
 

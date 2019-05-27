@@ -180,6 +180,8 @@ def get_media_info(filepath):
 def clean_up(dirpath='/tmp/raven'):
     diskinfo = get_drive_usage(dirpath)
     if diskinfo['used_percent'] > DISK_USED_LIMIT:
+        from backend.yclogger import telelog
+        telelog.info('disk usage > {} => clean up'.format(diskinfo.__dict__))
         for path in os.listdir(dirpath):
             full_path = os.path.join(dirpath, path)
             if os.path.isfile(full_path):

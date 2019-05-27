@@ -1,6 +1,7 @@
 import os
 
-from pysubs2 import SSAFile, SSAEvent
+# from pysubs2 import SSAFile, SSAEvent
+from backend.vendor.pysubs2 import SSAFile, SSAEvent
 from render.ffmpegcli import FfmpegCli
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
@@ -18,7 +19,7 @@ class HeaderFooter:
         if not os.path.exists(self.headerfooterass_file):
             raise FileExistsError('header_footer.ass file not exist')
 
-    def generate_header_footer_subtitle(self,outputfile):
+    def generate_header_footer_subtitle(self, outputfile):
         subs = SSAFile.load(self.headerfooterass_file, encoding='utf-8')
         if self.header:
             event = SSAEvent()
@@ -36,6 +37,8 @@ class HeaderFooter:
             subs.events.append(event)
         subs.save(outputfile)
         return outputfile
+
+
 import unittest
 
 

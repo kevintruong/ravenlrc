@@ -107,6 +107,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.back1s.pressed.connect(self.move_back_1s)
         self.next1s.pressed.connect(self.move_next_1s)
         self.finalizeButton.pressed.connect(self.send_render_film_req)
+        self.resetButton.pressed.connect(self.reset_all)
 
         self.action_back5s.setShortcut('[')
         self.action_next5s.setShortcut(']')
@@ -122,7 +123,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setAcceptDrops(True)
         self.videomask = []
         self.curvidMask = None
+        self.defaut_config()
         self.show()
+
+    def defaut_config(self):
+        default_font = QFont('Source Sans Pro')
+        self.fontname.setCurrentFont(default_font)
+        self.fontsize.setValue(80)
+        self.color_hex.setText('0xffffff')
 
     def remove_selected_in_playlist(self):
         curindex = self.playlist.currentIndex()
@@ -180,6 +188,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         footer = self.text_footer.text()
         header = self.text_header.text()
 
+    def reset_all(self):
+        self.videomask.clear()
+        self.playlist.clear()
+        self.audio_list.model().clear()
+        self.sub_list.model().clear()
+        self.videomask.clear()
+        self.player.stop()
+
     def send_render_film_req(self):
         print('send render request')
         film_mask = []
@@ -192,18 +208,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             'films': film_mask
         }
         if len(self.text_header.text()):
-            render_req['header'] = self.text_header.text()
+            header = {
+                'text': self.text_header.text(),
+                'font': {
+                    'color': self.color_hex.text(),
+                    'size': self.fontsize.value(),
+                    'name': self.fontname.currentFont().family()
+                }
+            }
+            render_req['header'] = header
         if len(self.text_footer.text()):
-            render_req['footer'] = self.text_footer.text()
-
+            footer = {
+                'text': self.text_footer.text(),
+                'font': {
+                    'color': self.color_hex.text(),
+                    'size': self.fontsize.value(),
+                    'name': self.fontname.currentFont().family()
+                }
+            }
+            render_req['footer'] = footer
         filmmaker = FilmRenderReqMaker(render_req)
         filmmaker.start()
-        self.videomask.clear()
-        self.playlist.clear()
-        self.audio_list.model().clear()
-        self.sub_list.model().clear()
-        self.videomask.clear()
-        self.player.stop()
 
     def move_next_1s(self):
         print('move next 1s')
@@ -253,12 +278,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.curvidMask: VideoMask
 
         substreams = self.curvidMask.get_audiostreams()
-        model = self.audio_list.model()
-        model.clear()
-        for f in substreams:
-            f = ",".join(f)
-            model.appendRow(QStandardItem(f))
-
+        if len(substreams):
+            model = self.audio_list.model()
+            model.clear()
+            for f in substreams:
+                f = ",".join(f)
+                model.appendRow(QStandardItem(f))
         if self.curvidMask.audio_lang:
             model: QStandardItemModel
             for i in range(model.rowCount()):
@@ -267,6 +292,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     index = model.index(i, 0)
                     self.audio_list.setCurrentIndex(index)
                     break
+            self.curvidMask.audio_lang = None # reset the audio_lang
 
     def update_subtitle_stream(self):
         self.curvidMask: VideoMask
@@ -357,14 +383,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(args)
 
 
-# TODO
-# space to pause/play (toggle)
 if __name__ == '__main__':
     app = QApplication([])
-    app.setApplicationName("Failamp")
+    app.setApplicationName("Film Recap Maker")
     app.setStyle("Fusion")
-
-    # Fusion dark palette from https://gist.github.com/QuantumCD/6245215.
     palette = QPalette()
     palette.setColor(QPalette.Window, QColor(53, 53, 53))
     palette.setColor(QPalette.WindowText, Qt.white)
@@ -381,6 +403,5 @@ if __name__ == '__main__':
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
     app.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
-
     window = MainWindow()
     app.exec_()

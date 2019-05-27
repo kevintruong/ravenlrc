@@ -36,13 +36,19 @@ class Font:
         import os
         fontfiles = os.listdir(fontsdir)
         for file in fontfiles:
+            fontpath = os.path.join(fontsdir, file)
             if self.name in file:
-                fontpath = os.path.join(fontsdir, file)
                 try:
                     fontname = self.get_font_name(fontpath)
                     return fontname
                 except Exception as exp:
                     print('ignore this {}'.format(exp))
+            try:
+                fontname = self.get_font_name(fontpath)
+                if self.name in fontname:
+                    return fontname
+            except Exception as exp:
+                print('ignore this {}'.format(exp))
         raise FileNotFoundError('Not found {} font file'.format(self.name))
 
     def get_font_name(self, fontfile):
