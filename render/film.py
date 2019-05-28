@@ -2,6 +2,9 @@ from abc import ABC
 from threading import Thread
 
 from backend.storage.content import FilmFile, CachedContentDir, ContentFileInfo
+from backend.utility.Utility import FileInfo
+from backend.yclogger import telelog
+from publisher.facebook.fb_publish import FbPageAPI
 from render.engine import RenderTiming, SongRenderEngine, RenderType, Font, SrtTempfile, AssTempfile
 from render.ffmpegcli import FfmpegCli
 from render.footer_header import HeaderFooter
@@ -145,6 +148,96 @@ class Header(TextInsert):
         super().__init__(data)
 
 
+class FacebookPublisher:
+    def __init__(self, data: dict):
+        self.header = None
+        self.footer = None
+        self.width = 720
+        self.height = 720
+        for key, value in data.items():
+            if key == 'footer':
+                self.footer = Footer(value)
+            if key == 'header':
+                self.header = Header(value)
+            if key == 'page':
+                self.page = value
+
+        pass
+
+    def insert_header_footer(self, videofile):
+        fileinfo = FileInfo(videofile)
+        if self.header or self.footer:
+            output = FilmFile.get_output_filename(
+                {'input': fileinfo.filename,
+                 'footer': self.footer.__dict__,
+                 'header': self.header.__dict__},
+                '.mp4')
+            output_file = FilmFile.get_cachedfile(output)
+            if output_file is None:
+                output_file = FilmFile.create_cachedfile(output)
+                footerheader_output = AssTempfile().getfullpath()
+                headerfootersub = HeaderFooter(self.header.text,
+                                               self.footer.text,
+                                               videofile)
+                headerfootersub.generate_header_footer_subtitle(footerheader_output)
+                from backend.utility.TempFileMnger import MvTempFile
+                scale_mv = MvTempFile().getfullpath()
+                FfmpegCli().scale_square_ratio_paddingblack(videofile, self.width, self.height, scale_mv)
+                FfmpegCli().adding_sub_to_video(footerheader_output,
+                                                scale_mv,
+                                                output_file,
+                                                audio=True, cleanup=False)
+                CachedContentDir.gdrive_file_upload(output_file)
+                output_file = FilmFile.get_cachedfile(output)
+            return output_file.get()
+        return videofile
+
+    def publish_video(self, videofile):
+        print(self.page)
+        fbpage_handler = FbPageAPI(self.page)
+        with open(videofile, 'rb') as videofd:
+            fbpage_handler.post_video(video_file=videofd,
+                                      description=str(self.header.text + self.footer.text),
+                                      title=self.header.text)
+
+    def run(self, videofile):
+        telelog.info("{} publish {}".format(self.page, videofile))
+        processed_file = self.insert_header_footer(videofile)
+        self.publish_video(processed_file)
+
+        pass
+
+
+class YoutubePublisher:
+    def __init__(self, data: dict):
+        for key, value in data.items():
+            if key == 'channel':
+                self.channel = value
+        pass
+
+    def run(self, videofile):
+        telelog.info("{} publish {}".format(self.channel, videofile))
+        pass
+
+
+class FilmPublisher:
+    def __init__(self, data: dict):
+        super().__init__()
+        self.facebook = None
+        self.youtube = None
+        for key, value in data.items():
+            if key == 'facebook':
+                self.facebook = FacebookPublisher(value)
+            if key == 'youtube':
+                self.youtube = YoutubePublisher(value)
+
+    def run(self, videofile):
+        if self.youtube:
+            self.youtube.run(videofile)
+        if self.facebook:
+            self.facebook.run(videofile)
+
+
 class FilmsRender(FilmRenderEngine):
     def run(self, **kwargs):
         try:
@@ -158,14 +251,18 @@ class FilmsRender(FilmRenderEngine):
                     films_output.append(film_output.get())
                 self.join_films(films_output)
             self.cachedoutput: ContentFileInfo
+            fileinfo = self.cachedoutput.fileinfo
             telelog.info(self.cachedoutput.fileinfo)
-            fileinfo = self.insert_header_footer()
-            telelog.info(fileinfo)
+            self.handler_publisher()
             return fileinfo
         except Exception as exp:
             from backend.yclogger import stacklogger, slacklog
             slacklog.error(stacklogger.format(exp))
             print(stacklogger.format(exp))
+
+    def handler_publisher(self):
+        if self.publisher:
+            self.publisher.run(self.cachedoutput.get())
 
     def insert_header_footer(self):
         if self.header or self.footer:
@@ -208,9 +305,12 @@ class FilmsRender(FilmRenderEngine):
         self.films = []
         self.header = None
         self.footer = None
+        self.publisher = None
         for key, value in filmsinfo.items():
             if key == 'films':
                 self.generate_filmrender(value)
+            if key == 'publish':
+                self.publisher = FilmPublisher(value)
             if key == 'header':
                 self.header = Header(value)
             if key == 'footer':

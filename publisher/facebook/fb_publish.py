@@ -5,7 +5,7 @@ import os
 
 from facepy import GraphAPI
 
-from publisher.facebook.account import AccInfo
+from publisher.facebook.account import AccInfo, FbPageInfoDb
 
 CurDir = os.path.dirname(os.path.realpath(__file__))
 AuthenticateFileDir = os.path.join(CurDir, 'db')
@@ -17,53 +17,45 @@ class FbPageAPI:
     fbpage_file = os.path.join(AuthenticateFileDir, 'fbpage.json')
 
     def __init__(self, page_name=None):
-        if os.path.exists(fbpageinfo):
-            self.authenticate_page(page_name)
+        pageinfo = FbPageInfoDb().get_page_info_by_name(page_name)
+        if pageinfo:
+            self.graph = GraphAPI(pageinfo.token)
+            self.pageid = pageinfo.id
         else:
-            raise FileNotFoundError
+            raise Exception('not found page info in DB')
 
-    def authenticate_page(self, page_name):
-        with open(fbpageinfo, 'r') as fbpage:
-            page_autth = json.load(fbpage)
-            for each_page in page_autth['pages']:
-                if page_name.lower() in each_page['name'].lower():
-                    self.page_access_token = each_page['token']
-                    self.pageid = each_page['id']
-            self.graph = GraphAPI(self.page_access_token)
+    def post_video(self, video_file,
+                   description,
+                   publish_time=None, title=None):
+        try:
+            if publish_time is None:
+                import time
+                next_threedays = 3 * 3600 * 24
+                publish_time = int(time.time()) + next_threedays
+            if title is None:
+                from backend.utility.Utility import FileInfo
+                fileinfo = FileInfo(video_file)
+                title = fileinfo.name
+            postvid_req = {'source': video_file}
+            postvid_req.update({'description': description})
+            postvid_req.update({'scheduled_publish_time': publish_time})
+            postvid_req.update({'published': False})
+            postvid_req.update({'title': title})
+            self.graph.post(path=self.pageid + '/videos', retry=2, **postvid_req)
+        except Exception as exp:
+            from backend.yclogger import stacklogger, slacklog, telelog
+            msg = stacklogger.format(exp)
+            slacklog.error(msg)
 
-    #
-    # def __init__(self, page_name=None):
-    #     with open(self.fbpage_file, 'r') as fbpage:
-    #         accountdata = json.load(fbpage)
-    #     for account in accountdata['account']:
-    #         accinfo = AccInfo(account['username'], account['password'])
-
-    def _get_accounts(self, limit=250):
-        self.accounts = self.graph.get('me/accounts?limit=' + str(limit))
-        return self.accounts['data']
-
-    def get_accounts(self):
-        return self.accounts['data']
-
-    def get_page_access_token(self, _page_id):
-        """
-            :param _page_id:
-            :return: page_specific_token
-        """
-        for data in self.accounts:
-            if _page_id == data['id']:
-                _page_access_token = data['access_token']
-                print('')
-                print('Page id: ', data['id'])
-                print('Page Name: ', data['name'])
-                return _page_access_token
-        else:
-            return None
-
-    def post(self, image_file=None, message=None, link=None, video_file=None):
+    def post(self,
+             image_file=None,
+             message=None,
+             link=None,
+             video_file=None):
         """
              Method to post the media and text message to your page you manage.
-             :param page_access_token: valid api token
+             :param video_file:
+             :param link:
              :param image_file: Image File along with path
              :param message: Text
              :return: None
@@ -117,17 +109,17 @@ class FbPageAPI:
             from backend.yclogger import telelog
             telelog.error('can not post mvid {}'.format(exp))
 
-    def post_video(self, mvsnippet: dict, id, videofile):
-        try:
-            ytlink = 'https://youtu.be/{}'.format(id)
-            description = mvsnippet['description']
-            post = description + '\n' + ytlink
-            with open(videofile, 'rb') as videofd:
-                self.post(message=post, video_file=videofd)
-            pass
-        except Exception as exp:
-            from backend.yclogger import telelog
-            telelog.error('can not post mvid {}'.format(exp))
+    # def post_video(self, mvsnippet: dict, id, videofile):
+    #     try:
+    #         ytlink = 'https://youtu.be/{}'.format(id)
+    #         description = mvsnippet['description']
+    #         post = description + '\n' + ytlink
+    #         with open(videofile, 'rb') as videofd:
+    #             self.post(message=post, video_file=videofd)
+    #         pass
+    #     except Exception as exp:
+    #         from backend.yclogger import telelog
+    #         telelog.error('can not post mvid {}'.format(exp))
 
 
 import unittest
@@ -176,12 +168,7 @@ class Test_Facebook_Page_Api(unittest.TestCase):
 class Test_Account_Info(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.acc = AccInfo(r'vu_spk08117@yahoo.com', r'Thuyanh3003')
-
-    def test_get_account_info(self):
-        accinfo = self.acc.get_account_info()
-        print(accinfo)
+        self.page = FbPageAPI('Subtitle Recap Movie')
 
     def test_collect_page_info(self):
-        self.acc.get_pages_info()
-        print(self.acc.toJSON())
+        self.page.post(message='hello world')

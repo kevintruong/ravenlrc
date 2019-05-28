@@ -11,7 +11,7 @@ TemplateDir = os.path.join(CurDir, 'template')
 class HeaderFooter:
     headerfooterass_file = os.path.join(TemplateDir, 'header_footer.ass')
 
-    def __init__(self, header, footer, videofile):
+    def __init__(self, header=None, footer=None, videofile=None):
         self.header = header
         self.footer = footer
         self.videofile = videofile

@@ -6,7 +6,6 @@ class FilmRequest:
         self.mainapp = mainapp
         from FilmMaker.mediaplayer import MainWindow
         self.mainapp: MainWindow
-
         self.ytchannel = self.mainapp.ytpagelistview.cur_channel_name
         self.fbpage = self.mainapp.fbpagelistview.cur_page_name
 
@@ -49,16 +48,30 @@ class FilmRequest:
         else:
             return None
 
+    def generate_pulisher_attribute(self):
+        publish = {}
+        if self.ytchannel:
+            youtube = {'youtube': {'channel':self.ytchannel}}
+            publish.update(youtube)
+        if self.fbpage:
+            fb_att = {'page': self.fbpage}
+            header_att = self.generate_header_attribute()
+            if header_att:
+                fb_att.update(header_att)
+            footer_att = self.generate_footer_attribute()
+            if footer_att:
+                fb_att.update(footer_att)
+            facebook = {'facebook': fb_att}
+            publish.update(facebook)
+        publish_att = {'publish': publish}
+        return publish_att
+
     def make_request(self):
         from FilmMaker.mediaplayer import MainWindow
         self.mainapp: MainWindow
-        print('send render request')
         render_req = self.generate_films_attribute()
-        header_att = self.generate_header_attribute()
-        if header_att:
-            render_req.update(header_att)
-        footer_att = self.generate_footer_attribute()
-        if footer_att:
-            render_req.update(footer_att)
+        publish_att = self.generate_pulisher_attribute()
+        if len(publish_att):
+            render_req.update(publish_att)
         filmmaker = FilmRenderReqMaker(render_req)
         filmmaker.start()

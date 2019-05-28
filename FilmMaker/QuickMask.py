@@ -233,15 +233,13 @@ class FilmRenderReqMaker(Thread):
         films_info = []
         for filminfo in films_list:
             filmrecap_obj = FilmRecap(filminfo, raw=True)
-            filmrecap_obj.file = CachedContentDir.gdrive_file_upload_to_dir(FilmFile.FilmDir, filmrecap_obj.file)[
-                'name']
+            filmrecap_obj.file = \
+                CachedContentDir.gdrive_file_upload_to_dir(FilmFile.FilmDir, filmrecap_obj.file)[
+                    'name']
             if filmrecap_obj.subtitle:
                 filmrecap_obj.subtitle = \
                     CachedContentDir.gdrive_file_upload_to_dir(FilmFile.FilmDir, filmrecap_obj.subtitle)['name']
             films_info.append(filmrecap_obj)
-        films = {
-            'films': films_info
-        }
         self.request['films'] = films_info
         self.films = self.request
 

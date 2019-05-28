@@ -16,10 +16,10 @@ from render.parser import SongApi
 from render.type import *
 
 from publisher.facebook.fb_publish import FbPageAPI
-from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
-from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
-from publisher.youtube.youtube_uploader import YoutubeUploader
-from publisher.youtube.youtube_uploader import YtMvConfigStatus
+from publisher.youtube.info import YoutubeMVInfo
+from publisher.youtube.info import YtMvConfigSnippet
+from publisher.youtube.uploader import YoutubeUploader
+from publisher.youtube.uploader import YtMvConfigStatus
 
 
 class RenderEngine(ABC):
