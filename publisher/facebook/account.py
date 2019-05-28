@@ -140,7 +140,13 @@ class FbPageInfoDb(RavDataBase):
             cursor = self.conn.cursor()
             cursor.execute("SELECT * FROM {}".format(self.tb_name))
             iteminfo = cursor.fetchall()
-            return iteminfo
+            if iteminfo:
+                pagesinfo = []
+                for each_page in iteminfo:
+                    pageifo =  PageInfo(each_page[0],each_page[1],each_page[2],each_page[3])
+                    pagesinfo.append(pageifo)
+                return pagesinfo
+            return None
         finally:
             self.close()
 
@@ -150,7 +156,6 @@ class FbAccountInfoDb(RavDataBase):
 
     def __init__(self):
         super().__init__()
-        self.create_schema()
 
     def create_schema(self):
         try:

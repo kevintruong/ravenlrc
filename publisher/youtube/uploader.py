@@ -4,6 +4,7 @@ import http.client as httplib
 import json
 import os
 import random
+
 import time
 
 import httplib2
@@ -16,7 +17,8 @@ from backend.utility.Utility import todict
 from publisher.youtube import auth
 from enum import Enum
 
-from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet, YoutubeMVInfo
+from publisher.youtube.channel import YoutubeChannelHandler
+from publisher.youtube.info import YtMvConfigSnippet, YoutubeMVInfo
 
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
@@ -63,8 +65,6 @@ class YtMvConfigStatus:
     def to_dict(self):
         return todict(self)
 
-    pass
-
 
 class YtMvConfigRecordingDetails:
     def __init__(self, recordingdate):
@@ -77,36 +77,16 @@ class YtMvConfigRecordingDetails:
 class YoutubeUploader:
 
     # Authorize the request and store authorization credentials
-    def __init__(self, channel: str, callback=None):
+    def __init__(self, channel: str,
+                 callback=None):
         self.youtube: Resource = self.get_youtube_handler(channel.lower(), callback)
-
-    @staticmethod
-    def get_and_create_credential_file(channelname):
-        channelname = channelname.lower()
-        if channelname in AuthenticateDictFile:
-            return AuthenticateDictFile[channelname]
-        else:
-            return None
-
-    @staticmethod
-    def get_secret_file():
-        return os.path.join(AuthenticateFileDir, 'client_secrets.json')
 
     def get_youtube_handler(self, channelname, callback=None):
         """Return the API Youtube object."""
         try:
-            default_credentials = self.get_and_create_credential_file(channelname)
-            if default_credentials is None:
-                default_credentials = os.path.join(AuthenticateFileDir, '{}_credential.json'.format(channelname))
-            client_secrets = self.get_secret_file()
-            credentials = default_credentials
-            if callback is None:
-                from publisher.youtube.auth import console
-                get_code_callback = console.get_code
-            else:
-                get_code_callback = callback
-            return auth.get_resource(client_secrets, credentials,
-                                     get_code_callback=get_code_callback)
+            handler = YoutubeChannelHandler(channelname, callback)
+            resource = handler.get_youtube_handler()
+            return resource
         except Exception as exp:
             print(exp)
             raise exp
@@ -150,16 +130,12 @@ class YoutubeUploader:
             snippet=snippet.to_dict(),
             status=status.to_dict(),
         )
-
-        print(json.dumps(body, indent=True))
-
         # Call the API's videos.insert method to create and upload the video.
         insert_request = youtube.videos().insert(
             part=','.join(body.keys()),
             body=body,
             media_body=MediaFileUpload(fileupload, chunksize=-1, resumable=True)
         )
-
         respond = resumable_upload(insert_request)
         return respond
 
@@ -203,6 +179,8 @@ class TestMvconfig(unittest.TestCase):
 
     def test_snippet_to_dict(self):
         print(self.snippet.to_dict())
+
+
 
     def test_status_to_dict(self):
         status = YtMvConfigStatus(5)

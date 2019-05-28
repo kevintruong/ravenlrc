@@ -1,3 +1,4 @@
+import abc
 from threading import Thread
 
 import psycopg2
@@ -8,15 +9,21 @@ from psycopg2 import sql
 # PASSWORD = 'kevinelg'
 # HOST_URL = '172.17.0.2'
 
+
 USERNAME = "ravtech"
 DBNAME = 'ravdb'
 PASSWORD = '*utG!~ue$k~Wb63'
 HOST_URL = '54.169.147.105'
 
 
-class RavDataBase:
+class RavDataBase(abc.ABC):
     def __init__(self):
         self.conn = None
+        self.create_schema()
+
+    @abc.abstractmethod
+    def create_schema(self):
+        pass
 
     def connect(self):
         posgres_url = 'postgres://{}:{}@{}/{}'.format(USERNAME, PASSWORD, HOST_URL, DBNAME)

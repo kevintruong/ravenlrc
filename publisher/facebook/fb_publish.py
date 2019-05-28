@@ -147,9 +147,9 @@ class Test_Facebook_Page_Api(unittest.TestCase):
             slacklog.error(stacklogger.format(exp))
 
     def test_youtube_post(self):
-        from publisher.youtube.youtube_uploader import YtMvConfigStatus
-        from publisher.youtube.YoutubeMVInfo import YtMvConfigSnippet
-        from publisher.youtube.YoutubeMVInfo import YoutubeMVInfo
+        from publisher.youtube.uploader import YtMvConfigStatus
+        from publisher.youtube.info import YtMvConfigSnippet
+        from publisher.youtube.info import YoutubeMVInfo
         from backend.type import SongInfo
         from crawler.cmder import CrawlCmder
         url = 'https://www.nhaccuatui.com/bai-hat/khong-la-cua-nhau-sidie-ft-nho.P6NrlAGU7HSs.html'

@@ -107,3 +107,8 @@ class Mp3TempFile(YtTempFile):
 class HtmlTempFile(YtTempFile):
     def __init__(self, pre='preview', sub='.html', autodel=False) -> None:
         super().__init__(pre, sub, autodel)
+
+
+class JsonCredentialTempFile(YtTempFile):
+    def __init__(self, pre='credential', sub='.json', autodel=False) -> None:
+        super().__init__(pre, sub, autodel)

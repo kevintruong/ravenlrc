@@ -6,6 +6,8 @@ from PyQt5.QtMultimediaWidgets import *
 
 from FilmMaker.MainWindow import Ui_MainWindow
 from FilmMaker.QuickMask import VideoMask, FilmRenderReqMaker
+from FilmMaker.facebook import FacebookListView
+from FilmMaker.youtube import YoutubeDiaLog, YoutubeListView
 
 
 def hhmmss(ms):
@@ -109,6 +111,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.finalizeButton.pressed.connect(self.send_render_film_req)
         self.resetButton.pressed.connect(self.reset_all)
 
+        self.button_add_acc_yt.pressed.connect(self.button_add_acc_yt_show)
+
         self.action_back5s.setShortcut('[')
         self.action_next5s.setShortcut(']')
         self.action_next5s.triggered.connect(self.move_next_5s)
@@ -124,6 +128,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.videomask = []
         self.curvidMask = None
         self.defaut_config()
+        self.ytpagelistview = YoutubeListView(self.list_youtube)
+        self.ytpagelistview.display_all_channel()
+        self.fbpagelistview = FacebookListView(self.list_facebookpage)
+        self.fbpagelistview.display_all()
+        self.yt_add_dialog = YoutubeDiaLog()
         self.show()
 
     def defaut_config(self):
@@ -131,6 +140,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.fontname.setCurrentFont(default_font)
         self.fontsize.setValue(80)
         self.color_hex.setText('0xffffff')
+
+    def button_add_acc_yt_show(self):
+        value = self.yt_add_dialog.exec_()
+        if value == QDialog.Accepted:
+            print('add new add => refresh acc list')
+            self.ytpagelistview.display_all_channel()
+        else:
+            print('cancel')
+
+
 
     def remove_selected_in_playlist(self):
         curindex = self.playlist.currentIndex()
@@ -184,10 +203,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mask_in = mask_in - 1000
         self.player.setPosition(mask_in)
 
-    def get_video_header_footer(self):
-        footer = self.text_footer.text()
-        header = self.text_header.text()
-
     def reset_all(self):
         self.videomask.clear()
         self.playlist.clear()
@@ -197,38 +212,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.player.stop()
 
     def send_render_film_req(self):
+        from FilmMaker.request import FilmRequest
         print('send render request')
-        film_mask = []
-        for each_vidmask in self.videomask:
-            each_vidmask: VideoMask
-            object = each_vidmask.generate_filmrecap_obj()
-            film_mask.append(object)
-
-        render_req = {
-            'films': film_mask
-        }
-        if len(self.text_header.text()):
-            header = {
-                'text': self.text_header.text(),
-                'font': {
-                    'color': self.color_hex.text(),
-                    'size': self.fontsize.value(),
-                    'name': self.fontname.currentFont().family()
-                }
-            }
-            render_req['header'] = header
-        if len(self.text_footer.text()):
-            footer = {
-                'text': self.text_footer.text(),
-                'font': {
-                    'color': self.color_hex.text(),
-                    'size': self.fontsize.value(),
-                    'name': self.fontname.currentFont().family()
-                }
-            }
-            render_req['footer'] = footer
-        filmmaker = FilmRenderReqMaker(render_req)
-        filmmaker.start()
+        request = FilmRequest(self)
+        request.make_request()
 
     def move_next_1s(self):
         print('move next 1s')
@@ -292,7 +279,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     index = model.index(i, 0)
                     self.audio_list.setCurrentIndex(index)
                     break
-            self.curvidMask.audio_lang = None # reset the audio_lang
+            self.curvidMask.audio_lang = None  # reset the audio_lang
 
     def update_subtitle_stream(self):
         self.curvidMask: VideoMask
