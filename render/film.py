@@ -97,7 +97,7 @@ class FilmRender(SongRenderEngine):
     def render_film_with_timing(self, timing: RenderTiming):
         audio_stream = None
         film_segment_name = FilmFile.get_cached_filename(self.film.file.filename,
-                                                         attribute=timing)
+                                                         attribute=[timing, self.film.subtitle.filename])
         film_segment_file = FilmFile.get_cachedfile(film_segment_name)
         if film_segment_file is None:
             film_segment = FilmFile.create_cachedfile(film_segment_name)
@@ -152,8 +152,8 @@ class FacebookPublisher:
     def __init__(self, data: dict):
         self.header = None
         self.footer = None
-        self.width = 720
-        self.height = 720
+        self.width = 1280
+        self.height = 1280
         for key, value in data.items():
             if key == 'footer':
                 self.footer = Footer(value)
@@ -194,6 +194,7 @@ class FacebookPublisher:
 
     def publish_video(self, videofile):
         print(self.page)
+        return
         fbpage_handler = FbPageAPI(self.page)
         with open(videofile, 'rb') as videofd:
             fbpage_handler.post_video(video_file=videofd,

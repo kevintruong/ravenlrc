@@ -1,7 +1,6 @@
 import fnmatch
 import json
 import os
-
 from threading import Thread
 
 from backend.storage.content import FilmFile, CachedContentDir
@@ -247,11 +246,7 @@ class FilmRenderReqMaker(Thread):
         self.upload_file()
         print(self.films)
         from Api.publish import render_filmrecap
-        from handler import handler_filmmaker
-        from render.engine import RenderThreadQueue
         ret = render_filmrecap(VideoMask.toJSON(self.films))
-        # ret = handler_filmmaker(VideoMask.toJSON(self.films))
-        # RenderThreadQueue.get_renderqueue().join()
         return ret
 
 

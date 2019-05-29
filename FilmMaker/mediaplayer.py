@@ -111,6 +111,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.finalizeButton.pressed.connect(self.send_render_film_req)
         self.resetButton.pressed.connect(self.reset_all)
 
+        self.button_loadsub.pressed.connect(self.manual_load_sub)
+
         self.button_add_acc_yt.pressed.connect(self.button_add_acc_yt_show)
 
         self.action_back5s.setShortcut('[')
@@ -128,6 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.videomask = []
         self.curvidMask = None
         self.defaut_config()
+
         self.ytpagelistview = YoutubeListView(self.list_youtube)
         self.ytpagelistview.display_all_channel()
         self.fbpagelistview = FacebookListView(self.list_facebookpage)
@@ -148,8 +151,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ytpagelistview.display_all_channel()
         else:
             print('cancel')
-
-
 
     def remove_selected_in_playlist(self):
         curindex = self.playlist.currentIndex()
@@ -319,6 +320,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 )
             )
         self.model.layoutChanged.emit()
+
+    def manual_load_sub(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Open file", "",
+                                              "subtitle (*.srt);advandce sub(*.ass);All files (*.*)")
+        subtitle = "Null==={}".format(path)
+        subitem = QStandardItem(subtitle)
+        self.sub_list_model.appendRow(subitem)
 
     def update_duration(self, mc):
         self.timeSlider.setMaximum(self.player.duration())
