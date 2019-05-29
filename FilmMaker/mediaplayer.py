@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -8,6 +10,7 @@ from FilmMaker.MainWindow import Ui_MainWindow
 from FilmMaker.QuickMask import VideoMask, FilmRenderReqMaker
 from FilmMaker.facebook import FacebookListView
 from FilmMaker.youtube import YoutubeDiaLog, YoutubeListView
+from backend.utility.Utility import FileInfo, only_latin_string
 
 
 def hhmmss(ms):
@@ -324,6 +327,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def manual_load_sub(self):
         path, _ = QFileDialog.getOpenFileName(self, "Open file", "",
                                               "subtitle (*.srt);advandce sub(*.ass);All files (*.*)")
+        if os.path.exists(path):
+            fileinfo = FileInfo(path)
+            subfile = only_latin_string(fileinfo.name)
+            newsubfile = os.path.join(fileinfo.dir, "{}.ass".format(subfile))
+            VideoMask.format_subtitle(path,newsubfile)
+            path = newsubfile
+
+        self.curvidMask.subtitle = path
         subtitle = "Null==={}".format(path)
         subitem = QStandardItem(subtitle)
         self.sub_list_model.appendRow(subitem)

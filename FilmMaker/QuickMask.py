@@ -148,6 +148,21 @@ class VideoMask:
             return sub_file
         return None
 
+    @classmethod
+    def format_subtitle(cls, sub_file, ass_subfile):
+        if not os.path.exists(sub_file):
+            raise FileExistsError('not found {}'.format(sub_file))
+        from pysubs2 import SSAFile
+        subs = SSAFile.load(sub_file, encoding='utf-8')  # create ass file
+        for key, value in subs.styles.items():
+            default_style = subs.styles[key]
+            default_style.fontsize = 24
+            default_style.fontname = 'Source Sans Pro'
+            default_style.shadow = 0
+            default_style.outline = 0
+        subs.save(ass_subfile)
+        return ass_subfile
+
     def set_subtitle_uri(self, subtitle_uri=None):
         if subtitle_uri:
             self.subtitle = subtitle_uri

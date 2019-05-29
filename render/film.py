@@ -194,7 +194,6 @@ class FacebookPublisher:
 
     def publish_video(self, videofile):
         print(self.page)
-        return
         fbpage_handler = FbPageAPI(self.page)
         with open(videofile, 'rb') as videofd:
             fbpage_handler.post_video(video_file=videofd,
