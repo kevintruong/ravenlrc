@@ -538,9 +538,6 @@ class FfmpegCli(object):
             FfmpegCli.check_file_exist(effect_vid)
             FfmpegCli.check_file_exist(video)
 
-            bg_video_alpha = self.check_alpha_channel(video)
-            effect_video_alpha = self.check_alpha_channel(effect_vid)
-
             video_stream = ffmpeg.input(video)['v'].filter('format', 'argb')
             effect_stream = ffmpeg.input(effect_vid)['v'].filter('format', 'argb')
 
@@ -549,7 +546,8 @@ class FfmpegCli(object):
             opacity = opacity_val / 100
             (
                 ffmpeg.filter([effect_stream, video_stream],
-                              'blend', all_mode='overlay',
+                              'blend',
+                              all_mode='overlay',
                               all_opacity="{}".format(opacity))
                     .output(output, t=timelength)
                     .global_args('-shortest')
@@ -558,7 +556,8 @@ class FfmpegCli(object):
                     .run(cmd=ffmpegpath, overwrite_output=True)
             )
         except Exception as exp:
-            os.remove(output)
+            if os.path.exists(output):
+                os.remove(output)
         finally:
             os.remove(effect_vid)
             os.remove(video)
@@ -663,6 +662,59 @@ class FfmpegCli(object):
             raise exp
         pass
 
+    def create_noise_color_input(self, color, tempfile):
+        input = ffmpeg.input("color=red:s=1280x720")
+        (
+            input.output(tempfile).run(cmd=ffmpegpath, overwrite_output=True)
+        )
+        pass
+
+    def decopyright_video(self, video_file, video_file_output, width, height, speedup=105):
+        try:
+            aspeed = speedup / 100
+            vspeed = 1 / aspeed
+            print('vspeed {} aspeed {}'.format(vspeed, aspeed))
+            self.check_file_exist(video_file)
+            input = ffmpeg.input(video_file)
+
+            input_delay = ffmpeg.input(video_file, itsoffset=0.12)
+            input_delay_audio = input_delay['a']
+            input_audio = input['a']
+
+            overlay_video = ffmpeg.input("color=0x00000030:s={}x{}".format(width, height), f='lavfi')
+            input_video = input['v']
+            node_1 = input_video.filter('hue', h=15, s=1.2).filter('setsar', sar='1/1')
+            overlay_node = ffmpeg.filter([node_1, overlay_video],
+                                         'blend', all_mode='overlay',
+                                         all_opacity="{}".format(0.3),
+                                         shortest=1)
+
+            split = overlay_node.filter_multi_output('split')
+            split0 = split.stream(0)
+            split1 = split[1].filter('lutyuv', y='val*1.5')
+
+            final_vid_stream = (ffmpeg.filter([split0, split1],
+                                              'overlay', shortest=1)
+                                .setpts(f"{vspeed}*PTS"))
+
+            audio_split1 = input_audio.filter('volume', 1.4)
+            decopyright_audio = (ffmpeg.filter([input_delay_audio, audio_split1],
+                                               'amix', inputs=2, duration="shortest")
+                                 .filter('atempo', aspeed))
+            value = (
+                ffmpeg.output(final_vid_stream, decopyright_audio, video_file_output)
+                    .global_args('-threads', '{}'.format(cpucount))
+                    .global_args("-preset", "ultrafast")
+                    .run(cmd=ffmpegpath, overwrite_output=True, capture_stdout=True, capture_stderr=True)
+            )
+            print(value)
+            return video_file_output
+        except ffmpeg.Error as exp:
+            print(exp.stderr.decode('utf-8'))
+            if os.path.exists(video_file_output):
+                os.remove(video_file_output)
+            raise exp
+
     def add_logo_to_bg_img(self, input_bg: str,
                            input_logo: str,
                            output: str,
@@ -718,8 +770,8 @@ class FfmpegCli(object):
                 f"({heigh}-ih*min({width}/iw\,{heigh}/ih))/2"
 
             cmd = 'scale={}:{},{}'.format("iw*min({}/iw\,{}/ih)".format(width, heigh),
-                                           "ih*min({}/iw\,{}/ih)".format(width, heigh),
-                                           pad)
+                                          "ih*min({}/iw\,{}/ih)".format(width, heigh),
+                                          pad)
             self._ffmpeg_input_fill_cmd(cmd)
             self.ffmpeg_cli_run(self.ffmpeg_cli, video_output)
         except Exception as exp:

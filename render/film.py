@@ -97,7 +97,9 @@ class FilmRender(SongRenderEngine):
     def render_film_with_timing(self, timing: RenderTiming):
         audio_stream = None
         film_segment_name = FilmFile.get_cached_filename(self.film.file.filename,
-                                                         attribute=[timing, self.film.subtitle.filename])
+                                                         attribute=[timing, self.film.subtitle.filename],
+                                                         extension='.mp4'
+                                                         )
         film_segment_file = FilmFile.get_cachedfile(film_segment_name)
         if film_segment_file is None:
             film_segment = FilmFile.create_cachedfile(film_segment_name)
@@ -106,7 +108,8 @@ class FilmRender(SongRenderEngine):
             if self.film.audio_lang:
                 audio_stream = self.get_audio_stream_by_lang(self.film.audio_lang)
             ffmpegcli = FfmpegCli()
-            ffmpegcli.adding_sub_to_video(srtpath, filmpath,
+            ffmpegcli.adding_sub_to_video(srtpath,
+                                          filmpath,
                                           film_segment,
                                           timing=timing,
                                           cleanup=False,
@@ -201,11 +204,21 @@ class FacebookPublisher:
                                       title=self.header.text)
 
     def run(self, videofile):
-        telelog.info("{} publish {}".format(self.page, videofile))
-        processed_file = self.insert_header_footer(videofile)
-        self.publish_video(processed_file)
-
-        pass
+        try:
+            telelog.info("{} publish {}".format(self.page, videofile))
+            processed_file = self.insert_header_footer(videofile)
+            from render.decopyright import DeCopyright
+            output = FilmFile.get_output_filename({'input': processed_file}, '.mp4')
+            fileinfo = FilmFile.get_cachedfile(filename=output)
+            if fileinfo is None:
+                decopyright_file = FilmFile.create_cachedfile(output)
+                DeCopyright(processed_file, self.width, self.height).run(decopyright_file)
+                CachedContentDir.gdrive_file_upload(decopyright_file)
+                self.publish_video(decopyright_file)
+            pass
+        except Exception as exp:
+            print(exp)
+            raise exp
 
 
 class YoutubePublisher:

@@ -1,15 +1,27 @@
+from backend.utility.TempFileMnger import MvTempFile, PngTempFile
+from render.ffmpegcli import FfmpegCli
+
+
 class DeCopyright:
-    def __init__(self, mediafile):
+    def __init__(self, mediafile, width, height):
         self.media_file = mediafile
+        self.width = width
+        self.height = height
 
-    def run(self):
-        # ffmpeg -y -i input.mp4 -af "[0:a]volume=1.5" -filter_complex "[0:v]boxblur=1:2"
-        # -vcodec libx264  -pix_fmt yuv420p -r 30 -g 60 -b:v 1400k -profile:v main
-        # -level 3.1 -acodec libmp3lame -b:a 128k -ar 44100
-        # -metadata title="" -metadata artist="" -metadata album_artist="" -metadata album="" -metadata date=""
-        # -metadata track="" -metadata genre="" -metadata publisher="" -metadata encoded_by="" -metadata copyright=""
-        # -metadata composer="" -metadata performer="" -metadata TIT1="" -metadata TIT3="" -metadata disc=""
-        # -metadata TKEY="" -metadata TBPM="" -metadata language="eng" -metadata encoder="" -threads 0 -preset
-        # superfast "output_px3.mp4"
-
+    def run(self, output):
+        FfmpegCli().decopyright_video(self.media_file, output, self.width, self.height)
         pass
+
+
+import unittest
+
+
+class test_decopyright(unittest.TestCase):
+    def setUp(self) -> None:
+        self.mediafile = '/home/kevin/Downloads/03f20b9a046b96eff1928f7319a65022.mp4'
+        self.decopyright = DeCopyright(self.mediafile)
+
+    def test_decopyright(self):
+        tempfile = '/tmp/raven/test1.mp4'
+        self.decopyright.run(tempfile)
+        # FfmpegCli().create_noise_color_input(0xaabbcc,tempfile)
