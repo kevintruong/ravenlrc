@@ -21,6 +21,12 @@ def get_filepath_info(filepath: str):
     return [dirname, filename, name, ext]
 
 
+def get_hash_from_string(text_string: str):
+    import hashlib
+    hash_md5 = hashlib.md5(text_string.encode('utf-8')).hexdigest()
+    return hash_md5
+
+
 class FileInfo:
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,
@@ -181,7 +187,7 @@ def clean_up(dirpath='/tmp/raven'):
     diskinfo = get_drive_usage(dirpath)
     if diskinfo['used_percent'] > DISK_USED_LIMIT:
         from backend.yclogger import telelog
-        telelog.info('disk usage > {} => clean up'.format(diskinfo.__dict__))
+        telelog.info('disk usage > {} => clean up'.format(diskinfo))
         for path in os.listdir(dirpath):
             full_path = os.path.join(dirpath, path)
             if os.path.isfile(full_path):

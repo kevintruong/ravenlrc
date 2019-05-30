@@ -41,7 +41,7 @@ class FbPageAPI:
             postvid_req.update({'scheduled_publish_time': publish_time})
             postvid_req.update({'published': False})
             postvid_req.update({'title': title})
-            self.graph.post(path=self.pageid + '/videos', retry=2, **postvid_req)
+            self.graph.post(path=self.pageid + '/videos', retry=3, **postvid_req)
         except Exception as exp:
             from backend.yclogger import stacklogger, slacklog, telelog
             msg = stacklogger.format(exp)

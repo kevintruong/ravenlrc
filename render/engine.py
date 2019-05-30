@@ -8,7 +8,7 @@ from backend.storage.content import ContentFileInfo
 from backend.type import SongInfo
 from backend.utility.TempFileMnger import *
 from backend.utility.Utility import clean_up, load_ass_from_lrc
-from backend.yclogger import telelog, slacklog
+from backend.yclogger import telelog, slacklog,stacklogger
 
 from render.cache import *
 from render.ffmpegcli import FfmpegCli
@@ -994,7 +994,7 @@ class RenderThreadQueue(Thread):
                     clean_up('/tmp/raven/content')
                     telelog.info('render thread complete')
                 except Exception as exp:
-                    slacklog.error(exp)
+                    slacklog.error(stacklogger.format(exp))
             time.sleep(2)
 
     def set_notify(self):

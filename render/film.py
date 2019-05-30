@@ -294,7 +294,7 @@ class FilmsRender(FilmRenderEngine):
                 headerfootersub.generate_header_footer_subtitle(footerheader_output)
                 from backend.utility.TempFileMnger import MvTempFile
                 scale_mv = MvTempFile().getfullpath()
-                FfmpegCli().scale_square_ratio_paddingblack(self.cachedoutput.get(), 1280, 1280, scale_mv)
+                FfmpegCli().scale_square_ratio_paddingblack(self.cachedoutput.get(), 1080, 1080, scale_mv)
                 FfmpegCli().adding_sub_to_video(footerheader_output,
                                                 scale_mv,
                                                 output_file,

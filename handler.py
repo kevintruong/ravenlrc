@@ -65,11 +65,13 @@ def handler_filmmaker(body):
     """
     from render.film import FilmsRender
     from render.engine import RenderThreadQueue
+    from render.db import FilmReqInfoDb,FilmReq
     try:
         from backend.storage.gdrive import GDriveMnger
-        body = json.loads(body)
-        filmrender = FilmsRender(body)
+        bodyjson = json.loads(body)
+        filmrender = FilmsRender(bodyjson)
         RenderThreadQueue.get_renderqueue().add(filmrender)
+        FilmReqInfoDb().insert_film_req(FilmReq(filmreq=body))
         return {'status', 'Render Req Added'}
     except Exception as exp:
         raise exp

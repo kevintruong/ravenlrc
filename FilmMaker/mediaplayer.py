@@ -113,6 +113,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.next1s.pressed.connect(self.move_next_1s)
         self.finalizeButton.pressed.connect(self.send_render_film_req)
         self.resetButton.pressed.connect(self.reset_all)
+        self.clearButton.pressed.connect(self.clear_all)
 
         self.button_loadsub.pressed.connect(self.manual_load_sub)
 
@@ -207,6 +208,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mask_in = mask_in - 1000
         self.player.setPosition(mask_in)
 
+    def clear_all(self):
+        for video_mask in self.videomask:
+            video_mask: VideoMask
+            video_mask.timing.clear()
+        self.curvidMask.timing.clear()
+
     def reset_all(self):
         self.videomask.clear()
         self.playlist.clear()
@@ -232,14 +239,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         maskvideo: VideoMask = self.videomask[curvid]
         # maskvideo = self.curvidMask
         mask_in = self.player.position()
+        self.mask_in_value.setText(f"{mask_in}")
         maskvideo.mask_in(mask_in)
 
     def set_mask_out(self):
         curvid = self.playlist.currentIndex()
         maskvideo: VideoMask = self.videomask[curvid]
         # maskvideo = self.curvidMask
-        mask_in = self.player.position()
-        maskvideo.mask_out(mask_in)
+        mask_out = self.player.position()
+        self.mask_out_value.setText(f"P{mask_out}")
+        maskvideo.mask_out(mask_out)
 
     def push_mask_vid(self):
         curvid = self.playlist.currentIndex()
@@ -331,7 +340,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             fileinfo = FileInfo(path)
             subfile = only_latin_string(fileinfo.name)
             newsubfile = os.path.join(fileinfo.dir, "{}.ass".format(subfile))
-            VideoMask.format_subtitle(path,newsubfile)
+            VideoMask.format_subtitle(path, newsubfile)
             path = newsubfile
 
         self.curvidMask.subtitle = path
